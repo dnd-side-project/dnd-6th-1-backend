@@ -4,11 +4,13 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BoardsModule } from './boards/boards.module';
 import { typeORMConfig } from './configs/typeorm.config';
+import { BoardImagesModule } from './board-images/board-images.module';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(typeORMConfig),
-    BoardsModule
+    BoardsModule,
+    BoardImagesModule
   ],
   controllers: [AppController],
   providers: [AppService],
