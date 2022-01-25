@@ -10,7 +10,7 @@ import { BoardImagesModule } from './board-images/board-images.module';
   imports: [
     TypeOrmModule.forRoot(typeORMConfig),
     BoardsModule,
-    BoardImagesModule
+    // BoardImagesModule
   ],
   controllers: [AppController],
   providers: [AppService],
