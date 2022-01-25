@@ -1,13 +1,13 @@
-// import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn} from "typeorm";
 
-// @Entity()
-// export class BoardImages extends BaseEntity{
-//     @PrimaryGeneratedColumn()
-//     boardImageId: number;
+@Entity()
+export class BoardImages extends BaseEntity{
+    @PrimaryGeneratedColumn()
+    boardImageId: number;
 
-//     @Column()
-//     originalName: string;
+    @Column()
+    originalName: string;
 
-//     @Column({ comment: "s3 업로드된 localtion url" })
-//     imageUrl: string;
-// }
+    @Column()
+    imageUrl: string;
+}
