@@ -1,14 +1,19 @@
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export class Board extends BaseEntity {
-    
+export class Boards extends BaseEntity {
     @PrimaryGeneratedColumn()
-    id: number;
+    boardId: number;
+
+    // @Column()
+    // userId: number;
 
     @Column()
-    title: string;
+    categoryName: string;
 
     @Column()
-    description: string;
+    postTitle: string;
+
+    @Column()
+    postContent: string;
 }
