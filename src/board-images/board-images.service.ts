@@ -15,10 +15,6 @@ export class BoardImagesService {
         private boardImagesRepository: BoardImagesRepository,
     ){}
 
-    getHello2():string{
-        return 'hello2';
-    }
-
     async uploadFile(file: Express.Multer.File, temp){
         const image = new BoardImages();
         image.originalName = file.originalname
@@ -29,11 +25,6 @@ export class BoardImagesService {
                 Key: temp
             }
             const s3 = new AWS.S3();
-            // AWS.config.update({
-            //     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-            //     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-            //     region: process.env.AWS_REGION
-            //   });
             s3.getObject(params, function(err,data){
                 if(err){
                     throw err;
