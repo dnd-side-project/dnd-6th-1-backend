@@ -29,8 +29,8 @@ export class BoardsService {
         return this.boardsRepository.createBoard(createBoardDto);
     }
 
-    updateBoard(boardId: number, updateBoardDto: UpdateBoardDto): Promise<Boards> {
-        return this.boardsRepository.updateBoard(boardId, updateBoardDto);
+    updateBoard(boardId: number, updateBoardDto: UpdateBoardDto) {
+        this.boardsRepository.updateBoard(boardId, updateBoardDto);
     }
 
     deleteBoard(boardId: number) {

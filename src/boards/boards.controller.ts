@@ -36,8 +36,8 @@ export class BoardsController {
     }
 
     @Patch('/:boardId') // 커뮤니티 글 수정
-    updateBoard(@Param("boardId") boardId: number, @Body() updateBoardDto: UpdateBoardDto): Promise<Boards> {
-        return this.boardsService.updateBoard(boardId, updateBoardDto);
+    updateBoard(@Param("boardId") boardId: number, @Body() updateBoardDto: UpdateBoardDto) {
+        this.boardsService.updateBoard(boardId, updateBoardDto);
     }
 
     @Delete('/:boardId') // 커뮤니티 글 삭제
