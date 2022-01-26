@@ -21,8 +21,11 @@ export class BoardsService {
     }
     
     async getAllBoardsByCategory(category: string): Promise <Boards[]> {
-        Logger.log(category);
         return this.boardsRepository.findByCategory(category);
+    }
+
+    async getAllBoardsByKeyword(keyword: string): Promise <Boards[]> {
+        return this.boardsRepository.findByKeyword(keyword);
     }
 
     createBoard(createBoardDto: CreateBoardDto): Promise<Boards> {

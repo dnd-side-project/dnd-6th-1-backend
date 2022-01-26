@@ -10,19 +10,19 @@ export class BoardRepository extends Repository<Boards>{
     // 카테고리별 검색
     async findByCategory(category: string){
         console.log(category);
-        return this.createQueryBuilder("boards")
-            .where("boards.categoryName = :category", {category})
-            .getMany();
+        return this.find({categoryName : category});
+        // return await this.createQueryBuilder("boards")
+        //     .where("categoryName = :category", {category})
+        //     .getMany();
     }
 
     // 검색어별 검색
     async findByKeyword(keyword: string){
-        return this.createQueryBuilder("boards")
+        return this.createQueryBuilder("Boards")
             .where("boards.postTitle like :keyword", { keyword: `%${keyword}%`})
             .orWhere("boards.postContent like :keyword", { keyword: `%${keyword}%`})                
             .getMany();
     }
-
 
     /*
         select * from boards
