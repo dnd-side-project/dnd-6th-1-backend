@@ -1,20 +1,58 @@
 import { EntityRepository, Repository } from "typeorm";
-import { Board } from "./boards.entity";
+import { Boards } from "./boards.entity";
 import { CreateBoardDto } from "./dto/create-board.dto";
+import { UpdateBoardDto } from "./dto/update-board.dto";
 
-@EntityRepository(Board) // 이 클래스가 Board를 관리하는 repository 라는 것을 알려줌
-export class BoardRepository extends Repository<Board>{
+@EntityRepository(Boards) // 이 클래스가 Board를 관리하는 repository 라는 것을 알려줌
+export class BoardRepository extends Repository<Boards>{
     // entity를 컨트롤하기 위해서는 extends Repository를 해줘야함
     
-    async createBoard(createBoardDto: CreateBoardDto): Promise<Board> {
-        const {title, description} = createBoardDto;
+    // 카테고리별 검색
+    async findByCategory(category: string){
+        console.log(category);
+        return this.find({categoryName : category});
+        // return await this.createQueryBuilder("boards")
+        //     .where("categoryName = :category", {category})
+        //     .getMany();
+    }
+
+    // 검색어별 검색
+    async findByKeyword(keyword: string){
+        return this.createQueryBuilder("Boards")
+            .where("boards.postTitle like :keyword", { keyword: `%${keyword}%`})
+            .orWhere("boards.postContent like :keyword", { keyword: `%${keyword}%`})                
+            .getMany();
+    }
+
+    /*
+        select * from boards
+            where postTitle like '%keyword%' or
+            where postContent like '%keyword%'
+    */
+
+    async createBoard(createBoardDto: CreateBoardDto): Promise<Boards> {
+        const {categoryName, postTitle, postContent} = createBoardDto;
 
         const board = this.create({
-            title, 
-            description,
+            categoryName,
+            postTitle, 
+            postContent,
         });
-
         await this.save(board);
         return board;
+    }
+
+    // 커뮤니티 글 수정
+    // 편집 가능한 요소 : 감정 카테고리, 제목, 글 내용, 이미지 삭제여부
+        // 현재 있었던 애는 남기고 수정사항만 반영해서 저장,,
+
+    async updateBoard(boardId: number, updateBoardDto: UpdateBoardDto) {        
+        await this.update({boardId}, {...updateBoardDto});
+        // UPDATE boards SET ...updateBoardDto = updateBoardDto where boardId = x
+    }
+
+    // 커뮤니티 글 삭제
+    async deleteBoard(boardId: number) {
+        await this.delete(boardId);
     }
 }

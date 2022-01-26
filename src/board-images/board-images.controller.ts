@@ -25,21 +25,21 @@ export class BoardImagesController {
         return this.boardImagesService.getHello2();
     }
 
-    // @Post()
-    // @UseInterceptors(FileInterceptor('file', {
-    //   storage: multerS3({
-    //     s3: s3,
-    //     bucket: process.env.AWS_S3_BUCKET_NAME,
-    //     contentType: multerS3.AUTO_CONTENT_TYPE,
-    //     acl: 'public-read',
-    //     key: function (request, file, cb) {
-    //         temp = `${Date.now().toString()}-${file.originalname}`;
-    //         console.log(file.ContentType)
-    //         cb(null, temp);
-    //     }
-    //   })
-    // }))
-    // async uploadFile(@UploadedFile() file: Express.Multer.File) {
-    //     return await this.boardImagesService.uploadFile(file, temp);
-    // }
+    @Post()
+    @UseInterceptors(FileInterceptor('file', {
+      storage: multerS3({
+        s3: s3,
+        bucket: process.env.AWS_S3_BUCKET_NAME,
+        contentType: multerS3.AUTO_CONTENT_TYPE,
+        acl: 'public-read',
+        key: function (request, file, cb) {
+            temp = `${Date.now().toString()}-${file.originalname}`;
+            console.log(file.ContentType)
+            cb(null, temp);
+        }
+      })
+    }))
+    async uploadFile(@UploadedFile() file: Express.Multer.File) {
+        return await this.boardImagesService.uploadFile(file, temp);
+    }
 }

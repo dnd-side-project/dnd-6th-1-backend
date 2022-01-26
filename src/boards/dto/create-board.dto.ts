@@ -1,9 +1,15 @@
 import { IsNotEmpty } from "class-validator";
 
 export class CreateBoardDto {
-    @IsNotEmpty()
-    title: string;
 
     @IsNotEmpty()
-    description: string;
+    categoryName: string;
+
+    @IsNotEmpty()
+    postTitle: string;
+
+    @IsNotEmpty()
+    postContent: string;
+
+    
 }
