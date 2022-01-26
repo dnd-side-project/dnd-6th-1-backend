@@ -10,19 +10,19 @@ export class BoardRepository extends Repository<Boards>{
     // 카테고리별 검색
     async findByCategory(category: string){
         console.log(category);
-        return await this.createQueryBuilder("boards")
-            .where("boards.categoryName = :category", {category})
-            .getMany();
+        return this.find({categoryName : category});
+        // return await this.createQueryBuilder("boards")
+        //     .where("categoryName = :category", {category})
+        //     .getMany();
     }
 
     // 검색어별 검색
     async findByKeyword(keyword: string){
-        return this.createQueryBuilder("boards")
+        return this.createQueryBuilder("Boards")
             .where("boards.postTitle like :keyword", { keyword: `%${keyword}%`})
             .orWhere("boards.postContent like :keyword", { keyword: `%${keyword}%`})                
             .getMany();
     }
-
 
     /*
         select * from boards
@@ -44,24 +44,15 @@ export class BoardRepository extends Repository<Boards>{
 
     // 커뮤니티 글 수정
     // 편집 가능한 요소 : 감정 카테고리, 제목, 글 내용, 이미지 삭제여부
-    async updateBoard(boardId: number, updateBoardDto: UpdateBoardDto): Promise<Boards> {
-        const board = this.findOne(boardId);
-        console.log(board);
-        this.deleteBoard(boardId);
-        const updatedBoard = { 
-            ...board,
-            ...updateBoardDto
-        }; 
-        console.log(updatedBoard);
-        await this.save(updatedBoard);
-        return updatedBoard;
+        // 현재 있었던 애는 남기고 수정사항만 반영해서 저장,,
+
+    async updateBoard(boardId: number, updateBoardDto: UpdateBoardDto) {        
+        await this.update({boardId}, {...updateBoardDto});
+        // UPDATE boards SET ...updateBoardDto = updateBoardDto where boardId = x
     }
 
     // 커뮤니티 글 삭제
     async deleteBoard(boardId: number) {
-        this.createQueryBuilder("boards")
-            .delete()
-            .where("boards.boardId = :boardId", {boardId})
-            .execute();
+        await this.delete(boardId);
     }
 }

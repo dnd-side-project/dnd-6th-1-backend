@@ -21,16 +21,19 @@ export class BoardsService {
     }
     
     async getAllBoardsByCategory(category: string): Promise <Boards[]> {
-        Logger.log(category);
         return this.boardsRepository.findByCategory(category);
+    }
+
+    async getAllBoardsByKeyword(keyword: string): Promise <Boards[]> {
+        return this.boardsRepository.findByKeyword(keyword);
     }
 
     createBoard(createBoardDto: CreateBoardDto): Promise<Boards> {
         return this.boardsRepository.createBoard(createBoardDto);
     }
 
-    updateBoard(boardId: number, updateBoardDto: UpdateBoardDto): Promise<Boards> {
-        return this.boardsRepository.updateBoard(boardId, updateBoardDto);
+    updateBoard(boardId: number, updateBoardDto: UpdateBoardDto) {
+        this.boardsRepository.updateBoard(boardId, updateBoardDto);
     }
 
     deleteBoard(boardId: number) {
