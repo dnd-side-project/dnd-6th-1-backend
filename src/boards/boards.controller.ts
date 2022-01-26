@@ -16,6 +16,7 @@ export class BoardsController {
     getAllBoards(): Promise <Boards[]> {
         return this.boardsService.getAllBoards();
     }
+    
 
     @Get('') // 커뮤니티 검색어별 글 조회
     getAllBoardsByKeyword(@Query("keyword") keyword: string): Promise <Boards[]>{
