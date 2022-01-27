@@ -12,6 +12,4 @@ export class CreateBoardDto {
 
     @IsNotEmpty()
     postContent: string;
-
-    images: BoardImages[];
 }

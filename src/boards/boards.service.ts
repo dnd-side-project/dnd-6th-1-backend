@@ -11,7 +11,7 @@ export class BoardsService {
     constructor(
         @InjectRepository(BoardRepository) // boardservice 안에서 boardrepository 사용하기 위해서
             private boardsRepository: BoardRepository,
-        @InjectRepository(BoardImagesRepository)
+        @InjectRepository(BoardImagesRepository) 
             private boardImagesRepository: BoardImagesRepository
     ){}
 
@@ -28,9 +28,9 @@ export class BoardsService {
             return this.boardsRepository.find({categoryName : category});
     }
     
-    async createBoard(createBoardDto: CreateBoardDto): Promise<Boards> {
-        const board = await this.boardsRepository.createBoard(createBoardDto);
-        // const boardImage = await this.boardImagesRepository.createImage(board.boardId, createBoardDto);
+    async createBoard(files: Express.Multer.File[], createBoardDto: CreateBoardDto): Promise<Boards> {
+        const board = await this.boardsRepository.createBoard(createBoardDto); // board DB에 저장
+        await this.boardImagesRepository.createBoardImage(files, board.boardId); // boardImage DB에 저장
         return board;
     }
 

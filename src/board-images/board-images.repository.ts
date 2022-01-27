@@ -1,21 +1,25 @@
 import { CreateBoardDto } from "src/boards/dto/create-board.dto";
 import { EntityRepository, Repository } from "typeorm";
-import { BoardImages } from "./board-images.entity";
+import { BadRequestException, Logger } from '@nestjs/common';
+import { BoardImages } from "src/board-images/board-images.entity";
+
 
 @EntityRepository(BoardImages)
 export class BoardImagesRepository extends Repository<BoardImages> {
 
-    // async createImage(boardId: number, createBoardDto: CreateBoardDto){
-    //     const { images } = createBoardDto;
-
-    //     console.log(images);
-    //     const boardImage = this.create({
-    //         boardId
-    //     })
-
-    //     await this.save(boardImage);
-    //     // return boardImage;
-    // }
+    // 게시글 등록 시 boardImage DB
+    async createBoardImage(files: Express.Multer.File[], boardId: number){
+        try {
+            for(const element of files){
+                const image = new BoardImages();
+                image.originalName = element.originalname
+                image.imageUrl = element['location']
+                image.boardId = boardId; 
+                await this.save(image);
+            }
+        } catch (error) {
+            Logger.error(error)
+            throw new BadRequestException(error.message)
+        }
+    }
 }
-
-// : Promise<BoardImages> 

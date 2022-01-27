@@ -1,4 +1,4 @@
-import { BoardImages } from "src/board-images/board-images.entity";
+import { BadRequestException, Logger } from "@nestjs/common";
 import { EntityRepository, Repository } from "typeorm";
 import { Boards } from "./boards.entity";
 import { CreateBoardDto } from "./dto/create-board.dto";
@@ -26,15 +26,15 @@ export class BoardRepository extends Repository<Boards>{
         return this.find({categoryName : category});
     }
 
+    // 게시글 등록시 board DB
     async createBoard(createBoardDto: CreateBoardDto): Promise<Boards> {
-        const {categoryName, postTitle, postContent, images } = createBoardDto;
+        const {categoryName, postTitle, postContent } = createBoardDto;
 
         const board = this.create({
             categoryName,
             postTitle, 
             postContent,
         });
-
         await this.save(board);
         return board;
     }

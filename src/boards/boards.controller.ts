@@ -1,10 +1,18 @@
-import { Logger } from '@nestjs/common';
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Logger, UploadedFile, UploadedFiles } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
+import { FilesInterceptor} from '@nestjs/platform-express';
 import { Boards } from './boards.entity';
 import { BoardsService } from './boards.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
+import * as AWS from 'aws-sdk';
+import * as multerS3 from 'multer-s3';
+import { create } from 'domain';
+require("dotenv").config();
 
+const s3 = new AWS.S3();
+  
+let S3ImageName=""
 @Controller('boards')
 export class BoardsController {
     constructor(private boardsService: BoardsService){}
@@ -21,8 +29,24 @@ export class BoardsController {
     }
 
     @Post() // 커뮤니티 글 작성
-    createBoard(@Body() createBoardDto: CreateBoardDto): Promise<Boards> {
-        return this.boardsService.createBoard(createBoardDto);
+    @UseInterceptors(FilesInterceptor('files', 3, {
+      storage: multerS3({ 
+        s3: s3,
+        bucket: process.env.AWS_S3_BUCKET_NAME,
+        contentType: multerS3.AUTO_CONTENT_TYPE, 
+        acl: 'public-read',
+        key: function (request, file, cb) { // files  for문 돌듯이 먼저 실행
+            S3ImageName = `${Date.now().toString()}-${file.originalname}`; // 파일 올리면 해당 파일의 이름을 받아옴 -> S3에 저장되는 이름
+            cb(null, S3ImageName); // 이게 뭘까?            
+        }
+      })
+    }))
+    async createBoard(
+        @UploadedFiles() files: Express.Multer.File[], 
+        @Body() createBoardDto: CreateBoardDto
+    ) {
+        console.log(createBoardDto)
+        return this.boardsService.createBoard(files, createBoardDto);
     }
 
     @Patch('/:boardId') // 커뮤니티 글 수정
@@ -36,3 +60,5 @@ export class BoardsController {
     }
 
 }
+
+
