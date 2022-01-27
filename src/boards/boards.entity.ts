@@ -19,10 +19,10 @@ export class Boards extends BaseEntity {
     @Column()
     postContent: string;
 
-    // Board(1) <> BoardImage(*)
-    @OneToMany(
-        () => BoardImages,
-        (boardImage) => boardImage.boardId
-    )
-    images: BoardImages[];
+    // // Board(1) <> BoardImage(*)
+    // @OneToMany(
+    //     () => BoardImages,
+    //     (boardImage) => boardImage.boardId
+    // )
+    // images: BoardImages[];
 }

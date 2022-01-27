@@ -7,18 +7,15 @@ export class BoardImages extends BaseEntity{
     boardImageId: number;
 
     @Column()
-    boardId: number;
-
-    @Column()
     originalName: string;
 
     @Column()
     imageUrl: string;
 
-    // Board(1) <> BoardImage(*)
-    @ManyToOne(
-        () => Boards,
-        (board) => board.images
-    )
-    board: Boards;
+    // // Board(1) <> BoardImage(*)
+    // @ManyToOne(
+    //     () => Boards,
+    //     (board) => board.images
+    // )
+    // id: number;
 }
