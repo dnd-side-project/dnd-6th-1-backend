@@ -1,4 +1,4 @@
-import { Controller, Get, Logger, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Logger, Post, UploadedFile, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { BoardImagesService } from './board-images.service';
 import * as AWS from 'aws-sdk';
 import * as multerS3 from 'multer-s3';
@@ -14,7 +14,7 @@ export class BoardImagesController {
     ) {}
 
     @Post()
-    @UseInterceptors(FileInterceptor('file', {
+    @UseInterceptors(FileInterceptor('files', {
       storage: multerS3({
         s3: s3,
         bucket: process.env.AWS_S3_BUCKET_NAME,
@@ -27,7 +27,8 @@ export class BoardImagesController {
         }
       })
     }))
-    async uploadFile(@UploadedFile() file: Express.Multer.File) {
-        return await this.boardImagesService.uploadFile(file, temp);
+    async uploadFile(@UploadedFiles() files: Array<Express.Multer.File>) {
+        console.log(files);
+        return await this.boardImagesService.uploadFile(files, temp);
     }
 }

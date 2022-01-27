@@ -1,8 +1,10 @@
-import { IsNotEmpty } from "class-validator";
+import { IsNotEmpty, IsString } from "class-validator";
+import { BoardImages } from "src/board-images/board-images.entity";
 
 export class CreateBoardDto {
 
     @IsNotEmpty()
+    @IsString()
     categoryName: string;
 
     @IsNotEmpty()
@@ -11,5 +13,5 @@ export class CreateBoardDto {
     @IsNotEmpty()
     postContent: string;
 
-    
+    images: BoardImages[];
 }

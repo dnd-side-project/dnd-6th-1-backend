@@ -15,9 +15,9 @@ export class BoardImagesService {
         private boardImagesRepository: BoardImagesRepository,
     ){}
 
-    async uploadFile(file: Express.Multer.File, temp){
+    async uploadFile(files: Express.Multer.File[], temp){
         const image = new BoardImages();
-        image.originalName = file.originalname
+        // image.originalName = file.originalname
         Logger.warn(image.originalName)
         try {
             const params = {
