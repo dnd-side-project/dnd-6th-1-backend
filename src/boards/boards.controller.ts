@@ -9,26 +9,11 @@ import { UpdateBoardDto } from './dto/update-board.dto';
 export class BoardsController {
     constructor(private boardsService: BoardsService){}
 
-    // param을 사용하는 get 요청이 존재할 시,
-    // 그 밑으로의 get의 내부 url이 param으로 인식된다.
-
-    @Get() // 커뮤니티 전체 글 조회
-    getAllBoards(): Promise <Boards[]> {
-        return this.boardsService.getAllBoards();
+    @Get() // 커뮤니티 전체 글 조회 / 카테고리별 조회 / 검색어별 조회
+    getAllBoards(@Query() query): Promise <Boards[]>{
+        const { category, keyword } = query;
+        return this.boardsService.getAllBoards(category, keyword);
     }
-    
-
-    @Get('') // 커뮤니티 검색어별 글 조회
-    getAllBoardsByKeyword(@Query("keyword") keyword: string): Promise <Boards[]>{
-        return this.boardsService.getAllBoardsByKeyword(keyword);
-    }
-
-    @Get('') // 커뮤니티 카테고리별 글 조회
-    getAllBoardsByCategory(@Query("category") category: string): Promise <Boards[]>{
-        Logger.warn(category);
-        return this.boardsService.getAllBoardsByCategory(category);
-    }
-
 
     @Get('/:boardId') // 커뮤니티 특정 글 조회
     getBoard(@Param("boardId") boardId: number): Promise <Boards> {

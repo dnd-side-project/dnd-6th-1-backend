@@ -7,28 +7,19 @@ import { UpdateBoardDto } from "./dto/update-board.dto";
 export class BoardRepository extends Repository<Boards>{
     // entity를 컨트롤하기 위해서는 extends Repository를 해줘야함
     
-    // 카테고리별 검색
-    async findByCategory(category: string){
-        console.log(category);
-        return this.find({categoryName : category});
-        // return await this.createQueryBuilder("boards")
-        //     .where("categoryName = :category", {category})
-        //     .getMany();
+    async findByElement(category: string, keyword: string){
+        if(keyword==null && category==null) // 전체 글 조회
+            return this.find();
+        else if(keyword!=null && category==null){ // 검색어별 조회 
+            return this.createQueryBuilder("boards")
+                .where("boards.postTitle like :keyword", { keyword: `%${keyword}%`})
+                .orWhere("boards.postContent like :keyword", { keyword: `%${keyword}%`})                
+                .getMany();
+        }
+        else if(keyword==null && category!=null){ // 카테고리별 조회
+            return this.find({categoryName : category});
+        }
     }
-
-    // 검색어별 검색
-    async findByKeyword(keyword: string){
-        return this.createQueryBuilder("Boards")
-            .where("boards.postTitle like :keyword", { keyword: `%${keyword}%`})
-            .orWhere("boards.postContent like :keyword", { keyword: `%${keyword}%`})                
-            .getMany();
-    }
-
-    /*
-        select * from boards
-            where postTitle like '%keyword%' or
-            where postContent like '%keyword%'
-    */
 
     async createBoard(createBoardDto: CreateBoardDto): Promise<Boards> {
         const {categoryName, postTitle, postContent} = createBoardDto;
