@@ -7,12 +7,7 @@ import { UpdateBoardDto } from "./dto/update-board.dto";
 
 @EntityRepository(Boards) // 이 클래스가 Board를 관리하는 repository 라는 것을 알려줌
 export class BoardRepository extends Repository<Boards>{
-    // entity를 컨트롤하기 위해서는 extends Repository를 해줘야함
     
-    async getAllBoards(){
-        return this.find();
-    }
-
     // 검색어별 조회 
     async findByKeyword(keyword: string){
         return this.createQueryBuilder("boards")
@@ -43,13 +38,13 @@ export class BoardRepository extends Repository<Boards>{
     // 편집 가능한 요소 : 감정 카테고리, 제목, 글 내용, 이미지 삭제여부
         // 현재 있었던 애는 남기고 수정사항만 반영해서 저장,,
 
-    async updateBoard(boardId: number, updateBoardDto: UpdateBoardDto) {        
-        await this.update({boardId}, {...updateBoardDto});
+    async updateBoard(boardId: number, updateBoardDto: UpdateBoardDto) {  
+        this.update({boardId}, {...updateBoardDto});
         // UPDATE boards SET ...updateBoardDto = updateBoardDto where boardId = x
     }
 
     // 커뮤니티 글 삭제
     async deleteBoard(boardId: number) {
-        await this.delete(boardId);
+        this.delete(boardId);
     }
 }

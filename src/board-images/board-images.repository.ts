@@ -1,4 +1,3 @@
-import { CreateBoardDto } from "src/boards/dto/create-board.dto";
 import { EntityRepository, Repository } from "typeorm";
 import { BadRequestException, Logger } from '@nestjs/common';
 import { BoardImages } from "src/board-images/board-images.entity";
@@ -7,7 +6,7 @@ import { BoardImages } from "src/board-images/board-images.entity";
 @EntityRepository(BoardImages)
 export class BoardImagesRepository extends Repository<BoardImages> {
 
-    // 게시글 등록 시 boardImage DB
+    // 게시글 등록 시 boardImage DB에 이미지 저장
     async createBoardImage(files: Express.Multer.File[], boardId: number){
         try {
             for(const element of files){
