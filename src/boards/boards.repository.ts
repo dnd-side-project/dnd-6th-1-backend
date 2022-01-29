@@ -18,7 +18,8 @@ export class BoardRepository extends Repository<Boards>{
 
     // 카테고리별 조회
     async findByCategory(category: string){
-        return this.find({categoryName : category});
+        // return await (await this.find({relations: ["images"]})).filter({category});
+        return await this.find({relations: ["images"]});
     }
 
     // 게시글 등록시 board DB

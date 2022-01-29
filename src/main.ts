@@ -3,9 +3,11 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as config from 'config';
 import { HttpExceptionFilter } from './http-exception.filter';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  
   //예외 필터 연결
   app.useGlobalFilters(new HttpExceptionFilter());
 
@@ -29,6 +31,16 @@ async function bootstrap() {
       disableErrorMessages: true,
     }),
   )
+
+  const options = new DocumentBuilder()
+    .setTitle('ITZZA API Docs')
+    .setDescription('DND 1조 완성하조의 API 문서입니다.')
+    .setVersion('1.0.0')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, options);
+  SwaggerModule.setup('api-docs', app, document);
+  
   const serverConfig = config.get('server')
   const port = serverConfig.port;
   await app.listen(port);
