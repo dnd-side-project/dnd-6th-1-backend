@@ -26,10 +26,10 @@ export class BoardsService {
             return this.boardsRepository.find();
         }
         else if(keyword!=null && category==null){ // 검색어별 조회 
-            return await this.boardsRepository.findByKeyword(keyword);
+            return this.boardsRepository.findByKeyword(keyword);
         }
         else if(keyword==null && category!=null){ // 카테고리별 조회
-            return await this.boardsRepository.findByCategory(category);
+            return this.boardsRepository.findByCategory(category);
         }
     }
     

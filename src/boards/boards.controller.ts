@@ -15,11 +15,19 @@ export class BoardsController {
     constructor(private boardsService: BoardsService){}
 
     @Get() // 커뮤니티 전체 글 조회 / 카테고리별 조회 / 검색어별 조회
-    getAllBoards(@Query() query): Promise <Boards[]>{
+    async getAllBoards(@Res() res, @Query() query): Promise <Boards[]>{
         const { category, keyword } = query; // @Query()'에서 해당 쿼리문을 받아 query에 저장하고 변수 받아옴
-        const data = this.boardsService.getAllBoards(category, keyword);
-        console.log(data)
-        return data;
+        const data = await this.boardsService.getAllBoards(category, keyword);
+        if(data.length==0)
+            return res
+                .status(HttpStatus.OK)
+                .json({
+                    success: true,
+                    message:'검색 결과가 없습니다.'
+                })
+        return res
+            .status(HttpStatus.OK)
+            .json(data)
     }
 
     @Get('/:boardId') // 커뮤니티 특정 글 조회
