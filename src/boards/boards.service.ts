@@ -23,13 +23,15 @@ export class BoardsService {
 
     async getAllBoards(category: string, keyword: string): Promise <Boards[]> {
         if(keyword==null && category==null){ // 전체 글 조회
-            return this.boardsRepository.find();
+            return await this.boardsRepository.find({ relations: ["images"] }); 
         }
         else if(keyword!=null && category==null){ // 검색어별 조회 
             return this.boardsRepository.findByKeyword(keyword);
         }
         else if(keyword==null && category!=null){ // 카테고리별 조회
             return this.boardsRepository.findByCategory(category);
+            // return await this.boardsRepository.find({ relations: ["images"] }); 
+   
         }
     }
     
