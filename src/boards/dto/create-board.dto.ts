@@ -3,16 +3,28 @@ import { IsNotEmpty, IsString } from "class-validator";
 
 export class CreateBoardDto {
 
-    @ApiProperty({ description: '카테고리명' })
+    @ApiProperty({ 
+        example: '털어놓자',
+        description: '카테고리명', 
+        required: true
+    })
     @IsNotEmpty()
     @IsString()
     categoryName: string;
 
-    @ApiProperty({ description: '글 제목' })
+    @ApiProperty({ 
+        example: '헤어질까요 말까요',
+        description: '글 제목', 
+        required: true
+    })
     @IsNotEmpty()
     postTitle: string;
 
-    @ApiProperty({ description: '글 본문' })
+    @ApiProperty({ 
+        example: '헤어질까요 말까요 본문',
+        description: '글 본문', 
+        required: true
+    })
     @IsNotEmpty()
     postContent: string;
 }

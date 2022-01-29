@@ -1,5 +1,5 @@
 import { BadRequestException, Logger } from "@nestjs/common";
-import { EntityRepository, Repository } from "typeorm";
+import { EntityRepository, Like, Repository } from "typeorm";
 import { Boards } from "./boards.entity";
 import { CreateBoardDto } from "./dto/create-board.dto";
 import { UpdateBoardDto } from "./dto/update-board.dto";
@@ -10,38 +10,47 @@ export class BoardRepository extends Repository<Boards>{
     
     // 검색어별 조회 
     async findByKeyword(keyword: string){
-        return this.createQueryBuilder("boards")
+        return await this.find({
+            where: [
+                {postTitle: Like(`%${keyword}%`)},
+                {postContent: Like(`%${keyword}%`)}
+            ],
+            relations: ['images']
+        })
+        /** QueryBuilder 이용
+         * return this.createQueryBuilder("boards")
                 .where("boards.postTitle like :keyword", { keyword: `%${keyword}%`})
                 .orWhere("boards.postContent like :keyword", { keyword: `%${keyword}%`})                
                 .getMany();
+         */   
     }
 
     // 카테고리별 조회
     async findByCategory(category: string){
-        // return await (await this.find({relations: ["images"]})).filter({category});
-        return await this.find({relations: ["images"]});
+        return await this.find({
+            where: {
+                categoryName: category
+            },
+            relations: ['images']
+        });
     }
 
     // 게시글 등록시 board DB
     async createBoard(createBoardDto: CreateBoardDto): Promise<Boards> {
         const {categoryName, postTitle, postContent } = createBoardDto;
 
-        const board = this.create({
+        const board = {
             categoryName,
             postTitle, 
             postContent,
-        });
-        await this.save(board);
-        return board;
+        };
+        const newBoard = await this.save(board);
+        return newBoard;
     }
 
-    // 커뮤니티 글 수정
-    // 편집 가능한 요소 : 감정 카테고리, 제목, 글 내용, 이미지 삭제여부
-        // 현재 있었던 애는 남기고 수정사항만 반영해서 저장,,
-
+    // 커뮤니티 글 수정 - 편집 가능한 요소 : 감정 카테고리, 제목, 글 내용, 이미지 
     async updateBoard(boardId: number, updateBoardDto: UpdateBoardDto) {  
-        this.update({boardId}, {...updateBoardDto});
-        // UPDATE boards SET ...updateBoardDto = updateBoardDto where boardId = x
+        await this.update({boardId}, {...updateBoardDto});
     }
 
     // 커뮤니티 글 삭제

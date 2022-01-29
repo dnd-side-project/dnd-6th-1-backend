@@ -7,7 +7,7 @@ import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
 import * as AWS from 'aws-sdk';
 import * as multerS3 from 'multer-s3';
-import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 require("dotenv").config();
 
 const s3 = new AWS.S3();
@@ -46,6 +46,11 @@ export class BoardsController {
 
     @Get('/:boardId') // 커뮤니티 특정 글 조회
     @ApiOperation({ summary : '커뮤니티 특정 글 조회 API' })
+    @ApiParam({
+        name: 'boardId',
+        required: true,
+        description: '게시글 번호'
+    })
     async getBoard(@Res() res, @Param("boardId") boardId: number): Promise <Boards> {
         const board = await this.boardsService.getBoardById(boardId);
         if(!board)
@@ -79,19 +84,23 @@ export class BoardsController {
         @UploadedFiles() files: Express.Multer.File[], 
         @Body() createBoardDto: CreateBoardDto
     ) {
-        const board = this.boardsService.createBoard(files, createBoardDto);
-        // return res
-        //     .status(HttpStatus.CREATED)
-        //     .json({
-        //         message:'게시물을 등록했습니다'
-        //     });
-
+        const board = await this.boardsService.createBoard(files, createBoardDto);
         return res
             .status(HttpStatus.CREATED)
-            .json(board);
+            .json({
+                data: board,
+                message:'게시물을 등록했습니다.'
+            });
     }
 
     @Patch('/:boardId') // 커뮤니티 글 수정
+    @ApiOperation({ summary : '커뮤니티 특정 글 수정 API' })
+    @ApiBody({ type : CreateBoardDto })
+    @ApiParam({
+        name: 'boardId',
+        required: true,
+        description: '게시글 번호'
+    })
     async updateBoard(@Res() res, @Param("boardId") boardId: number, @Body() updateBoardDto: UpdateBoardDto){
         const board = await this.boardsService.getBoardById(boardId);
         if(!board)
@@ -100,15 +109,22 @@ export class BoardsController {
                 .json({
                     message:`boardId:${boardId}에 해당하는 게시물이 없습니다.`
                 })
-        this.boardsService.updateBoard(boardId, updateBoardDto);
+        const updatedBoard = await this.boardsService.updateBoard(boardId, updateBoardDto);
         return res
             .status(HttpStatus.OK)
             .json({
+                data: updatedBoard,
                 message:'게시글을 수정했습니다'
             })
     }
 
-    @Delete('/:boardId') // 커뮤니티 글 삭제
+    @Delete('/:boardId')
+    @ApiOperation({ summary : '커뮤니티 특정 글 삭제 API' })
+    @ApiParam({
+        name: 'boardId',
+        required: true,
+        description: '게시글 번호'
+    })
     async deleteBoard(@Res() res, @Param("boardId") boardId: number){
         const board = await this.boardsService.getBoardById(boardId);
         if(!board)

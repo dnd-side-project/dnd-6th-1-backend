@@ -9,6 +9,8 @@ export class BoardImagesRepository extends Repository<BoardImages> {
     // 게시글 등록 시 boardImage DB에 이미지 저장
     async createBoardImage(files: Express.Multer.File[], boardId: number){
         try {
+            if(files==null)
+                return;
             for(const element of files){
                 const image = new BoardImages();
                 image.originalName = element.originalname
