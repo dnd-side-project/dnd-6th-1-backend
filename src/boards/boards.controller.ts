@@ -51,7 +51,8 @@ export class BoardsController {
             boards = this.boardsService.getAllBoardsByKeyword(keyword);
         }
         else if(keyword==null && category!=null){ // 카테고리별 조회
-            if(category in ['부정','화','타협','슬픔','수용'])
+            console.log(category)
+            if(['부정','화','타협','슬픔','수용'].includes(category))
                 boards = await this.boardsService.getAllBoardsByCategory(category);
             else
                 return res
@@ -110,17 +111,11 @@ export class BoardsController {
             contentType: multerS3.AUTO_CONTENT_TYPE, 
             acl: 'public-read',
             key: function (request, file, cb) { // files  for문 돌듯이 먼저 실행
-                console.log(file);
                 file.encoding = 'utf-8';
-                console.log(file.encoding);
                 let S3ImageName = `boardImages/${Date.now().toString()}-${file.originalname}`; // 파일 올리면 해당 파일의 이름을 받아옴 -> S3에 저장되는 이름
-                console.log(S3ImageName)
-                cb(null, S3ImageName); // 이게 뭘까?    
+                cb(null, S3ImageName);   
             },
         }),
-        // fileFilter: (req, res) => {
-        //     console.log('Bad file type')
-        // }
     }))
     async createBoard(
         @Res() res, 
