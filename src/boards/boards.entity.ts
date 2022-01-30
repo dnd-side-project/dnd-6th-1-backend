@@ -9,7 +9,7 @@ export class Boards extends BaseEntity {
     @Column()
     categoryName: string;
 
-    @Column({type: 'varchar', length: 80}) 
+    @Column({type: 'varchar', length: 10}) 
     postTitle: string;
 
     @Column()

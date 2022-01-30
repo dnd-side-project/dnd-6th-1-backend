@@ -2,14 +2,10 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as config from 'config';
-import { HttpExceptionFilter } from './http-exception.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
-  //예외 필터 연결
-  app.useGlobalFilters(new HttpExceptionFilter());
 
   //Global Middleware 설정 -> Cors 속성 활성화
   app.enableCors({

@@ -15,7 +15,7 @@ export class BoardRepository extends Repository<Boards>{
                 {postContent: Like(`%${keyword}%`)}
             ],
             relations: ['images']
-        })
+        });
         /** QueryBuilder 이용
          * return this.createQueryBuilder("boards")
                 .where("boards.postTitle like :keyword", { keyword: `%${keyword}%`})
