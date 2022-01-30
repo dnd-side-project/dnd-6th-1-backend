@@ -1,4 +1,3 @@
-import { BadRequestException, Logger } from "@nestjs/common";
 import { EntityRepository, Like, Repository } from "typeorm";
 import { Boards } from "./boards.entity";
 import { CreateBoardDto } from "./dto/create-board.dto";

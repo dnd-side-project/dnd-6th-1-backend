@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsIn, IsNotEmpty, IsString } from "class-validator";
 
 export class CreateBoardDto {
 
@@ -8,9 +8,10 @@ export class CreateBoardDto {
         description: '카테고리명', 
         required: true
     })
+    // @IsIn (CATEGORY_NAMES) : https://leonkong.cc/posts/nestjs-validation-pipe-with-class-validator.html
     @IsNotEmpty()
     @IsString()
-    categoryName: string;
+    readonly categoryName: string;
 
     @ApiProperty({ 
         example: '헤어질까요 말까요',
@@ -18,7 +19,7 @@ export class CreateBoardDto {
         required: true
     })
     @IsNotEmpty()
-    postTitle: string;
+    readonly postTitle: string;
 
     @ApiProperty({ 
         example: '헤어질까요 말까요 본문',
@@ -26,5 +27,5 @@ export class CreateBoardDto {
         required: true
     })
     @IsNotEmpty()
-    postContent: string;
+    readonly postContent: string;
 }

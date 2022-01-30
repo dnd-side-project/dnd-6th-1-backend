@@ -30,7 +30,6 @@ export class BoardsService {
         }
         else if(keyword==null && category!=null){ // 카테고리별 조회
             return this.boardsRepository.findByCategory(category);
-            // return await this.boardsRepository.find({ relations: ["images"] }); 
         }
     }
     
@@ -41,8 +40,8 @@ export class BoardsService {
     }
 
     async updateBoard(boardId: number, updateBoardDto: UpdateBoardDto): Promise<Boards> {
-        this.boardsRepository.updateBoard(boardId, updateBoardDto);
-        const board = this.getBoardById(boardId);
+        await this.boardsRepository.updateBoard(boardId, updateBoardDto);
+        const board = await this.getBoardById(boardId);
         return board;
     }
 

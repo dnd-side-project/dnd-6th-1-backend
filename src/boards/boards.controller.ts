@@ -1,4 +1,4 @@
-import { HttpStatus, Res, UploadedFiles } from '@nestjs/common';
+import { HttpStatus, ParseIntPipe, Res, UploadedFiles } from '@nestjs/common';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor} from '@nestjs/platform-express';
 import { Boards } from './boards.entity';
@@ -14,7 +14,7 @@ const s3 = new AWS.S3();
 @Controller('boards')
 @ApiTags('커뮤니티 글 API')
 export class BoardsController {
-    constructor(private boardsService: BoardsService){}
+    constructor(private readonly boardsService: BoardsService){}
 
     @Get() // 커뮤니티 전체 글 조회 / 카테고리별 조회 / 검색어별 조회
     @ApiOperation({ 
@@ -51,7 +51,13 @@ export class BoardsController {
         required: true,
         description: '게시글 번호'
     })
-    async getBoard(@Res() res, @Param("boardId") boardId: number): Promise <Boards> {
+    async getBoard(
+        @Res() res,
+        @Param("boardId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        boardId: number
+    ): Promise <Boards> {
         const board = await this.boardsService.getBoardById(boardId);
         if(!board)
             return res
@@ -101,7 +107,15 @@ export class BoardsController {
         required: true,
         description: '게시글 번호'
     })
-    async updateBoard(@Res() res, @Param("boardId") boardId: number, @Body() updateBoardDto: UpdateBoardDto){
+    async updateBoard(
+        @Res() res, 
+        @Param("boardId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        // @Param("boardId")
+        boardId: number, 
+        @Body() updateBoardDto: UpdateBoardDto
+    ){
         const board = await this.boardsService.getBoardById(boardId);
         if(!board)
             return res
@@ -125,7 +139,15 @@ export class BoardsController {
         required: true,
         description: '게시글 번호'
     })
-    async deleteBoard(@Res() res, @Param("boardId") boardId: number){
+    async deleteBoard(
+        @Res() res, 
+        // @Param("boardId", new ParseIntPipe({
+        //     errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        // }))
+        // boardId: number
+        @Param("boardId")
+        boardId: number
+    ){
         const board = await this.boardsService.getBoardById(boardId);
         if(!board)
             return res
@@ -140,7 +162,4 @@ export class BoardsController {
                 message:'게시글이 삭제되었습니다'
             })
     }
-
 }
-
-
