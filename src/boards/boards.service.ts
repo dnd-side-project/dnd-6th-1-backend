@@ -1,6 +1,5 @@
 import { HttpException, HttpStatus, Injectable, Logger, NotFoundException, Res } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { HttpResponse } from 'aws-sdk';
 import { BoardImagesRepository } from 'src/board-images/board-images.repository';
 import { Boards } from './boards.entity';
 import { BoardRepository } from './boards.repository';
@@ -35,7 +34,7 @@ export class BoardsService {
     
     async createBoard(files: Express.Multer.File[], createBoardDto: CreateBoardDto): Promise<Boards> {
         const board = await this.boardsRepository.createBoard(createBoardDto); // board DB에 저장
-        await this.boardImagesRepository.createBoardImage(files, board.boardId); // boardImage DB에 저장
+        await this.boardImagesRepository.createBoardImage(files, board.boardId); // boardImage DB에 저장        
         return board;
     }
 
