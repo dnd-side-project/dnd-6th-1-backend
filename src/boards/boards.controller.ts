@@ -36,10 +36,34 @@ export class BoardsController {
     })
     async getAllBoards(@Res() res, @Query() query): Promise <Boards[]>{
         const { category, keyword } = query; // @Query()'에서 해당 쿼리문을 받아 query에 저장하고 변수 받아옴
-        const boards = await this.boardsService.getAllBoards(category, keyword);
+        let boards;
+        if(keyword==null && category==null){ // 전체 글 조회
+            boards = await this.boardsService.getAllBoards();
+        }
+        else if(keyword!=null && category==null){ // 검색어별 조회
+            if(keyword.length < 2){
+                return res
+                    .status(HttpStatus.BAD_REQUEST)
+                    .json({
+                        message:'2글자 이상 입력해주세요.'
+                    }) 
+            }
+            boards = this.boardsService.getAllBoardsByKeyword(keyword);
+        }
+        else if(keyword==null && category!=null){ // 카테고리별 조회
+            if(category in ['부정','화','타협','슬픔','수용'])
+                boards = await this.boardsService.getAllBoardsByCategory(category);
+            else
+                return res
+                    .status(HttpStatus.BAD_REQUEST)
+                    .json({
+                        message:'잘못된 카테고리입니다.'
+                    })  
+        }
+        
         if(boards.length==0)
             return res
-                .status(HttpStatus.OK)
+                .status(HttpStatus.NO_CONTENT)
                 .json({
                     message:'검색 결과가 없습니다.'
                 })
@@ -67,7 +91,7 @@ export class BoardsController {
             return res
                 .status(HttpStatus.NOT_FOUND)
                 .json({
-                    message:`boardId:${boardId}에 해당하는 게시물이 없습니다.`
+                    message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
                 })
         return res
             .status(HttpStatus.OK)
@@ -135,7 +159,7 @@ export class BoardsController {
             return res
                 .status(HttpStatus.NOT_FOUND)
                 .json({
-                    message:`boardId:${boardId}에 해당하는 게시물이 없습니다.`
+                    message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
                 })
         const updatedBoard = await this.boardsService.updateBoard(boardId, updateBoardDto);
         return res
@@ -165,7 +189,7 @@ export class BoardsController {
             return res
                 .status(HttpStatus.NOT_FOUND)
                 .json({
-                    message:`boardId:${boardId}에 해당하는 게시물이 없습니다.`
+                    message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
                 })
         this.boardsService.deleteBoard(boardId);
         return res
