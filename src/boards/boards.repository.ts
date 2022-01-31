@@ -1,58 +1,59 @@
-import { EntityRepository, Repository } from "typeorm";
+import { EntityRepository, Like, Repository } from "typeorm";
 import { Boards } from "./boards.entity";
 import { CreateBoardDto } from "./dto/create-board.dto";
 import { UpdateBoardDto } from "./dto/update-board.dto";
 
+
 @EntityRepository(Boards) // 이 클래스가 Board를 관리하는 repository 라는 것을 알려줌
 export class BoardRepository extends Repository<Boards>{
-    // entity를 컨트롤하기 위해서는 extends Repository를 해줘야함
     
-    // 카테고리별 검색
-    async findByCategory(category: string){
-        console.log(category);
-        return this.find({categoryName : category});
-        // return await this.createQueryBuilder("boards")
-        //     .where("categoryName = :category", {category})
-        //     .getMany();
-    }
-
-    // 검색어별 검색
+    // 검색어별 조회 
     async findByKeyword(keyword: string){
-        return this.createQueryBuilder("Boards")
-            .where("boards.postTitle like :keyword", { keyword: `%${keyword}%`})
-            .orWhere("boards.postContent like :keyword", { keyword: `%${keyword}%`})                
-            .getMany();
+        return await this.find({
+            where: [
+                {postTitle: Like(`%${keyword}%`)},
+                {postContent: Like(`%${keyword}%`)}
+            ],
+            relations: ['images']
+        });
+        /** QueryBuilder 이용
+         * return this.createQueryBuilder("boards")
+                .where("boards.postTitle like :keyword", { keyword: `%${keyword}%`})
+                .orWhere("boards.postContent like :keyword", { keyword: `%${keyword}%`})                
+                .getMany();
+         */   
     }
 
-    /*
-        select * from boards
-            where postTitle like '%keyword%' or
-            where postContent like '%keyword%'
-    */
+    // 카테고리별 조회
+    async findByCategory(category: string){
+        return await this.find({
+            where: {
+                categoryName: category
+            },
+            relations: ['images']
+        });
+    }
 
+    // 게시글 등록시 board DB
     async createBoard(createBoardDto: CreateBoardDto): Promise<Boards> {
-        const {categoryName, postTitle, postContent} = createBoardDto;
+        const {categoryName, postTitle, postContent } = createBoardDto;
 
-        const board = this.create({
+        const board = {
             categoryName,
             postTitle, 
             postContent,
-        });
-        await this.save(board);
-        return board;
+        };
+        const newBoard = await this.save(board);
+        return newBoard;
     }
 
-    // 커뮤니티 글 수정
-    // 편집 가능한 요소 : 감정 카테고리, 제목, 글 내용, 이미지 삭제여부
-        // 현재 있었던 애는 남기고 수정사항만 반영해서 저장,,
-
-    async updateBoard(boardId: number, updateBoardDto: UpdateBoardDto) {        
+    // 커뮤니티 글 수정 - 편집 가능한 요소 : 감정 카테고리, 제목, 글 내용, 이미지 
+    async updateBoard(boardId: number, updateBoardDto: UpdateBoardDto) {  
         await this.update({boardId}, {...updateBoardDto});
-        // UPDATE boards SET ...updateBoardDto = updateBoardDto where boardId = x
     }
 
     // 커뮤니티 글 삭제
     async deleteBoard(boardId: number) {
-        await this.delete(boardId);
+        this.delete(boardId);
     }
 }
