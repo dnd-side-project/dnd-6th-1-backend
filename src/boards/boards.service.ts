@@ -16,7 +16,6 @@ export class BoardsService {
     ){}
 
     async getBoardById(boardId: number): Promise <Boards> {
-        // Promise<Boards>가 반환값이기 떄문에, 리포지토리에서 find할 때는 await을 꼭 붙여주도록 하자
         return await this.boardsRepository.findOne(boardId);
     }      
     

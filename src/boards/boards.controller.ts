@@ -8,13 +8,9 @@ import { UpdateBoardDto } from './dto/update-board.dto';
 import * as AWS from 'aws-sdk';
 import * as multerS3 from 'multer-s3';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { ReturningStatementNotSupportedError } from 'typeorm';
-import { request } from 'http';
-// import { uploadOptions } from 'src/upload.option';
 require("dotenv").config();
 
 const s3 = new AWS.S3();
-let cnt=0;
 @Controller('boards')
 @ApiTags('커뮤니티 글 API')
 export class BoardsController {
@@ -51,7 +47,8 @@ export class BoardsController {
             boards = this.boardsService.getAllBoardsByKeyword(keyword);
         }
         else if(keyword==null && category!=null){ // 카테고리별 조회
-            if(category in ['부정','화','타협','슬픔','수용'])
+            console.log(category)
+            if(['부정','화','타협','슬픔','수용'].includes(category))
                 boards = await this.boardsService.getAllBoardsByCategory(category);
             else
                 return res
@@ -85,7 +82,7 @@ export class BoardsController {
             errorHttpStatusCode: HttpStatus.BAD_REQUEST
         }))
         boardId: number
-    ): Promise <Boards> {
+    ) {
         const board = await this.boardsService.getBoardById(boardId);
         if(!board)
             return res
@@ -98,7 +95,6 @@ export class BoardsController {
             .json(board);
     }
 
-
     @Post() // 커뮤니티 글 작성
     @ApiOperation({ summary : '커뮤니티 글 작성 API' })
     @ApiBody({ type : CreateBoardDto })
@@ -110,24 +106,17 @@ export class BoardsController {
             contentType: multerS3.AUTO_CONTENT_TYPE, 
             acl: 'public-read',
             key: function (request, file, cb) { // files  for문 돌듯이 먼저 실행
-                console.log(file);
                 file.encoding = 'utf-8';
-                console.log(file.encoding);
                 let S3ImageName = `boardImages/${Date.now().toString()}-${file.originalname}`; // 파일 올리면 해당 파일의 이름을 받아옴 -> S3에 저장되는 이름
-                console.log(S3ImageName)
-                cb(null, S3ImageName); // 이게 뭘까?    
+                cb(null, S3ImageName);   
             },
         }),
-        // fileFilter: (req, res) => {
-        //     console.log('Bad file type')
-        // }
     }))
     async createBoard(
         @Res() res, 
         @UploadedFiles() files: Express.Multer.File[], 
         @Body() createBoardDto: CreateBoardDto
     ): Promise<any> {
-        
         const board = await this.boardsService.createBoard(files, createBoardDto);
         return res
             .status(HttpStatus.CREATED)
@@ -135,17 +124,30 @@ export class BoardsController {
                 data: board,
                 message:'게시물을 등록했습니다.'
             });
-       
     }
 
     @Patch('/:boardId') // 커뮤니티 글 수정
     @ApiOperation({ summary : '커뮤니티 특정 글 수정 API' })
-    @ApiBody({ type : CreateBoardDto })
+    @ApiBody({ type : UpdateBoardDto })
     @ApiParam({
         name: 'boardId',
         required: true,
         description: '게시글 번호'
     })
+    @UseInterceptors(
+        FilesInterceptor('files', 3, {
+            storage: multerS3({ 
+            s3: s3,
+            bucket: process.env.AWS_S3_BUCKET_NAME,
+            contentType: multerS3.AUTO_CONTENT_TYPE, 
+            acl: 'public-read',
+            key: function (request, file, cb) { // files  for문 돌듯이 먼저 실행
+                file.encoding = 'utf-8';
+                let S3ImageName = `boardImages/${Date.now().toString()}-${file.originalname}`; // 파일 올리면 해당 파일의 이름을 받아옴 -> S3에 저장되는 이름
+                cb(null, S3ImageName);   
+            },
+        }),
+    }))
     async updateBoard(
         @Res() res, 
         @Param("boardId", new ParseIntPipe({
@@ -154,6 +156,7 @@ export class BoardsController {
         boardId: number, 
         @Body() updateBoardDto: UpdateBoardDto
     ){
+        console.log(updateBoardDto);
         const board = await this.boardsService.getBoardById(boardId);
         if(!board)
             return res
