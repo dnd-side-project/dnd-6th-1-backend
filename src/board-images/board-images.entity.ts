@@ -1,4 +1,5 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn} from "typeorm";
+import { Boards } from "src/boards/boards.entity";
+import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
 
 @Entity()
 export class BoardImages extends BaseEntity{
@@ -10,4 +11,12 @@ export class BoardImages extends BaseEntity{
 
     @Column()
     imageUrl: string;
+
+    // Board(1) <> BoardImage(*)
+    @ManyToOne(
+        () => Boards,
+        (board) => board.images
+    )
+    @JoinColumn({name:"boardId"})
+    boardId: number;
 }
