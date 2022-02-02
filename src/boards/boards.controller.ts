@@ -156,7 +156,6 @@ export class BoardsController {
         boardId: number, 
         @Body() updateBoardDto: UpdateBoardDto
     ){
-        console.log(updateBoardDto);
         const board = await this.boardsService.getBoardById(boardId);
         if(!board)
             return res

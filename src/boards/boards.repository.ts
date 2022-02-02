@@ -5,7 +5,7 @@ import { UpdateBoardDto } from "./dto/update-board.dto";
 
 
 @EntityRepository(Boards) // 이 클래스가 Board를 관리하는 repository 라는 것을 알려줌
-export class BoardRepository extends Repository<Boards>{
+export class BoardsRepository extends Repository<Boards>{
     
     // 검색어별 조회 
     async findByKeyword(keyword: string){
