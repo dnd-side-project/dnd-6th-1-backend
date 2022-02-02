@@ -7,28 +7,7 @@ import * as bcrypt from "bcryptjs";
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
-    /*
-    async createUser(authCredentialsDto: AuthCredentialsDto) : Promise<void> {
-        const { username, password } = authCredentialsDto;
-
-        // salt 생성 - 비밀번호 암호화
-        const salt = await bcrypt.genSalt();
-        const hashedPassword = await bcrypt.hash(password, salt);
-        const user = this.create({username, password: hashedPassword});
-
-        try {
-            // user 생성
-            await this.save(user);
-        } catch (error) {
-            if(error.code === '23505') {
-                throw new ConflictException('Existing username');
-            } else {
-                throw new InternalServerErrorException();
-            }
-        }
-    }
-    */
-
+    
     // itzza
     async createUser(authCredentialsDto: AuthCredentialsDto) : Promise<void> {
         
@@ -52,7 +31,5 @@ export class UserRepository extends Repository<User> {
         }
         
     }
-    
-
 
 }
