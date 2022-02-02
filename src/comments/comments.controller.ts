@@ -1,17 +1,29 @@
 import { HttpStatus, ParseIntPipe, Req, Res, UploadedFiles } from '@nestjs/common';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { BoardsService } from 'src/boards/boards.service';
 import { CommentsService } from './comments.service';
+import { CreateCommentDto } from './dto/create-comment.dto';
+import { UpdateCommentDto } from './dto/update-comment.dto';
 require("dotenv").config();
 
 @Controller('boards/:boardId/comments')
 @ApiTags('커뮤니티 댓글 API')
 export class CommentsController {
-    constructor(private readonly commentsService: CommentsService){}
+    constructor(
+        private readonly commentsService: CommentsService,
+        private readonly boardsService: BoardsService
+    ){}
 
     @Get('') // 특정 글의 댓글 조회
-    async getAllComments(@Res() res){
-       const comments = await this.commentsService.getAllComments();
+    async getAllComments(
+        @Res() res, 
+        @Param("boardId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        boardId: number
+    ){
+       const comments = await this.commentsService.getAllComments(boardId);
        return res
             .status(HttpStatus.OK)
             .json(comments)
@@ -21,13 +33,13 @@ export class CommentsController {
     @ApiOperation({ summary : '커뮤니티 댓글 작성 API' })
     async createComment(
         @Res() res, 
-        @Body('commentContent') commentContent: string,
+        @Body() createCommentDto: CreateCommentDto,
         @Param("boardId", new ParseIntPipe({
             errorHttpStatusCode: HttpStatus.BAD_REQUEST
         }))
         boardId: number
     ): Promise<any> {
-        const comment = await this.commentsService.createComment(boardId, commentContent);
+        const comment = await this.commentsService.createComment(boardId, createCommentDto);
         
         return res
             .status(HttpStatus.CREATED)
@@ -37,9 +49,128 @@ export class CommentsController {
             });
     }
 
+    @Post('/:commentId') // 특정 글의 대댓글 작성
+    @ApiOperation({ summary : '커뮤니티 대댓글 작성 API' })
+    async createReply(
+        @Res() res, 
+        @Body() createReplyDto: CreateCommentDto,
+        @Param("boardId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        boardId: number,
+        @Param("commentId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        commentId: number
+    ): Promise<any> {
+        const board = await this.boardsService.getBoardById(boardId);
+        if(!board)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
+                })
 
+        const comment = await this.commentsService.getCommentById(commentId);
+        if(!comment)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`댓글 번호 ${commentId}번에 해당하는 댓글이 없습니다.`
+                })
 
-    // @Patch('/:commentId') // 특정 글의 댓글 수정
+        const reply = await this.commentsService.createReply(boardId, commentId, createReplyDto);
+        
+        return res
+            .status(HttpStatus.CREATED)
+            .json({
+                data: reply,
+                message:'대댓글을 등록했습니다.'
+            });
+    }
 
-    // @Delete('/:commentId') // 특정 글의 댓글 삭제
+    @Patch('/:commentId') // 특정 글의 댓글/ 대댓글 수정
+    @ApiOperation({ summary : '커뮤니티 특정 댓글 수정 API' })
+    async updateComment(
+        @Res() res,
+        @Body() updateCommentDto: UpdateCommentDto,
+        @Param("boardId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        boardId: number, 
+        @Param("commentId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        commentId: number
+    ){
+        const board = await this.boardsService.getBoardById(boardId);
+        if(!board)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
+                })
+
+        const comment = await this.commentsService.getCommentById(commentId);
+        if(!comment)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`댓글 번호 ${commentId}번에 해당하는 댓글이 없습니다.`
+                })
+        const updatedComment = await this.commentsService.updateComment(commentId, updateCommentDto);
+        console.log(updatedComment);
+        return res
+            .status(HttpStatus.OK)
+            .json({
+                data: updatedComment,
+                message:'댓글을 수정했습니다'
+            })
+    }
+
+    @Delete('/:commentId') // 특정 글의 댓글 삭제
+    @ApiOperation({ summary : '커뮤니티 특정 댓글 삭제 API' })
+    @ApiParam({
+        name: 'boardId',
+        required: true,
+        description: '게시글 번호'
+    })
+    @ApiParam({
+        name: 'commentId',
+        required: true,
+        description: '댓글 번호'
+    })
+    async deleteBoard(
+        @Res() res, 
+        @Param("boardId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        boardId: number,
+        @Param("commentId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        commentId: number
+    ){
+        const board = await this.boardsService.getBoardById(boardId);
+        if(!board)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
+                })
+
+        const comment = await this.commentsService.getCommentById(commentId);
+        if(!comment)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`댓글 번호 ${commentId}번에 해당하는 댓글이 없습니다.`
+                })
+        this.commentsService.deleteComment(commentId);
+        return res
+            .status(HttpStatus.OK)
+            .json({
+                message:'댓글이 삭제되었습니다'
+            })
+    }
 }

@@ -2,15 +2,15 @@ import { HttpException, HttpStatus, Injectable, Logger, NotFoundException, Res }
 import { InjectRepository } from '@nestjs/typeorm';
 import { BoardImagesRepository } from 'src/board-images/board-images.repository';
 import { Boards } from './boards.entity';
-import { BoardRepository } from './boards.repository';
+import { BoardsRepository } from './boards.repository';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
 
 @Injectable()
 export class BoardsService {
     constructor(
-        @InjectRepository(BoardRepository) // boardservice 안에서 boardrepository 사용하기 위해서
-            private boardsRepository: BoardRepository,
+        @InjectRepository(BoardsRepository) // boardservice 안에서 boardrepository 사용하기 위해서
+            private boardsRepository: BoardsRepository,
         @InjectRepository(BoardImagesRepository) 
             private boardImagesRepository: BoardImagesRepository
     ){}

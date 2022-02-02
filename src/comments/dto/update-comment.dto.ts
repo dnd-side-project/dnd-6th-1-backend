@@ -1,4 +1,4 @@
-// import { PartialType } from "@nestjs/mapped-types";
-// import { CreateBoardDto } from "./create-board.dto";
+import { ApiProperty, PartialType } from "@nestjs/swagger";
+import { CreateCommentDto } from "./create-comment.dto";
 
-// export class UpdateBoardDto extends PartialType(CreateBoardDto){}
+export class UpdateCommentDto extends PartialType(CreateCommentDto){}
