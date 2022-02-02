@@ -15,7 +15,15 @@ export class CommentsController {
         private readonly boardsService: BoardsService
     ){}
 
-    @Get('') // 특정 글의 댓글 조회
+    @Get() // 특정 글의 댓글 조회
+    @ApiOperation({ 
+        summary: '커뮤니티 특정 글의 모든 댓글 조회 API'
+    })
+    @ApiParam({
+        name: 'boardId',
+        required: true,
+        description: '게시글 번호'
+    })
     async getAllComments(
         @Res() res, 
         @Param("boardId", new ParseIntPipe({
@@ -23,14 +31,35 @@ export class CommentsController {
         }))
         boardId: number
     ){
-       const comments = await this.commentsService.getAllComments(boardId);
-       return res
+        const board = await this.boardsService.getBoardById(boardId);
+        console.log(board);
+        if(!board)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
+                })
+
+        const comments = await this.commentsService.getAllComments(boardId);
+        if(comments.length==0)
+            return res
+                .status(HttpStatus.OK)
+                .json({
+                    message:`게시물 번호 ${boardId}번 게시물에 댓글이 없습니다`
+                })
+        return res
             .status(HttpStatus.OK)
             .json(comments)
     }
 
     @Post() // 특정 글의 댓글 작성
-    @ApiOperation({ summary : '커뮤니티 댓글 작성 API' })
+    @ApiOperation({ summary : '커뮤니티 특정 글에 댓글 작성 API' })
+    @ApiBody({ type : CreateCommentDto })
+    @ApiParam({
+        name: 'boardId',
+        required: true,
+        description: '게시글 번호'
+    })
     async createComment(
         @Res() res, 
         @Body() createCommentDto: CreateCommentDto,
@@ -40,7 +69,6 @@ export class CommentsController {
         boardId: number
     ): Promise<any> {
         const comment = await this.commentsService.createComment(boardId, createCommentDto);
-        
         return res
             .status(HttpStatus.CREATED)
             .json({
@@ -51,6 +79,17 @@ export class CommentsController {
 
     @Post('/:commentId') // 특정 글의 대댓글 작성
     @ApiOperation({ summary : '커뮤니티 대댓글 작성 API' })
+    @ApiBody({ type : UpdateCommentDto })
+    @ApiParam({
+        name: 'boardId',
+        required: true,
+        description: '게시글 번호'
+    })
+    @ApiParam({
+        name: 'commentId',
+        required: true,
+        description: '댓글 번호'
+    })
     async createReply(
         @Res() res, 
         @Body() createReplyDto: CreateCommentDto,
@@ -119,7 +158,6 @@ export class CommentsController {
                     message:`댓글 번호 ${commentId}번에 해당하는 댓글이 없습니다.`
                 })
         const updatedComment = await this.commentsService.updateComment(commentId, updateCommentDto);
-        console.log(updatedComment);
         return res
             .status(HttpStatus.OK)
             .json({

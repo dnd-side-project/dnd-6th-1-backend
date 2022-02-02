@@ -60,7 +60,7 @@ export class BoardsController {
         
         if(boards.length==0)
             return res
-                .status(HttpStatus.NO_CONTENT)
+                .status(HttpStatus.OK)
                 .json({
                     message:'검색 결과가 없습니다.'
                 })
