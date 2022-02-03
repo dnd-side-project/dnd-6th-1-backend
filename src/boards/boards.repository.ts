@@ -1,3 +1,4 @@
+import { UserRepository } from "src/auth/user.repository";
 import { EntityRepository, Like, Repository } from "typeorm";
 import { Boards } from "./boards.entity";
 import { CreateBoardDto } from "./dto/create-board.dto";
@@ -29,13 +30,12 @@ export class BoardsRepository extends Repository<Boards>{
     }
 
     // 전체 게시물 조회해갈 때
-    async getAllBoards(): Promise<Boards[]>{
+    async getAllBoards() {
         const boards = await this.find({ relations: ["images"] });
-
         // 닉네임 추가 
         var totalBoards = new Array();
         for(var i=0;i<boards.length;i++){
-            // const userId = boards[i].userId; 유저 추가된 경우**
+            const userId = boards[i].userId; //유저 추가된 경우
             const boardId = boards[i].boardId;
             const category = boards[i].categoryName;
             const title = boards[i].postTitle;
@@ -65,16 +65,16 @@ export class BoardsRepository extends Repository<Boards>{
         return totalBoards;
     }
 
-    // 검색어별 조회 
-    async findByKeyword(keyword: string){
-        const allBoards = await this.getAllBoards();
-        console.log(allBoards);
-        return allBoards;
-        // return await allBoards.find({
-        //     where: [
-        //         {postTitle: Like(`%${keyword}%`)},
-        //         {postContent: Like(`%${keyword}%`)}
-        //     ],
+    // // 검색어별 조회 
+    // async findByKeyword(keyword: string){
+    //     const allBoards = await this.getAllBoards();
+    //     // console.log(allBoards);
+    //     return allBoards;
+    //     // return await allBoards.find({
+    //     //     where: [
+    //     //         {postTitle: Like(`%${keyword}%`)},
+    //     //         {postContent: Like(`%${keyword}%`)}
+    //     //     ],
         // });
 
 
@@ -84,23 +84,24 @@ export class BoardsRepository extends Repository<Boards>{
                 .orWhere("boards.postContent like :keyword", { keyword: `%${keyword}%`})                
                 .getMany();
          */   
-    }
+    // }
 
-    // 카테고리별 조회
-    async findByCategory(category: string){
-        return await this.find({
-            where: {
-                categoryName: category
-            },
-            relations: ['images']
-        });
-    }
+    // // 카테고리별 조회
+    // async findByCategory(category: string){
+    //     return await this.find({
+    //         where: {
+    //             categoryName: category
+    //         },
+    //         relations: ['images']
+    //     });
+    // }
 
     // 게시글 등록시 board DB
     async createBoard(createBoardDto: CreateBoardDto): Promise<Boards> {
-        const {categoryName, postTitle, postContent } = createBoardDto;
+        const { userId, categoryName, postTitle, postContent } = createBoardDto;
 
         const board = {
+            userId,
             categoryName,
             postTitle, 
             postContent,

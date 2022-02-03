@@ -38,6 +38,7 @@ export class BoardsController {
         let boards;
         if(keyword==null && category==null){ // 전체 글 조회
             boards = await this.boardsService.getAllBoards();
+            console.log(boards);
         }
         else if(keyword!=null && category==null){ // 검색어별 조회
             if(keyword.length < 2){
@@ -47,10 +48,23 @@ export class BoardsController {
                         message:'2글자 이상 입력해주세요.'
                     }) 
             }
-            boards = this.boardsService.getAllBoardsByKeyword(keyword);
-        }
+            boards = await this.boardsService.getAllBoardsByKeyword(keyword);
+            console.log(boards);
+            if(boards['resultCnt']==0){
+                return res
+                    .status(HttpStatus.NO_CONTENT)
+                    .json({
+                        message:'검색 결과가 없습니다.'
+                    })
+            }
+            // else
+            //     return res
+            //         .status(HttpStatus.OK)
+            //         .json({
+            //             message:'하잉'
+            //         })   
+        }    
         else if(keyword==null && category!=null){ // 카테고리별 조회
-            console.log(category)
             if(['부정','화','타협','슬픔','수용'].includes(category))
                 boards = await this.boardsService.getAllBoardsByCategory(category);
             else
@@ -60,16 +74,10 @@ export class BoardsController {
                         message:'잘못된 카테고리입니다.'
                     })  
         }
-        
-        if(boards.length==0)
-            return res
-                .status(HttpStatus.OK)
-                .json({
-                    message:'검색 결과가 없습니다.'
-                })
+        console.log(boards);
         return res
             .status(HttpStatus.OK)
-            .json(boards)
+            .json(boards);
     }
 
     @Get('/:boardId') // 커뮤니티 특정 글 조회 (상세페이지에서도 댓글 시간체크!!!!!!!!!)

@@ -25,7 +25,7 @@ export class BoardsService {
         return await this.boardsRepository.findOne(boardId);
     }      
     
-    async getAllBoards(): Promise <Boards[]> {
+    async getAllBoards() {
         const totalBoards = new Array();
         const boards = await this.boardsRepository.find({ relations: ["images"] }); // 전체 게시글 다가져오기
         const allBoards = await this.boardsRepository.getAllBoards();
@@ -47,14 +47,22 @@ export class BoardsService {
         return totalBoards;
     }
 
-    async getAllBoardsByKeyword(keyword: string): Promise <Boards[]> { // 검색어별 조회
+    async getAllBoardsByKeyword(keyword: string) { // 검색어별 조회
         const totalBoards = await this.getAllBoards();
-        console.log(totalBoards);
-        return await this.boardsRepository.findByKeyword(keyword);
+        const boardsByKeyword = totalBoards.filter(board =>  // true를 반환하는 요소를 기준으로 신규 배열을 만들어 반환
+            board.title.includes(keyword) || board.content.includes(keyword)
+        );
+        const keywordResults = {
+            resultCnt: boardsByKeyword.length,
+            searchResult: boardsByKeyword
+        }
+        return keywordResults;
     }
 
-    async getAllBoardsByCategory(category: string): Promise <Boards[]> { // 카테고리별 조회
-        return await this.boardsRepository.findByCategory(category);
+    async getAllBoardsByCategory(category: string) { // 카테고리별 조회
+        const totalBoards = await this.getAllBoards();
+        const boardsByCategory = totalBoards.filter(board => board.category === category);
+        return boardsByCategory;
     }
 
     async createBoard(files: Express.Multer.File[], createBoardDto: CreateBoardDto): Promise<Boards> {
