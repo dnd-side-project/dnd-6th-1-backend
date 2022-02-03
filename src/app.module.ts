@@ -7,6 +7,7 @@ import { BoardImagesModule } from './board-images/board-images.module';
 import { BoardsModule } from './boards/boards.module';
 import { typeORMConfig } from './configs/typeorm.config';
 import { CommentsModule } from './comments/comments.module';
+import { AuthModule} from './auth/auth.module'
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { CommentsModule } from './comments/comments.module';
     BoardsModule,
     BoardImagesModule,
     CommentsModule
+    AuthModule
   ],
   controllers: [AppController],
   providers: [

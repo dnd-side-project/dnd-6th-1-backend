@@ -11,6 +11,9 @@ import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swag
 require("dotenv").config();
 
 const s3 = new AWS.S3();
+
+
+
 @Controller('boards')
 @ApiTags('커뮤니티 글 API')
 export class BoardsController {
