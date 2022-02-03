@@ -7,6 +7,9 @@ export class Boards extends BaseEntity {
     @PrimaryGeneratedColumn()
     boardId: number;
 
+    @Column() //작성자 아이디 
+    userId: number;
+    
     @Column()
     categoryName: string;
 
@@ -29,4 +32,7 @@ export class Boards extends BaseEntity {
         (comment) => comment.boardId
     )
     comments: Comments[];
+
+    @Column({ type:'timestamp'})
+    postCreated: Date;
 }

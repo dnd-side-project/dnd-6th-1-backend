@@ -8,24 +8,22 @@ export class CommentsRepository extends Repository<Comments>{
 
     // 댓글 조회시 댓글 / 대댓글 구분해서 가져오기
     async getAllComments(boardId: number): Promise <Comments[]> {
-        // 댓글 
         const totalComments = new Array();
-        const comments = await this.find({boardId, class:0}); // 부모 댓글 가져오기
-        for(var i=0;i<comments.length;i++){
+        const parentComments = await this.find({boardId, class: 0}); // 부모 댓글 가져오기
+
+        for(var i=0;i<parentComments.length;i++){ // 부모 댓글 for문 돌고 
             var allComments = new Array();
-            const replies = await this.find({boardId, class:1, groupId:comments[i].groupId}) // 각 부모댓글에 해당하는 대댓글 가져오기
+            const replies = await this.find({boardId, class:1, groupId:parentComments[i].groupId}) // 각 부모댓글에 해당하는 대댓글 가져오기
             for(var j=0;j<replies.length;j++){
                 allComments[j]=replies[j];
             }
             totalComments[i] = {
-                comment: comments[i],
+                comment: (parentComments[i].commentStatus == false)? '삭제된 댓글입니다.' : parentComments[i],
                 replies: allComments
             }
         }
-        console.log(totalComments)
         return totalComments;
     } 
-
 
     // 댓글 등록시 comment DB
     async createComment(boardId: number, createCommentDto: CreateCommentDto): Promise<Comments> {
@@ -62,8 +60,8 @@ export class CommentsRepository extends Repository<Comments>{
         await this.update({commentId}, {commentContent});
     }
 
-    // 커뮤니티 댓글 삭제
+    // 커뮤니티 댓글 삭제 -> commentStatus = false 로 변경
     async deleteBoard(commentId: number) {
-        this.delete(commentId);
+        await this.update({commentId}, {commentStatus : false})
     }
 }

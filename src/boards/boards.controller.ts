@@ -63,7 +63,7 @@ export class BoardsController {
         
         if(boards.length==0)
             return res
-                .status(HttpStatus.NO_CONTENT)
+                .status(HttpStatus.OK)
                 .json({
                     message:'검색 결과가 없습니다.'
                 })
@@ -72,7 +72,7 @@ export class BoardsController {
             .json(boards)
     }
 
-    @Get('/:boardId') // 커뮤니티 특정 글 조회
+    @Get('/:boardId') // 커뮤니티 특정 글 조회 (상세페이지에서도 댓글 시간체크!!!!!!!!!)
     @ApiOperation({ summary : '커뮤니티 특정 글 조회 API' })
     @ApiParam({
         name: 'boardId',

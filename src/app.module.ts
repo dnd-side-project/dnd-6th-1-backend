@@ -7,14 +7,14 @@ import { BoardImagesModule } from './board-images/board-images.module';
 import { BoardsModule } from './boards/boards.module';
 import { typeORMConfig } from './configs/typeorm.config';
 import { CommentsModule } from './comments/comments.module';
-import { AuthModule} from './auth/auth.module'
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(typeORMConfig),
     BoardsModule,
     BoardImagesModule,
-    CommentsModule
+    CommentsModule,
     AuthModule
   ],
   controllers: [AppController],
