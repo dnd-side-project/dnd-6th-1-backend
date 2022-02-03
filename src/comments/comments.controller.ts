@@ -166,6 +166,8 @@ export class CommentsController {
             })
     }
 
+    // 2/3 할일 -> 댓글이 삭제되어도 대댓글은 남아있도록 처리해야함 
+
     @Delete('/:commentId') // 특정 글의 댓글 삭제
     @ApiOperation({ summary : '커뮤니티 특정 댓글 삭제 API' })
     @ApiParam({
