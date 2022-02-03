@@ -2,20 +2,9 @@ import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity } from "type
 
 
 @Entity()
-// @Unique(['username'])
+@Unique(['email'])
 export class User extends BaseEntity {
-    /*
-    @PrimaryGeneratedColumn()
-    id: number;
-
     
-    @Column()
-    username: string;
-
-    @Column()
-    password: string;
-    */
-
     // itzza
     // userId, email, password, nickname, userStatus, breakupDate
     @PrimaryGeneratedColumn()
