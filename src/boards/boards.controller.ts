@@ -55,13 +55,7 @@ export class BoardsController {
                     .json({
                         message:'검색 결과가 없습니다.'
                     })
-            }
-            // else
-            //     return res
-            //         .status(HttpStatus.OK)
-            //         .json({
-            //             message:'하잉'
-            //         })   
+            } 
         }    
         else if(keyword==null && category!=null){ // 카테고리별 조회
             if(['부정','화','타협','슬픔','수용'].includes(category))
@@ -140,51 +134,51 @@ export class BoardsController {
             });
     }
 
-    // @Patch('/:boardId') // 커뮤니티 글 수정
-    // @ApiOperation({ summary : '커뮤니티 특정 글 수정 API' })
-    // @ApiBody({ type : UpdateBoardDto })
-    // @ApiParam({
-    //     name: 'boardId',
-    //     required: true,
-    //     description: '게시글 번호'
-    // })
-    // @UseInterceptors(
-    //     FilesInterceptor('files', 3, {
-    //         storage: multerS3({ 
-    //         s3: s3,
-    //         bucket: process.env.AWS_S3_BUCKET_NAME,
-    //         contentType: multerS3.AUTO_CONTENT_TYPE, 
-    //         acl: 'public-read',
-    //         key: function (request, file, cb) { // files  for문 돌듯이 먼저 실행
-    //             file.encoding = 'utf-8';
-    //             let S3ImageName = `boardImages/${Date.now().toString()}-${file.originalname}`; // 파일 올리면 해당 파일의 이름을 받아옴 -> S3에 저장되는 이름
-    //             cb(null, S3ImageName);   
-    //         },
-    //     }),
-    // }))
-    // async updateBoard(
-    //     @Res() res, 
-    //     @Param("boardId", new ParseIntPipe({
-    //         errorHttpStatusCode: HttpStatus.BAD_REQUEST
-    //     }))
-    //     boardId: number, 
-    //     @Body() updateBoardDto: UpdateBoardDto
-    // ){
-    //     const board = await this.boardsService.getBoardById(boardId);
-    //     if(!board)
-    //         return res
-    //             .status(HttpStatus.NOT_FOUND)
-    //             .json({
-    //                 message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
-    //             })
-    //     const updatedBoard = await this.boardsService.updateBoard(boardId, updateBoardDto);
-    //     return res
-    //         .status(HttpStatus.OK)
-    //         .json({
-    //             data: updatedBoard,
-    //             message:'게시글을 수정했습니다'
-    //         })
-    // }
+    @Patch('/:boardId') // 커뮤니티 글 수정
+    @ApiOperation({ summary : '커뮤니티 특정 글 수정 API' })
+    @ApiBody({ type : UpdateBoardDto })
+    @ApiParam({
+        name: 'boardId',
+        required: true,
+        description: '게시글 번호'
+    })
+    @UseInterceptors(
+        FilesInterceptor('files', 3, {
+            storage: multerS3({ 
+            s3: s3,
+            bucket: process.env.AWS_S3_BUCKET_NAME,
+            contentType: multerS3.AUTO_CONTENT_TYPE, 
+            acl: 'public-read',
+            key: function (request, file, cb) { // files  for문 돌듯이 먼저 실행
+                file.encoding = 'utf-8';
+                let S3ImageName = `boardImages/${Date.now().toString()}-${file.originalname}`; // 파일 올리면 해당 파일의 이름을 받아옴 -> S3에 저장되는 이름
+                cb(null, S3ImageName);   
+            },
+        }),
+    }))
+    async updateBoard(
+        @Res() res, 
+        @Param("boardId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        boardId: number, 
+        @Body() updateBoardDto: UpdateBoardDto
+    ){
+        const board = await this.boardsService.getBoardById(boardId);
+        if(!board)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
+                })
+        const updatedBoard = await this.boardsService.updateBoard(boardId, updateBoardDto);
+        return res
+            .status(HttpStatus.OK)
+            .json({
+                data: updatedBoard,
+                message:'게시글을 수정했습니다'
+            })
+    }
 
     @Delete('/:boardId')
     @ApiOperation({ summary : '커뮤니티 특정 글 삭제 API' })

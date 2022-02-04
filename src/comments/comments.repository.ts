@@ -11,7 +11,7 @@ export class CommentsRepository extends Repository<Comments>{
     }
 
     async getChildComments(boardId: number, groupId: number){
-        return await await this.find({boardId, class:1, groupId}) // 각 부모댓글에 해당하는 대댓글 가져오기
+        return await this.find({boardId, class:1, groupId}) // 각 부모댓글에 해당하는 대댓글 가져오기
     }
 
     // 댓글 등록시 comment DB

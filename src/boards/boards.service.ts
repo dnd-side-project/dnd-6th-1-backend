@@ -29,7 +29,7 @@ export class BoardsService {
         var hour = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         var minute = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         var second = Math.floor((distance % (1000 * 60)) / 1000);
-        var time;
+        var time = "";
 
         if(day!=0)
             time = day+'일 전';
@@ -96,53 +96,45 @@ export class BoardsService {
             commentCnt,
             comments,
         }    
-    
         return board;
     }      
     
-    // 게시판 특정 글 조회
+    // 게시판 전체 글 조회
     async getAllBoards() {
         const totalBoards = new Array();
         const boards = await this.boardsRepository.getAllBoards(); // 전체 게시글 다가져오기
-        var allBoards = new Array();
         for(var i=0;i<boards.length;i++){
             const { boardId, categoryName, postTitle, postContent, postCreated } = boards[i];
             var createdAt = await this.calculateTime(new Date(), postCreated);        
+            const user = await this.userRepository.findById(boards[i].userId);
+            const { nickname, profileImage } = user;
+            const comments = await this.getAllComments(boards[i].boardId);
+            var commentCnt = await this.countComment(comments); // 댓글 개수 세기
+            
             const imageCnt = boards[i].images.length // 게시글 사진 개수
-            const bookmarkCnt = 3; // 북마크 개수
             const likeCnt = 10; // 좋아요 개수
             const board = {
                 boardId,
                 categoryName,
+                profileImage,
+                nickname,
                 postTitle,
                 postContent,
                 createdAt,
                 imageCnt,
-                bookmarkCnt,
+                commentCnt,
                 likeCnt,
             }
-            allBoards[i] = board;
+            totalBoards[i] = board;
         }    
-        console.log(allBoards)
-        for(var i=0;i<boards.length;i++){
-            const user = await this.userRepository.findById(boards[i].userId);
-            const comments = await this.getAllComments(boards[i].boardId);
- 
-            var commentCnt = await this.countComment(comments); // 댓글 개수 세기
-            
-            allBoards[i]['commentCnt'] = commentCnt;
-            // allBoards[i]['profileImage'] = user.profileImage;
-            allBoards[i]['profileImage'] = 'https://dnd-project-1.s3.ap-northeast-2.amazonaws.com/boardImages/1643825809948-mongoose.jpg';
-            allBoards[i]['nickname'] = user.nickname; 
-            totalBoards[i]=allBoards[i];
-        }
         return totalBoards;
     }
 
     async getAllBoardsByKeyword(keyword: string) { // 검색어별 조회
         const totalBoards = await this.getAllBoards();
+        console.log(totalBoards)
         const boardsByKeyword = totalBoards.filter(board =>  // true를 반환하는 요소를 기준으로 신규 배열을 만들어 반환
-            board.title.includes(keyword) || board.content.includes(keyword)
+            board.postTitle.includes(keyword) || board.postContent.includes(keyword)
         );
         const keywordResults = {
             resultCnt: boardsByKeyword.length,
@@ -153,7 +145,7 @@ export class BoardsService {
 
     async getAllBoardsByCategory(category: string) { // 카테고리별 조회
         const totalBoards = await this.getAllBoards();
-        const boardsByCategory = totalBoards.filter(board => board.category === category);
+        const boardsByCategory = totalBoards.filter(board => board.categoryName === category);
         return boardsByCategory;
     }
 
@@ -163,11 +155,11 @@ export class BoardsService {
         return board;
     }
 
-    // async updateBoard(boardId: number, updateBoardDto: UpdateBoardDto): Promise<Boards> {
-    //     await this.boardsRepository.updateBoard(boardId, updateBoardDto);
-    //     const board = await this.getBoardById(boardId);
-    //     return board;
-    // }
+    async updateBoard(boardId: number, updateBoardDto: UpdateBoardDto) {
+        await this.boardsRepository.updateBoard(boardId, updateBoardDto);
+        const board = await this.getBoardById(boardId);
+        return board;
+    }
 
     async deleteBoard(boardId: number) {
         this.boardsRepository.deleteBoard(boardId);
