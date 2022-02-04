@@ -35,9 +35,9 @@ export class AuthCredentialsDto {
     @IsString()
     @IsNotEmpty()
     @Length(1,10)
-    // @Matches(/^[a-zA-Z0-9]*$/, {
-    //     message: '닉네임 only accepts english and number'
-    // })
+    @Matches(/^\S[가-힣a-zA-Z0-9-\s]*$/, {
+        message: '닉네임은 1-10사이의 한글,영어,숫자만 입력 가능합니다.'
+    })
     nickname: string;
 
 }
