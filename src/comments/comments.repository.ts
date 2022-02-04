@@ -6,24 +6,13 @@ import { UpdateCommentDto } from "./dto/update-comment.dto";
 @EntityRepository(Comments) // 이 클래스가 Board를 관리하는 repository 라는 것을 알려줌
 export class CommentsRepository extends Repository<Comments>{
 
-    // 댓글 조회시 댓글 / 대댓글 구분해서 가져오기
-    async getAllComments(boardId: number): Promise <Comments[]> {
-        const totalComments = new Array();
-        const parentComments = await this.find({boardId, class: 0}); // 부모 댓글 가져오기
+    async getParentComments(boardId: number): Promise <Comments[]>{
+        return await this.find({boardId, class: 0}); // 부모 댓글 가져오기
+    }
 
-        for(var i=0;i<parentComments.length;i++){ // 부모 댓글 for문 돌고 
-            var allComments = new Array();
-            const replies = await this.find({boardId, class:1, groupId:parentComments[i].groupId}) // 각 부모댓글에 해당하는 대댓글 가져오기
-            for(var j=0;j<replies.length;j++){
-                allComments[j]=replies[j];
-            }
-            totalComments[i] = {
-                comment: (parentComments[i].commentStatus == false)? '삭제된 댓글입니다.' : parentComments[i],
-                replies: allComments
-            }
-        }
-        return totalComments;
-    } 
+    async getChildComments(boardId: number, groupId: number){
+        return await await this.find({boardId, class:1, groupId}) // 각 부모댓글에 해당하는 대댓글 가져오기
+    }
 
     // 댓글 등록시 comment DB
     async createComment(boardId: number, createCommentDto: CreateCommentDto): Promise<Comments> {

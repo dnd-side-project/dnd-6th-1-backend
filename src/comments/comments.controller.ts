@@ -15,42 +15,42 @@ export class CommentsController {
         private readonly boardsService: BoardsService
     ){}
 
-    @Get() // 특정 글의 댓글 조회
-    @ApiOperation({ 
-        summary: '커뮤니티 특정 글의 모든 댓글 조회 API'
-    })
-    @ApiParam({
-        name: 'boardId',
-        required: true,
-        description: '게시글 번호'
-    })
-    async getAllComments(
-        @Res() res, 
-        @Param("boardId", new ParseIntPipe({
-            errorHttpStatusCode: HttpStatus.BAD_REQUEST
-        }))
-        boardId: number
-    ){
-        const board = await this.boardsService.getBoardById(boardId);
-        console.log(board);
-        if(!board)
-            return res
-                .status(HttpStatus.NOT_FOUND)
-                .json({
-                    message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
-                })
+    // @Get() // 특정 글의 댓글 조회
+    // @ApiOperation({ 
+    //     summary: '커뮤니티 특정 글의 모든 댓글 조회 API'
+    // })
+    // @ApiParam({
+    //     name: 'boardId',
+    //     required: true,
+    //     description: '게시글 번호'
+    // })
+    // async getAllComments(
+    //     @Res() res, 
+    //     @Param("boardId", new ParseIntPipe({
+    //         errorHttpStatusCode: HttpStatus.BAD_REQUEST
+    //     }))
+    //     boardId: number
+    // ){
+    //     const board = await this.boardsService.getBoardById(boardId);
+    //     console.log(board);
+    //     if(!board)
+    //         return res
+    //             .status(HttpStatus.NOT_FOUND)
+    //             .json({
+    //                 message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
+    //             })
 
-        const comments = await this.commentsService.getAllComments(boardId);
-        if(comments.length==0)
-            return res
-                .status(HttpStatus.OK)
-                .json({
-                    message:`게시물 번호 ${boardId}번 게시물에 댓글이 없습니다`
-                })
-        return res
-            .status(HttpStatus.OK)
-            .json(comments)
-    }
+    //     const comments = await this.commentsService.getAllComments(boardId);
+    //     if(comments.length==0)
+    //         return res
+    //             .status(HttpStatus.OK)
+    //             .json({
+    //                 message:`게시물 번호 ${boardId}번 게시물에 댓글이 없습니다`
+    //             })
+    //     return res
+    //         .status(HttpStatus.OK)
+    //         .json(comments)
+    // }
 
     @Post() // 특정 글의 댓글 작성
     @ApiOperation({ summary : '커뮤니티 특정 글에 댓글 작성 API' })
