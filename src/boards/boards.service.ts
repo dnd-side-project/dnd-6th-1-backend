@@ -61,8 +61,11 @@ export class BoardsService {
 
         for(var i=0;i<parentComments.length;i++){ // 부모 댓글 for문 돌고 
             var allComments = new Array();
+            parentComments[i]['createdAgo'] = await this.calculateTime(new Date(), parentComments[i].commentCreated); // 부모 댓글 시간 계산
             const replies = await this.commentsRepository.getChildComments(boardId, parentComments[i].groupId); // 각 부모댓글에 해당하는 대댓글 가져오기
+
             for(var j=0;j<replies.length;j++){
+                replies[i]['createdAgo'] = await this.calculateTime(new Date(), replies[i].commentCreated); // 자식 댓글 시간 계산
                 allComments[j]=replies[j];
             }
             totalComments[i] = {
@@ -145,7 +148,9 @@ export class BoardsService {
 
     async getAllBoardsByCategory(category: string) { // 카테고리별 조회
         const totalBoards = await this.getAllBoards();
-        const boardsByCategory = totalBoards.filter(board => board.categoryName === category);
+        const boardsByCategory = totalBoards.filter(board => 
+            board.categoryName === category
+        );
         return boardsByCategory;
     }
 
