@@ -2,10 +2,11 @@ import { HttpException, HttpStatus, Inject, Injectable, Logger, NotFoundExceptio
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/user.repository';
 import { BoardImagesRepository } from 'src/board-images/board-images.repository';
+import { Comments } from 'src/comments/comments.entity';
 import { CommentsRepository } from 'src/comments/comments.repository';
 import { Boards } from './boards.entity';
 import { BoardsRepository } from './boards.repository';
-import { CreateBoardDto } from './dto/create-board.dto';
+import { CreateBoardFirstDto } from './dto/create-board-first.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
 
 @Injectable()
@@ -22,8 +23,37 @@ export class BoardsService {
     ){}
 
     async getBoardById(boardId: number): Promise <Boards> {
+        const totalBoard = new Array();
+        const board = await this.boardsRepository.getBoardById(boardId);
+        // 사용자  프로필이미지, 닉네임
+        
+        // 댓글 개수 및 목록
+        const comments = await this.commentsRepository.getAllComments(board.boardId);
+
+        var commentCnt=0; // 댓글 개수 세기
+        console.log(comments.length);
+        for(var j=0;j<comments.length;j++){
+            if(comments[j]['comment']!=='삭제된 댓글입니다.') // 원댓글이 삭제되지 않은 경우만 count
+                commentCnt++;
+            commentCnt += comments[j]['replies'].length; // 대댓글 갯수   
+        }
+        console.log(commentCnt);
+        // allBoards[i]['commentCnt'] = commentCnt;
+
+
+        // 게시글 사진
         return await this.boardsRepository.findOne(boardId);
     }      
+    
+    async countComment(comments: Comments[]) {
+        var commentCnt = 0;
+        for(var j=0;j<comments.length;j++){
+            if(comments[j]['comment']!=='삭제된 댓글입니다.') // 원댓글이 삭제되지 않은 경우만 count
+                commentCnt++;
+            commentCnt += comments[j]['replies'].length; // 대댓글 갯수   
+        }
+        return commentCnt;
+    }
     
     async getAllBoards() {
         const totalBoards = new Array();
@@ -32,12 +62,8 @@ export class BoardsService {
         for(var i=0;i<boards.length;i++){
             const user = await this.userRepository.findOne({ userId: boards[i].userId })
             const comments = await this.commentsRepository.getAllComments(boards[i].boardId);
-            var commentCnt=0; // 댓글 개수 세기
-            for(var j=0;j<comments.length;j++){
-                if(comments[j]['comment']!=='삭제된 댓글입니다.') // 원댓글이 삭제되지 않은 경우만 count
-                    commentCnt++;
-                commentCnt += comments[j]['replies'].length; // 대댓글 갯수   
-            }
+            var commentCnt = await this.countComment(comments); // 댓글 개수 세기
+            
             allBoards[i]['commentCnt'] = commentCnt;
             // allBoards[i]['profileImage'] = user.profileImage;
             allBoards[i]['profileImage'] = 'https://dnd-project-1.s3.ap-northeast-2.amazonaws.com/boardImages/1643825809948-mongoose.jpg';
@@ -65,8 +91,8 @@ export class BoardsService {
         return boardsByCategory;
     }
 
-    async createBoard(files: Express.Multer.File[], createBoardDto: CreateBoardDto): Promise<Boards> {
-        const board = await this.boardsRepository.createBoard(createBoardDto); // board DB에 저장
+    async createBoard(files: Express.Multer.File[], createBoardFirstDto: CreateBoardFirstDto): Promise<Boards> {
+        const board = await this.boardsRepository.createBoard(createBoardFirstDto); // board DB에 저장
         await this.boardImagesRepository.createBoardImage(files, board.boardId); // boardImage DB에 저장        
         return board;
     }

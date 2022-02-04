@@ -1,7 +1,7 @@
 import { UserRepository } from "src/auth/user.repository";
 import { EntityRepository, Like, Repository } from "typeorm";
 import { Boards } from "./boards.entity";
-import { CreateBoardDto } from "./dto/create-board.dto";
+import { CreateBoardFirstDto } from "./dto/create-board-first.dto";
 import { UpdateBoardDto } from "./dto/update-board.dto";
 
 
@@ -64,55 +64,45 @@ export class BoardsRepository extends Repository<Boards>{
         }    
         return totalBoards;
     }
-
-    // // 검색어별 조회 
-    // async findByKeyword(keyword: string){
-    //     const allBoards = await this.getAllBoards();
-    //     // console.log(allBoards);
-    //     return allBoards;
-    //     // return await allBoards.find({
-    //     //     where: [
-    //     //         {postTitle: Like(`%${keyword}%`)},
-    //     //         {postContent: Like(`%${keyword}%`)}
-    //     //     ],
-        // });
-
-
-        /** QueryBuilder 이용
-         * return this.createQueryBuilder("boards")
-                .where("boards.postTitle like :keyword", { keyword: `%${keyword}%`})
-                .orWhere("boards.postContent like :keyword", { keyword: `%${keyword}%`})                
-                .getMany();
-         */   
-    // }
-
-    // // 카테고리별 조회
-    // async findByCategory(category: string){
-    //     return await this.find({
-    //         where: {
-    //             categoryName: category
-    //         },
-    //         relations: ['images']
-    //     });
-    // }
+    
+    // 특정 게시물 조회해갈 때
+    async getBoardById(boardId: number) {
+        const boardById = await this.findOne({boardId}, { relations: ["images"] });
+        console.log(boardById);
+        
+        const title = boardById.postTitle;
+        const content = boardById.postContent;
+        const created = boardById.postCreated; // UTC 시간대여서 Z가 붙음
+        const createdAt = await this.calculateTime(new Date(), created);        
+        const likeCnt = 10; // 좋아요 개수
+        const board = {
+            boardId,
+            title,
+            content,
+            createdAt,
+            likeCnt,
+        }    
+        return board;
+    }
 
     // 게시글 등록시 board DB
-    async createBoard(createBoardDto: CreateBoardDto): Promise<Boards> {
-        const { userId, categoryName, postTitle, postContent } = createBoardDto;
-
+    async createBoard(createBoardFirstDto: CreateBoardFirstDto): Promise<Boards> {
+        const { userId, categoryName, postTitle, postContent } = createBoardFirstDto;
+        const userIdToNumber: number = +userId;
         const board = {
-            userId,
+            userId: userIdToNumber,
             categoryName,
             postTitle, 
             postContent,
             postCreated: new Date(),
         };
         const newBoard = await this.save(board);
+        console.log(newBoard);
         return newBoard;
     }
 
     // 커뮤니티 글 수정 - 편집 가능한 요소 : 감정 카테고리, 제목, 글 내용, 이미지 
-    async updateBoard(boardId: number, updateBoardDto: UpdateBoardDto) {  
+    async updateBoard(boardId: number, updateBoardDto: UpdateBoardDto) {          
         await this.update({boardId}, {...updateBoardDto});
     }
 

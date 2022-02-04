@@ -8,11 +8,10 @@ import { UpdateBoardDto } from './dto/update-board.dto';
 import * as AWS from 'aws-sdk';
 import * as multerS3 from 'multer-s3';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { CreateBoardFirstDto } from './dto/create-board-first.dto';
 require("dotenv").config();
 
 const s3 = new AWS.S3();
-
-
 
 @Controller('boards')
 @ApiTags('커뮤니티 글 API')
@@ -126,9 +125,13 @@ export class BoardsController {
     async createBoard(
         @Res() res, 
         @UploadedFiles() files: Express.Multer.File[], 
-        @Body() createBoardDto: CreateBoardDto
+        @Body() createBoardFirstDto: CreateBoardFirstDto,
     ): Promise<any> {
-        const board = await this.boardsService.createBoard(files, createBoardDto);
+        console.log(createBoardFirstDto);
+        // console.log(userId);
+        // const board = await this.boardsService.createBoard(files, createBoardDto, userId);
+        const board = await this.boardsService.createBoard(files, createBoardFirstDto);
+
         return res
             .status(HttpStatus.CREATED)
             .json({
