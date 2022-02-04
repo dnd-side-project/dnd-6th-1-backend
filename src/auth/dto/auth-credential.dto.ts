@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString, Length, Matches, MaxLength, MinLength } from "class-validator";
+import { IsEmail, IsNotEmpty, IsString, Length, Matches, MaxLength, MinLength } from "class-validator";
 
 export class AuthCredentialsDto {
     
@@ -11,7 +11,7 @@ export class AuthCredentialsDto {
         description: 'email',
         required: true,
     })
-    @IsString()
+    @IsEmail()      // 이메일 유효성 검사
     @IsNotEmpty()
     email: string;
 
@@ -36,9 +36,8 @@ export class AuthCredentialsDto {
     @IsNotEmpty()
     @Length(1,10)
     // @Matches(/^[a-zA-Z0-9]*$/, {
-    //     message: 'password only accepts english and number'
+    //     message: '닉네임 only accepts english and number'
     // })
     nickname: string;
-
 
 }
