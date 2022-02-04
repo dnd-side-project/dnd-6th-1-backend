@@ -31,7 +31,7 @@ export class CommentsController {
     //     }))
     //     boardId: number
     // ){
-    //     const board = await this.boardsService.getBoardById(boardId);
+    //     const board = await this.boardsService.findByBoardId(boardId);
     //     console.log(board);
     //     if(!board)
     //         return res
@@ -40,7 +40,7 @@ export class CommentsController {
     //                 message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
     //             })
 
-    //     const comments = await this.commentsService.getAllComments(boardId);
+    //     const comments = await this.boardsService.getAllComments(boardId);
     //     if(comments.length==0)
     //         return res
     //             .status(HttpStatus.OK)
@@ -102,7 +102,7 @@ export class CommentsController {
         }))
         commentId: number
     ): Promise<any> {
-        const board = await this.boardsService.getBoardById(boardId);
+        const board = await this.boardsService.findByBoardId(boardId);
         if(!board)
             return res
                 .status(HttpStatus.NOT_FOUND)
@@ -142,7 +142,7 @@ export class CommentsController {
         }))
         commentId: number
     ){
-        const board = await this.boardsService.getBoardById(boardId);
+        const board = await this.boardsService.findByBoardId(boardId);
         if(!board)
             return res
                 .status(HttpStatus.NOT_FOUND)
@@ -165,8 +165,6 @@ export class CommentsController {
                 message:'댓글을 수정했습니다'
             })
     }
-
-    // 2/3 할일 -> 댓글이 삭제되어도 대댓글은 남아있도록 처리해야함 
 
     @Delete('/:commentId') // 특정 글의 댓글 삭제
     @ApiOperation({ summary : '커뮤니티 특정 댓글 삭제 API' })
@@ -191,7 +189,7 @@ export class CommentsController {
         }))
         commentId: number
     ){
-        const board = await this.boardsService.getBoardById(boardId);
+        const board = await this.boardsService.findByBoardId(boardId);
         if(!board)
             return res
                 .status(HttpStatus.NOT_FOUND)

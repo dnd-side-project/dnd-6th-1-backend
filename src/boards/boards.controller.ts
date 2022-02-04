@@ -4,11 +4,11 @@ import { FilesInterceptor} from '@nestjs/platform-express';
 import { Boards } from './boards.entity';
 import { BoardsService } from './boards.service';
 import { CreateBoardDto } from './dto/create-board.dto';
-import { UpdateBoardDto } from './dto/update-board.dto';
 import * as AWS from 'aws-sdk';
 import * as multerS3 from 'multer-s3';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CreateBoardFirstDto } from './dto/create-board-first.dto';
+import { UpdateBoardDto } from './dto/update-board.dto';
 require("dotenv").config();
 
 const s3 = new AWS.S3();
@@ -37,7 +37,6 @@ export class BoardsController {
         let boards;
         if(keyword==null && category==null){ // 전체 글 조회
             boards = await this.boardsService.getAllBoards();
-            console.log(boards);
         }
         else if(keyword!=null && category==null){ // 검색어별 조회
             if(keyword.length < 2){
@@ -48,10 +47,9 @@ export class BoardsController {
                     }) 
             }
             boards = await this.boardsService.getAllBoardsByKeyword(keyword);
-            console.log(boards);
             if(boards['resultCnt']==0){
                 return res
-                    .status(HttpStatus.NO_CONTENT)
+                    .status(HttpStatus.OK)
                     .json({
                         message:'검색 결과가 없습니다.'
                     })
@@ -67,13 +65,12 @@ export class BoardsController {
                         message:'잘못된 카테고리입니다.'
                     })  
         }
-        console.log(boards);
         return res
             .status(HttpStatus.OK)
             .json(boards);
     }
 
-    @Get('/:boardId') // 커뮤니티 특정 글 조회 (상세페이지에서도 댓글 시간체크!!!!!!!!!)
+    @Get('/:boardId') // 커뮤니티 특정 글 조회
     @ApiOperation({ summary : '커뮤니티 특정 글 조회 API' })
     @ApiParam({
         name: 'boardId',
@@ -85,9 +82,10 @@ export class BoardsController {
         @Param("boardId", new ParseIntPipe({
             errorHttpStatusCode: HttpStatus.BAD_REQUEST
         }))
-        boardId: number
+        boardId: number,
+        @Body('loginUserId') loginUserId: number
     ) {
-        const board = await this.boardsService.getBoardById(boardId);
+        const board = await this.boardsService.getBoardById(boardId, loginUserId);
         if(!board)
             return res
                 .status(HttpStatus.NOT_FOUND)
@@ -121,9 +119,6 @@ export class BoardsController {
         @UploadedFiles() files: Express.Multer.File[], 
         @Body() createBoardFirstDto: CreateBoardFirstDto,
     ): Promise<any> {
-        console.log(createBoardFirstDto);
-        // console.log(userId);
-        // const board = await this.boardsService.createBoard(files, createBoardDto, userId);
         const board = await this.boardsService.createBoard(files, createBoardFirstDto);
 
         return res
@@ -164,7 +159,7 @@ export class BoardsController {
         boardId: number, 
         @Body() updateBoardDto: UpdateBoardDto
     ){
-        const board = await this.boardsService.getBoardById(boardId);
+        const board = await this.boardsService.findByBoardId(boardId);
         if(!board)
             return res
                 .status(HttpStatus.NOT_FOUND)
@@ -192,9 +187,9 @@ export class BoardsController {
         @Param("boardId", new ParseIntPipe({
             errorHttpStatusCode: HttpStatus.BAD_REQUEST
         }))
-        boardId: number
+        boardId: number,
     ){
-        const board = await this.boardsService.getBoardById(boardId);
+        const board = await this.boardsService.findByBoardId(boardId);
         if(!board)
             return res
                 .status(HttpStatus.NOT_FOUND)

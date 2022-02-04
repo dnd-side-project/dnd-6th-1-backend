@@ -8,6 +8,10 @@ import { UpdateBoardDto } from "./dto/update-board.dto";
 @EntityRepository(Boards) // 이 클래스가 Board를 관리하는 repository 라는 것을 알려줌
 export class BoardsRepository extends Repository<Boards>{
     
+    async findByBoardId(boardId: number){
+        return await this.findOne(boardId);
+    }
+
     async getAllBoards(): Promise<Boards[]> {
         return await this.find({ relations: ["images"] });
     }
