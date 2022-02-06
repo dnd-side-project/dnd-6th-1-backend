@@ -6,9 +6,9 @@ export class Comments extends BaseEntity {
     @PrimaryGeneratedColumn()
     commentId: number;
 
-    // 여기도 manytoOne
-    // @Column() // 누가 쓴건지
-    // userId: number;
+    @Column() // 누가 쓴건지
+    userId: number;
+
     @Column()
     commentContent: string;
 

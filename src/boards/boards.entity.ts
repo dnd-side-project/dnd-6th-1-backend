@@ -35,4 +35,7 @@ export class Boards extends BaseEntity {
 
     @Column({ type:'timestamp'})
     postCreated: Date;
+
+    @Column({ default : 1 }) // 글 삭제 여부 
+    postStatus: boolean;
 }

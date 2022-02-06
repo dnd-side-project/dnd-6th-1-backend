@@ -17,11 +17,6 @@ export class CommentsService {
         return await this.commentsRepository.findOne(commentId);
     }   
 
-    // 특정 글의 모든 댓글 조회
-    async getAllComments(boardId: number): Promise <Comments[]> {
-        return await this.commentsRepository.getAllComments(boardId);
-    }
-
     // 특정 글에 댓글 작성
     async createComment(boardId: number, createCommentDto: CreateCommentDto): Promise<Comments> {
         const comment = await this.commentsRepository.createComment(boardId, createCommentDto); // board DB에 저장
