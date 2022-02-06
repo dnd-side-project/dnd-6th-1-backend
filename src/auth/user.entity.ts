@@ -10,16 +10,16 @@ export class User extends BaseEntity {
     @PrimaryGeneratedColumn()
     userId: number;
 
-    @Column()
+    @Column({ type: 'varchar', length: 200})
     email: string;
 
     @Column()
     password: string;
 
-    @Column()
+    @Column({ type: 'varchar', length: 200})
     nickname: string;
 
-    @Column()
+    @Column({default: true})
     userStatus: boolean;
 
     @Column()
