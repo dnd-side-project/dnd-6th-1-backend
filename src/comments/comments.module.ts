@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthService } from 'src/auth/auth.service';
 import { UserRepository } from 'src/auth/user.repository';
 import { BoardImagesRepository } from 'src/board-images/board-images.repository';
 import { BoardsRepository } from 'src/boards/boards.repository';
@@ -20,6 +21,6 @@ import { CommentsService } from './comments.service';
     BookmarksRepository
   ])],
   controllers: [CommentsController],
-  providers: [CommentsService, BoardsService]
+  providers: [CommentsService, BoardsService, AuthService]
 })
 export class CommentsModule {}

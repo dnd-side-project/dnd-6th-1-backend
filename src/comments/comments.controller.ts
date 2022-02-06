@@ -1,7 +1,9 @@
 import { HttpStatus, ParseIntPipe, Req, Res, UploadedFiles } from '@nestjs/common';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { AuthService } from 'src/auth/auth.service';
 import { BoardsService } from 'src/boards/boards.service';
+import { Comments } from './comments.entity';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
@@ -12,7 +14,8 @@ require("dotenv").config();
 export class CommentsController {
     constructor(
         private readonly commentsService: CommentsService,
-        private readonly boardsService: BoardsService
+        private readonly boardsService: BoardsService,
+        private readonly authService : AuthService    
     ){}
 
     // @Get() // 특정 글의 댓글 조회
@@ -54,6 +57,7 @@ export class CommentsController {
 
     @Post() // 특정 글의 댓글 작성
     @ApiOperation({ summary : '커뮤니티 특정 글에 댓글 작성 API' })
+    @ApiCreatedResponse({ description: '댓글을 생성합니다', type: Comments })
     @ApiBody({ type : CreateCommentDto })
     @ApiParam({
         name: 'boardId',
@@ -68,6 +72,23 @@ export class CommentsController {
         }))
         boardId: number
     ): Promise<any> {
+        const userId = createCommentDto.userId;
+        const user = await this.authService.findByUserId(userId);
+        if(!user)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+                })
+
+        const board = await this.boardsService.findByBoardId(boardId);
+        if(!board)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
+                })
+
         const comment = await this.commentsService.createComment(boardId, createCommentDto);
         return res
             .status(HttpStatus.CREATED)
@@ -102,6 +123,15 @@ export class CommentsController {
         }))
         commentId: number
     ): Promise<any> {
+        const userId = createReplyDto.userId;
+        const user = await this.authService.findByUserId(userId);
+        if(!user)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+                })
+
         const board = await this.boardsService.findByBoardId(boardId);
         if(!board)
             return res
@@ -129,7 +159,7 @@ export class CommentsController {
     }
 
     @Patch('/:commentId') // 특정 글의 댓글/ 대댓글 수정
-    @ApiOperation({ summary : '커뮤니티 특정 댓글 수정 API' })
+    @ApiOperation({ summary : '커뮤니티 특정 댓글/대댓글 수정 API' })
     async updateComment(
         @Res() res,
         @Body() updateCommentDto: UpdateCommentDto,
@@ -142,6 +172,15 @@ export class CommentsController {
         }))
         commentId: number
     ){
+        const userId = updateCommentDto.userId;
+        const user = await this.authService.findByUserId(userId);
+        if(!user)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+                })
+
         const board = await this.boardsService.findByBoardId(boardId);
         if(!board)
             return res
@@ -149,6 +188,13 @@ export class CommentsController {
                 .json({
                     message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
                 })
+
+         if(board.userId != userId) // 댓글 작성자와 현재 로그인한 사람이 다른 경우 
+            return res
+                .status(HttpStatus.BAD_REQUEST)
+                .json({
+                    message:`댓글을 수정할 권한이 없습니다.`
+                })                  
 
         const comment = await this.commentsService.getCommentById(commentId);
         if(!comment)
@@ -178,6 +224,17 @@ export class CommentsController {
         required: true,
         description: '댓글 번호'
     })
+    @ApiBody({
+        description: "댓글 삭제하는 유저 ID", 
+        schema: {
+          properties: {
+            userId: { 
+                type: "number",
+                example: 9,
+            },
+          }
+        }
+    })
     async deleteBoard(
         @Res() res, 
         @Param("boardId", new ParseIntPipe({
@@ -187,8 +244,17 @@ export class CommentsController {
         @Param("commentId", new ParseIntPipe({
             errorHttpStatusCode: HttpStatus.BAD_REQUEST
         }))
-        commentId: number
+        commentId: number,
+        @Body('userId') userId: number,
     ){
+        const user = await this.authService.findByUserId(userId);
+        if(!user)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+                })
+
         const board = await this.boardsService.findByBoardId(boardId);
         if(!board)
             return res
@@ -197,6 +263,13 @@ export class CommentsController {
                     message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
                 })
 
+        if(board.userId != userId) // 댓글 작성자와 현재 로그인한 사람이 다른 경우 
+            return res
+                .status(HttpStatus.BAD_REQUEST)
+                .json({
+                    message:`댓글을 삭제할 권한이 없습니다.`
+                })      
+
         const comment = await this.commentsService.getCommentById(commentId);
         if(!comment)
             return res
@@ -204,6 +277,7 @@ export class CommentsController {
                 .json({
                     message:`댓글 번호 ${commentId}번에 해당하는 댓글이 없습니다.`
                 })
+                
         this.commentsService.deleteComment(commentId);
         return res
             .status(HttpStatus.OK)
