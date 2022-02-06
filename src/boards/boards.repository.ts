@@ -1,8 +1,8 @@
 import { UserRepository } from "src/auth/user.repository";
 import { EntityRepository, Like, Repository } from "typeorm";
-import { Boards } from "./boards.entity";
 import { CreateBoardFirstDto } from "./dto/create-board-first.dto";
 import { UpdateBoardDto } from "./dto/update-board.dto";
+import { Boards } from "./entity/boards.entity";
 
 
 @EntityRepository(Boards) // 이 클래스가 Board를 관리하는 repository 라는 것을 알려줌

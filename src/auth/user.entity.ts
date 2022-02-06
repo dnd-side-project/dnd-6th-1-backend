@@ -1,4 +1,5 @@
-import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity } from "typeorm";
+import { Likes } from "src/boards/entity/likes.entity";
+import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity, OneToMany } from "typeorm";
 
 
 @Entity()
@@ -31,4 +32,10 @@ export class User extends BaseEntity {
     @Column()
     profileImage: string;
 
+    // User(1) <> Likes(*)
+    @OneToMany(
+        () => Likes,
+        (like) => like.boardId
+    )
+    likes: Likes[];
 }
