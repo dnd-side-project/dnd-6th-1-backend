@@ -10,8 +10,12 @@ export class CommentsRepository extends Repository<Comments>{
         return await this.find({boardId, class: 0, commentStatus: true}); // 부모 댓글 가져오기
     }
 
-    async getChildComments(boardId: number, groupId: number){
+    async getChildComments(boardId: number, groupId: number): Promise <Comments[]>{
         return await this.find({boardId, class:1, groupId, commentStatus: true}) // 각 부모댓글에 해당하는 대댓글 가져오기
+    }
+
+    async getAllComments(boardId: number): Promise <Comments[]>{ // 게시물의 모든 댓글 가져오기
+        return await this.find({boardId, commentStatus: true});
     }
 
     // 댓글 등록시 comment DB

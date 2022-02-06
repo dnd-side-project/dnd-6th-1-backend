@@ -22,11 +22,13 @@ export class User extends BaseEntity {
     @Column()
     userStatus: boolean;
 
+    @Column({ default : 0 })
+    loginStatus: boolean;
+
     @Column()
     breakupDate: string;
 
     @Column()
     profileImage: string;
 
-    // 프로필 이미지 추가해야함
 }
