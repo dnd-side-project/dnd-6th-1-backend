@@ -8,18 +8,19 @@ import { UpdateBoardDto } from "./dto/update-board.dto";
 @EntityRepository(Boards) // 이 클래스가 Board를 관리하는 repository 라는 것을 알려줌
 export class BoardsRepository extends Repository<Boards>{
     
-    async findByBoardId(boardId: number){
-        return await this.findOne(boardId);
+    async findByBoardId(boardId: number){ // 삭제 안 된 게시물들만 반환
+        return await this.findOne({boardId, postStatus: true}, { relations: ["images"] });
     }
 
     async getAllBoards(): Promise<Boards[]> {
-        return await this.find({ relations: ["images"] });
+        return await this.find({
+            where: {
+                postStatus: true
+            },
+            relations: ["images"] 
+        });
     }
 
-    async getBoardById(boardId: number): Promise<Boards> {
-        return await this.findOne({boardId}, { relations: ["images"] });
-    }
-    
     // 게시글 등록시 board DB
     async createBoard(createBoardFirstDto: CreateBoardFirstDto): Promise<Boards> {
         const { userId, categoryName, postTitle, postContent } = createBoardFirstDto;
@@ -40,8 +41,8 @@ export class BoardsRepository extends Repository<Boards>{
         await this.update({boardId}, {...updateBoardDto});
     }
 
-    // 커뮤니티 글 삭제
+    // 커뮤니티 글 삭제 -> postStatus = false 로 변경
     async deleteBoard(boardId: number) {
-        this.delete(boardId);
+        await this.update({boardId},{postStatus: false});
     }
 }
