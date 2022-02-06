@@ -1,7 +1,7 @@
 import { HttpStatus, ParseIntPipe, Req, Res, UploadedFiles } from '@nestjs/common';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor} from '@nestjs/platform-express';
-import { Boards } from './boards.entity';
+import { Boards } from './entity/boards.entity';
 import { BoardsService } from './boards.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import * as AWS from 'aws-sdk';
@@ -9,6 +9,7 @@ import * as multerS3 from 'multer-s3';
 import { ApiBody, ApiOperation, ApiParam, ApiProperty, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CreateBoardFirstDto } from './dto/create-board-first.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
+import { AuthService } from 'src/auth/auth.service';
 require("dotenv").config();
 
 const s3 = new AWS.S3();
@@ -16,7 +17,10 @@ const s3 = new AWS.S3();
 @Controller('boards')
 @ApiTags('커뮤니티 글 API')
 export class BoardsController {
-    constructor(private readonly boardsService: BoardsService){}
+    constructor(
+        private readonly boardsService: BoardsService, 
+        private readonly authService : AuthService    
+    ){}
 
     @Get() // 커뮤니티 전체 글 조회 / 카테고리별 조회 / 검색어별 조회
     @ApiOperation({ 
@@ -226,5 +230,143 @@ export class BoardsController {
             .json({
                 message:'게시글이 삭제되었습니다'
             })
+    }
+
+// 좋아요 처음 누른 경우는 post
+// 좋아요 취소 한 경우 patch -> status 를 0으로 바꿈
+// 취소했다가 다시 누른 경우 patch -> status 1로 바꿈
+
+    @Post('/:boardId/likes')
+    async createLike(
+        @Res() res,
+        @Param("boardId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        boardId: number,
+        @Body('userId') userId: number
+    ){
+        const board = await this.boardsService.findByBoardId(boardId);
+        if(!board)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
+                })
+
+        const user = await this.authService.findByUserId(userId);
+        if(!user)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+                })
+        
+        const like = await this.boardsService.createLike(boardId, user.userId);
+        return res
+            .status(HttpStatus.CREATED)
+            .json({
+                data: like,
+                message:'좋아요를 눌렀습니다.'
+            });
+    }
+
+    @Patch('/:boardId/likes')
+    async changeLikeStatus(
+        @Res() res,
+        @Param("boardId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        boardId: number,
+        @Body('userId') userId: number
+    ){
+        const board = await this.boardsService.findByBoardId(boardId);
+        if(!board)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
+                })
+
+        const user = await this.authService.findByUserId(userId);
+        if(!user)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+                })
+        
+        await this.boardsService.changeLikeStatus(boardId, user.userId);
+        return res
+            .status(HttpStatus.OK)
+            .json({
+                message:'좋아요 상태 변경'
+            });
+    }
+
+    @Post('/:boardId/bookmarks')
+    async createBookmark(
+        @Res() res,
+        @Param("boardId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        boardId: number,
+        @Body('userId') userId: number
+    ){
+        const board = await this.boardsService.findByBoardId(boardId);
+        if(!board)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
+                })
+
+        const user = await this.authService.findByUserId(userId);
+        if(!user)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+                })
+        
+        const bookmark = await this.boardsService.createBookmark(boardId, user.userId);
+        return res
+            .status(HttpStatus.CREATED)
+            .json({
+                data: bookmark,
+                message:'북마크 완료'
+            });
+    }
+
+    @Patch('/:boardId/bookmarks')
+    async changeBookmarkStatus(
+        @Res() res,
+        @Param("boardId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        boardId: number,
+        @Body('userId') userId: number
+    ){
+        const board = await this.boardsService.findByBoardId(boardId);
+        if(!board)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
+                })
+
+        const user = await this.authService.findByUserId(userId);
+        if(!user)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+                })
+        
+        await this.boardsService.changeBookmarkStatus(boardId, user.userId);
+        return res
+            .status(HttpStatus.OK)
+            .json({
+                message:'북마크 상태 변경'
+            });
     }
 }
