@@ -1,3 +1,4 @@
+import { Bookmarks } from "src/boards/entity/bookmarks.entity";
 import { Likes } from "src/boards/entity/likes.entity";
 import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity, OneToMany } from "typeorm";
 
@@ -35,7 +36,14 @@ export class User extends BaseEntity {
     // User(1) <> Likes(*)
     @OneToMany(
         () => Likes,
-        (like) => like.boardId
+        (like) => like.userId
     )
     likes: Likes[];
+
+    // User(1) <> Bookmarks(*)
+    @OneToMany(
+        () => Bookmarks,
+        (bookmark) => bookmark.userId
+    )
+    bookmarks: Bookmarks[];
 }

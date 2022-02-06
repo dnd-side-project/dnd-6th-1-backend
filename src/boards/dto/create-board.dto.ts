@@ -3,7 +3,7 @@ import { IsIn, IsNotEmpty, IsNumber, IsString, Length } from "class-validator";
 
 export class CreateBoardDto {
     @ApiProperty({ 
-        example: '털어놓자',
+        example: '타협',
         description: '카테고리명', 
         required: true
     })
@@ -13,7 +13,7 @@ export class CreateBoardDto {
     readonly categoryName: string;
 
     @ApiProperty({ 
-        example: '헤어질까요 말까요',
+        example: '제자신과 타협하겠습니다',
         description: '글 제목', 
         required: true
     })
@@ -22,7 +22,7 @@ export class CreateBoardDto {
     readonly postTitle: string;
 
     @ApiProperty({ 
-        example: '헤어질까요 말까요 본문',
+        example: '제자신과 타협하는 본문',
         description: '글 본문', 
         required: true
     })
