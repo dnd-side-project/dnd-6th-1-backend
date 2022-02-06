@@ -25,5 +25,8 @@ export class User extends BaseEntity {
     @Column()
     breakupDate: string;
 
+    @Column()
+    profileImage: string;
+
     // 프로필 이미지 추가해야함
 }

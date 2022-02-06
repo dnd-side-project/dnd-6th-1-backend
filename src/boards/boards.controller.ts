@@ -4,15 +4,14 @@ import { FilesInterceptor} from '@nestjs/platform-express';
 import { Boards } from './boards.entity';
 import { BoardsService } from './boards.service';
 import { CreateBoardDto } from './dto/create-board.dto';
-import { UpdateBoardDto } from './dto/update-board.dto';
 import * as AWS from 'aws-sdk';
 import * as multerS3 from 'multer-s3';
 import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { CreateBoardFirstDto } from './dto/create-board-first.dto';
+import { UpdateBoardDto } from './dto/update-board.dto';
 require("dotenv").config();
 
 const s3 = new AWS.S3();
-
-
 
 @Controller('boards')
 @ApiTags('커뮤니티 글 API')
@@ -33,11 +32,11 @@ export class BoardsController {
         required: false,
         description: '검색어별'
     })
-    async getAllBoards(@Res() res, @Query() query): Promise <Boards[]>{
+    async getAllBoards(@Res() res, @Query() query, @Body('loginUserId') loginUserId: number): Promise <Boards[]>{
         const { category, keyword } = query; // @Query()'에서 해당 쿼리문을 받아 query에 저장하고 변수 받아옴
         let boards;
         if(keyword==null && category==null){ // 전체 글 조회
-            boards = await this.boardsService.getAllBoards();
+            boards = await this.boardsService.getAllBoards(loginUserId);
         }
         else if(keyword!=null && category==null){ // 검색어별 조회
             if(keyword.length < 2){
@@ -47,12 +46,18 @@ export class BoardsController {
                         message:'2글자 이상 입력해주세요.'
                     }) 
             }
-            boards = this.boardsService.getAllBoardsByKeyword(keyword);
-        }
+            boards = await this.boardsService.getAllBoardsByKeyword(keyword, loginUserId);
+            if(boards['resultCnt']==0){
+                return res
+                    .status(HttpStatus.OK)
+                    .json({
+                        message:'검색 결과가 없습니다.'
+                    })
+            } 
+        }    
         else if(keyword==null && category!=null){ // 카테고리별 조회
-            console.log(category)
             if(['부정','화','타협','슬픔','수용'].includes(category))
-                boards = await this.boardsService.getAllBoardsByCategory(category);
+                boards = await this.boardsService.getAllBoardsByCategory(category, loginUserId);
             else
                 return res
                     .status(HttpStatus.BAD_REQUEST)
@@ -60,16 +65,9 @@ export class BoardsController {
                         message:'잘못된 카테고리입니다.'
                     })  
         }
-        
-        if(boards.length==0)
-            return res
-                .status(HttpStatus.NO_CONTENT)
-                .json({
-                    message:'검색 결과가 없습니다.'
-                })
         return res
             .status(HttpStatus.OK)
-            .json(boards)
+            .json(boards);
     }
 
     @Get('/:boardId') // 커뮤니티 특정 글 조회
@@ -84,18 +82,20 @@ export class BoardsController {
         @Param("boardId", new ParseIntPipe({
             errorHttpStatusCode: HttpStatus.BAD_REQUEST
         }))
-        boardId: number
+        boardId: number,
+        @Body('loginUserId') loginUserId: number
     ) {
-        const board = await this.boardsService.getBoardById(boardId);
+        const board = await this.boardsService.findByBoardId(boardId);
         if(!board)
             return res
                 .status(HttpStatus.NOT_FOUND)
                 .json({
                     message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
                 })
+        const boardById = await this.boardsService.getBoardById(boardId, loginUserId);
         return res
             .status(HttpStatus.OK)
-            .json(board);
+            .json(boardById);
     }
 
     @Post() // 커뮤니티 글 작성
@@ -104,23 +104,25 @@ export class BoardsController {
     @UseInterceptors(
         FilesInterceptor('files', 3, {
             storage: multerS3({ 
-            s3: s3,
-            bucket: process.env.AWS_S3_BUCKET_NAME,
-            contentType: multerS3.AUTO_CONTENT_TYPE, 
-            acl: 'public-read',
-            key: function (request, file, cb) { // files  for문 돌듯이 먼저 실행
-                file.encoding = 'utf-8';
-                let S3ImageName = `boardImages/${Date.now().toString()}-${file.originalname}`; // 파일 올리면 해당 파일의 이름을 받아옴 -> S3에 저장되는 이름
-                cb(null, S3ImageName);   
-            },
-        }),
-    }))
+                s3: s3,
+                bucket: process.env.AWS_S3_BUCKET_NAME,
+                contentType: multerS3.AUTO_CONTENT_TYPE, 
+                acl: 'public-read',
+                key: function (request, file, cb) { // files  for문 돌듯이 먼저 실행
+                    file.encoding = 'utf-8';
+                    let S3ImageName = `boardImages/${Date.now().toString()}-${file.originalname}`; // 파일 올리면 해당 파일의 이름을 받아옴 -> S3에 저장되는 이름
+                    cb(null, S3ImageName);   
+                },
+            }),
+        })
+    )
     async createBoard(
         @Res() res, 
         @UploadedFiles() files: Express.Multer.File[], 
-        @Body() createBoardDto: CreateBoardDto
+        @Body() createBoardFirstDto: CreateBoardFirstDto,
     ): Promise<any> {
-        const board = await this.boardsService.createBoard(files, createBoardDto);
+        const board = await this.boardsService.createBoard(files, createBoardFirstDto);
+
         return res
             .status(HttpStatus.CREATED)
             .json({
@@ -145,11 +147,27 @@ export class BoardsController {
             contentType: multerS3.AUTO_CONTENT_TYPE, 
             acl: 'public-read',
             key: function (request, file, cb) { // files  for문 돌듯이 먼저 실행
+                // var params = {
+                //     Bucket: process.env.AWS_S3_BUCKET_NAME, 
+                //     Key: "objectkey.jpg" //(하나면)
+                //     // Objects: [
+                //     //     { Key: "어쩌구" },
+                //     //     { Key: "저쩌구" }
+                //     // ],
+                // };
+                // s3.deleteObject(params, function(err, data) {
+                //     if (err) 
+                //        console.log(err, err.stack); // an error occurred
+                //     else     
+                //        console.log(data);           // successful response
+                // });
+                
                 file.encoding = 'utf-8';
                 let S3ImageName = `boardImages/${Date.now().toString()}-${file.originalname}`; // 파일 올리면 해당 파일의 이름을 받아옴 -> S3에 저장되는 이름
                 cb(null, S3ImageName);   
             },
         }),
+        
     }))
     async updateBoard(
         @Res() res, 
@@ -159,8 +177,7 @@ export class BoardsController {
         boardId: number, 
         @Body() updateBoardDto: UpdateBoardDto
     ){
-        console.log(updateBoardDto);
-        const board = await this.boardsService.getBoardById(boardId);
+        const board = await this.boardsService.findByBoardId(boardId);
         if(!board)
             return res
                 .status(HttpStatus.NOT_FOUND)
@@ -188,15 +205,16 @@ export class BoardsController {
         @Param("boardId", new ParseIntPipe({
             errorHttpStatusCode: HttpStatus.BAD_REQUEST
         }))
-        boardId: number
+        boardId: number,
     ){
-        const board = await this.boardsService.getBoardById(boardId);
+        const board = await this.boardsService.findByBoardId(boardId);
         if(!board)
             return res
                 .status(HttpStatus.NOT_FOUND)
                 .json({
                     message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
                 })
+        // 게시글 삭제 될 때 s3에 있는 이미지도 삭제 -> rds image 도 삭제
         this.boardsService.deleteBoard(boardId);
         return res
             .status(HttpStatus.OK)
