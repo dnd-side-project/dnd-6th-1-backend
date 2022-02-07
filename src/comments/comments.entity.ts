@@ -1,5 +1,4 @@
 import { ApiExtraModels, ApiHideProperty, ApiProperty, ApiTags } from "@nestjs/swagger";
-import { IsNumber } from "class-validator";
 import { Boards } from "src/boards/entity/boards.entity";
 import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
