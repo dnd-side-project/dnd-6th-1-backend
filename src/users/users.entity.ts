@@ -3,10 +3,9 @@ import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity } from "type
 
 @Entity()
 @Unique(['email'])
-export class User extends BaseEntity {
+export class Users extends BaseEntity {
     
-    // itzza
-    // userId, email, password, nickname, userStatus, breakupDate
+
     @PrimaryGeneratedColumn()
     userId: number;
 
@@ -19,11 +18,14 @@ export class User extends BaseEntity {
     @Column({ type: 'varchar', length: 200})
     nickname: string;
 
-    @Column({default: true})
+    @Column({ default: true })
     userStatus: boolean;
 
     @Column()
     breakupDate: string;
+
+    @Column({ default: false })
+    loginStatus: boolean;
 
     // 프로필 이미지 추가해야함
 }

@@ -1,12 +1,12 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AuthCredentialsDto } from './dto/auth-credential.dto';
+import { UserCredentialsDto } from './dto/users-credential.dto';
 import { UserRepository } from './user.repository';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
-export class AuthService {
+export class UserService {
     constructor(
         @InjectRepository(UserRepository)
         private userRepository: UserRepository,
@@ -16,14 +16,14 @@ export class AuthService {
     
     // itzza
     // 회원가입
-    async signUp(authCredentialsDto: AuthCredentialsDto) : Promise<void> {
+    async signUp(userCredentialsDto: UserCredentialsDto) : Promise<void> {
 
-        return this.userRepository.createUser(authCredentialsDto);
+        return this.userRepository.createUser(userCredentialsDto);
     }
 
     // 로그인 : email, pw 입력
-    async signIn(authCredentialsDto: AuthCredentialsDto): Promise<string> {
-        const {email, password} = authCredentialsDto;
+    async signIn(userCredentialsDto: UserCredentialsDto): Promise<string> {
+        const {email, password} = userCredentialsDto;
         // user 찾기 : email
         const user = await this.userRepository.findOne({email});
 
