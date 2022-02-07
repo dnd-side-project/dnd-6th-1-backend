@@ -1,13 +1,17 @@
-import { HttpException, HttpStatus, Inject, Injectable, Logger, NotFoundException, Res } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from 'src/auth/user.repository';
 import { BoardImagesRepository } from 'src/board-images/board-images.repository';
 import { Comments } from 'src/comments/comments.entity';
 import { CommentsRepository } from 'src/comments/comments.repository';
-import { Boards } from './boards.entity';
+import { Boards } from './entity/boards.entity';
 import { BoardsRepository } from './boards.repository';
 import { CreateBoardFirstDto } from './dto/create-board-first.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
+import { LikesRepository } from './likes.repository';
+import { BookmarksRepository } from './bookmarks.repository';
+import { Likes } from './entity/likes.entity';
+import { Bookmarks } from './entity/bookmarks.entity';
 
 @Injectable()
 export class BoardsService {
@@ -19,7 +23,11 @@ export class BoardsService {
         @InjectRepository(CommentsRepository)
             private commentsRepository: CommentsRepository,
         @InjectRepository(UserRepository)
-            private userRepository: UserRepository   
+            private userRepository: UserRepository,
+        @InjectRepository(LikesRepository)
+            private likesRepository: LikesRepository,
+        @InjectRepository(BookmarksRepository)
+            private bookmarksRepository: BookmarksRepository     
     ){}
 
     async findByBoardId(boardId: number){
@@ -47,33 +55,24 @@ export class BoardsService {
         return time;
     }
 
-    // 댓글 개수 세는 함수
-    async countComment(comments: Comments[]) {
-        var commentCnt = 0;
-        for(var j=0;j<comments.length;j++){
-            if(comments[j]['comment']!=='삭제된 댓글입니다.') // 원댓글이 삭제되지 않은 경우만 count
-                commentCnt++;
-            commentCnt += comments[j]['replies'].length; // 대댓글 갯수   
-        }
-        return commentCnt;
-    }
-
     // 댓글 목록 가져오기
-    async getAllComments(boardId: number, loginUserId: number): Promise <Comments[]> {
+    async getAllComments(boardId: number): Promise <Comments[]> {
         const totalComments = new Array();
+        const board = await this.boardsRepository.findByBoardId(boardId);
         const parentComments = await this.commentsRepository.getParentComments(boardId); // 부모 댓글 가져오기
         for(var i=0;i<parentComments.length;i++){ // 부모 댓글 for문 돌고 
-            const { commentContent, userId } = parentComments[i];
-            const commentUser = await this.userRepository.findById(userId);
+            const { commentContent, userId } = parentComments[i]; // 댓글 작성자
+            const commentUser = await this.userRepository.findByUserId(userId);
             const { nickname, profileImage } = commentUser;
             const createdAt = await this.calculateTime(new Date(), parentComments[i].commentCreated); // 부모 댓글 시간 계산
-            var writerOrNot = (userId == loginUserId)? true : false // 댓글 작성자 / 로그인한 사용자가 동일한 경우
-
+            var canEdit = (commentUser.loginStatus == true)? true : false // 댓글 작성자 / 로그인한 사용자가 동일한 경우
+            var writerOrNot = (userId == board.userId) ? true : false // 댓글 작성자 / 글 작성자가 동일한 경우
             const comment = { // 부모댓글
                 nickname,
                 profileImage,
                 commentContent,
                 createdAt,
+                canEdit,
                 writerOrNot
             }
 
@@ -81,15 +80,17 @@ export class BoardsService {
             const replies = await this.commentsRepository.getChildComments(boardId, parentComments[i].groupId); // 각 부모댓글에 해당하는 대댓글 가져오기
             for(var j=0;j<replies.length;j++){
                 const { commentContent, userId } = replies[j];
-                const replyUser = await this.userRepository.findById(userId);
+                const replyUser = await this.userRepository.findByUserId(userId);
                 const { nickname, profileImage } = replyUser;
                 const createdAt = await this.calculateTime(new Date(), replies[i].commentCreated); // 자식 댓글 시간 계산
-                var writerOrNot = (userId == loginUserId)? true : false // 대댓글 작성자 / 로그인한 사용자가 동일한 경우
-                const reply = {
+                var canEdit = (replyUser.loginStatus == true) ? true : false // 대댓글 작성자 / 로그인한 사용자가 동일한 경우
+                var writerOrNot = (userId == board.userId) ? true : false // 대댓글 작성자와 글 작성자가 동일한 경우
+                 const reply = {
                     nickname,
                     profileImage,
                     commentContent,
                     createdAt,
+                    canEdit,
                     writerOrNot
                 }
                 allReplies[j]=reply;
@@ -103,20 +104,21 @@ export class BoardsService {
     } 
      
     // 커뮤니티 특정 글 조회
-    async getBoardById(boardId: number, loginUserId: number) {
+    async getBoardById(boardId: number) {
         const boardById = await this.findByBoardId(boardId);
-        const { userId, postTitle, postContent, postCreated, images }= boardById;
-        const user = await this.userRepository.findById(userId);
+        const { userId, categoryName, postTitle, postContent, postCreated, images }= boardById;
+        const user = await this.userRepository.findByUserId(userId);
         const { nickname, profileImage } = user;   // 사용자  프로필이미지, 닉네임
-
         const createdAt = await this.calculateTime(new Date(), postCreated); // 게시글 쓴 시간        
-        const likeCnt = 10; // 좋아요 개수
-        const comments = await this.getAllComments(boardId, loginUserId); // 댓글 목록
-        var commentCnt = await this.countComment(comments); // 댓글 개수 세기
-        var writerOrNot = (user.userId == loginUserId)? true : false // 글 작성자 / 로그인한 사용자가 동일한 경우
+        const likeCnt = (await this.likesRepository.getAllLikes(boardId)).length; // 좋아요 수
+        const comments = await this.getAllComments(boardId); // 댓글 목록
+        var commentCnt = (await this.commentsRepository.getAllComments(boardById.boardId)).length;
+        var canEdit = (user.loginStatus == true)? true : false // 글 작성자 / 로그인한 사용자가 동일한 경우
+        
         const board = {
             profileImage,
             nickname,
+            categoryName,
             createdAt,
             postTitle,
             postContent,
@@ -124,25 +126,23 @@ export class BoardsService {
             likeCnt,
             commentCnt: `총 ${commentCnt}개의 댓글`,
             comments,
-            writerOrNot
+            canEdit
         }    
         return board;
     }      
     
     // 게시판 전체 글 조회
-    async getAllBoards(loginUserId: number) {
+    async getAllBoards() {
         const totalBoards = new Array();
         const boards = await this.boardsRepository.getAllBoards(); // 전체 게시글 다가져오기
         for(var i=0;i<boards.length;i++){
             const { boardId, categoryName, postTitle, postContent, postCreated } = boards[i];
             var createdAt = await this.calculateTime(new Date(), postCreated);        
-            const user = await this.userRepository.findById(boards[i].userId);
+            const user = await this.userRepository.findByUserId(boards[i].userId);
             const { nickname, profileImage } = user;
-            const comments = await this.getAllComments(boards[i].boardId, loginUserId);
-            var commentCnt = await this.countComment(comments); // 댓글 개수 세기
-            
+            var commentCnt = (await this.commentsRepository.getAllComments(boardId)).length;
             const imageCnt = boards[i].images.length // 게시글 사진 개수
-            const likeCnt = 10; // 좋아요 개수
+            const likeCnt = (await this.likesRepository.getAllLikes(boardId)).length; // 좋아요 수
             const board = {
                 boardId,
                 categoryName,
@@ -160,8 +160,8 @@ export class BoardsService {
         return totalBoards;
     }
 
-    async getAllBoardsByKeyword(keyword: string, loginUserId: number) { // 검색어별 조회
-        const totalBoards = await this.getAllBoards(loginUserId);
+    async getAllBoardsByKeyword(keyword: string) { // 검색어별 조회
+        const totalBoards = await this.getAllBoards();
         const boardsByKeyword = totalBoards.filter(board =>  // true를 반환하는 요소를 기준으로 신규 배열을 만들어 반환
             board.postTitle.includes(keyword) || board.postContent.includes(keyword)
         );
@@ -172,8 +172,8 @@ export class BoardsService {
         return keywordResults;
     }
 
-    async getAllBoardsByCategory(category: string, loginUserId: number) { // 카테고리별 조회
-        const totalBoards = await this.getAllBoards(loginUserId);
+    async getAllBoardsByCategory(category: string) { // 카테고리별 조회
+        const totalBoards = await this.getAllBoards();
         const boardsByCategory = totalBoards.filter(board => 
             board.categoryName === category
         );
@@ -194,5 +194,21 @@ export class BoardsService {
 
     async deleteBoard(boardId: number) {
         this.boardsRepository.deleteBoard(boardId);
+    }
+
+    async createLike(boardId: number, userId: number): Promise<Likes>{
+        return this.likesRepository.createLike(boardId, userId);
+    }
+
+    async changeLikeStatus(boardId: number, userId: number) {
+        this.likesRepository.changeLikeStatus(boardId, userId);
+    }
+
+    async createBookmark(boardId: number, userId: number): Promise<Bookmarks>{
+        return this.bookmarksRepository.createBookmark(boardId, userId);
+    }
+
+    async changeBookmarkStatus(boardId: number, userId: number) {
+        this.bookmarksRepository.changeBookmarkStatus(boardId, userId);
     }
 }

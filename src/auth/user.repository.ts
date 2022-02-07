@@ -31,7 +31,7 @@ export class UserRepository extends Repository<User> {
         }        
     }
 
-    async findById(userId: number){
+    async findByUserId(userId: number){
         return await this.findOne(userId);
     }
 }

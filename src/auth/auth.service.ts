@@ -10,7 +10,6 @@ export class AuthService {
     constructor(
         @InjectRepository(UserRepository)
         private userRepository: UserRepository,
-        private jwtService: JwtService
     ) { }
 
     
@@ -32,5 +31,9 @@ export class AuthService {
         } else {        // 로그인 실패
             throw new UnauthorizedException('login faild')
         }
+    }
+
+    async findByUserId(userId: number) {
+        return this.userRepository.findByUserId(userId);
     }
 }

@@ -1,4 +1,4 @@
 import { PartialType } from "@nestjs/mapped-types";
-import { CreateBoardDto } from "./create-board.dto";
+import { CreateBoardFirstDto } from "./create-board-first.dto";
 
-export class UpdateBoardDto extends PartialType(CreateBoardDto){}
+export class UpdateBoardDto extends PartialType(CreateBoardFirstDto){}
