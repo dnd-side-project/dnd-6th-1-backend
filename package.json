@@ -9,17 +9,17 @@
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "TZ=Asia/Seoul nest start",
-    "start:dev": "TZ=Asia/Seoul nest start --watch",
-    "start:debug": "TZ=Asia/Seoul nest start --debug --watch",
-    "start:prod": "TZ=Asia/Seoul node dist/main",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "forever": "forever start -m 999 -a -o log/out.log -e log/err.log dist/main.js"
+    "forever": "TZ=Asia/Seoul forever start -m 999 -a -o log/out.log -e log/err.log dist/main.js"
   },
   "dependencies": {
     "@nestjs/common": "^8.0.0",
