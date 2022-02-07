@@ -5,23 +5,22 @@ import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity, OneToMany }
 
 @Entity()
 @Unique(['email'])
-export class User extends BaseEntity {
+export class Users extends BaseEntity {
     
-    // itzza
-    // userId, email, password, nickname, userStatus, breakupDate
+
     @PrimaryGeneratedColumn()
     userId: number;
 
-    @Column()
+    @Column({ type: 'varchar', length: 200})
     email: string;
 
     @Column()
     password: string;
 
-    @Column()
+    @Column({ type: 'varchar', length: 200})
     nickname: string;
 
-    @Column()
+    @Column({ default: true })
     userStatus: boolean;
 
     @Column({ default : 0 })
@@ -30,6 +29,12 @@ export class User extends BaseEntity {
     @Column()
     breakupDate: string;
 
+<<<<<<< HEAD:src/users/users.entity.ts
+    @Column({ default: false })
+    loginStatus: boolean;
+
+    // 프로필 이미지 추가해야함
+=======
     @Column()
     profileImage: string;
 
@@ -46,4 +51,5 @@ export class User extends BaseEntity {
         (bookmark) => bookmark.userId
     )
     bookmarks: Bookmarks[];
+>>>>>>> a27003bd552940b7dbe86bb6f77f92a6850924a1:src/auth/user.entity.ts
 }
