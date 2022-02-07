@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserController } from './users.controller';
-import { UserService } from './users.service';
-import { UserRepository } from './user.repository';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
+import { UsersRepository } from './users.repository';
+import { UsersService } from './users.service';
 
 
 
@@ -20,10 +20,10 @@ import { JwtStrategy } from './jwt.strategy';
         expiresIn: 60 * 60,
       }
     }),
-    TypeOrmModule.forFeature([UserRepository])
+    TypeOrmModule.forFeature([UsersRepository])
   ],
   controllers: [UserController],
-  providers: [UserService, JwtStrategy],
+  providers: [UsersService, JwtStrategy],
   exports: [JwtStrategy, PassportModule]
 })
 export class UserModule {}
