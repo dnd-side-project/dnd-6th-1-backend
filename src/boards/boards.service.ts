@@ -124,7 +124,7 @@ export class BoardsService {
             postContent,
             images,
             likeCnt,
-            commentCnt: `총 ${commentCnt}개의 댓글`,
+            commentCnt,
             comments,
             canEdit
         }    
@@ -166,7 +166,7 @@ export class BoardsService {
             board.postTitle.includes(keyword) || board.postContent.includes(keyword)
         );
         const keywordResults = {
-            resultCnt: boardsByKeyword.length+'개',
+            resultCnt: boardsByKeyword.length,
             searchResult: boardsByKeyword
         }
         return keywordResults;
