@@ -1,37 +1,44 @@
 import { HttpStatus, ParseIntPipe, Req, Res, UploadedFiles } from '@nestjs/common';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor} from '@nestjs/platform-express';
-import { Boards } from './boards.entity';
+import { Boards } from './entity/boards.entity';
 import { BoardsService } from './boards.service';
-import { CreateBoardDto } from './dto/create-board.dto';
-import { UpdateBoardDto } from './dto/update-board.dto';
 import * as AWS from 'aws-sdk';
 import * as multerS3 from 'multer-s3';
-import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { CreateBoardFirstDto } from './dto/create-board-first.dto';
+import { UpdateBoardDto } from './dto/update-board.dto';
+import { AuthService } from 'src/auth/auth.service';
+import { BoardImages } from 'src/board-images/board-images.entity';
+import { Likes } from './entity/likes.entity';
+import { Bookmarks } from './entity/bookmarks.entity';
 require("dotenv").config();
 
 const s3 = new AWS.S3();
 
-
-
 @Controller('boards')
 @ApiTags('커뮤니티 글 API')
 export class BoardsController {
-    constructor(private readonly boardsService: BoardsService){}
+    constructor(
+        private readonly boardsService: BoardsService, 
+        private readonly authService : AuthService    
+    ){}
 
     @Get() // 커뮤니티 전체 글 조회 / 카테고리별 조회 / 검색어별 조회
     @ApiOperation({ 
-        summary: '커뮤니티 글 조회 API'
+        summary: '커뮤니티 메인화면에서 전체 글 조회 API'
     })
     @ApiQuery({
         name: 'category',
         required: false,
-        description: '카테고리별'
+        description: '카테고리별',
+        example:'슬픔'
     })
     @ApiQuery({
         name: 'keyword',
         required: false,
-        description: '검색어별'
+        description: '검색어별',
+        example:'졸려'
     })
     async getAllBoards(@Res() res, @Query() query): Promise <Boards[]>{
         const { category, keyword } = query; // @Query()'에서 해당 쿼리문을 받아 query에 저장하고 변수 받아옴
@@ -47,12 +54,24 @@ export class BoardsController {
                         message:'2글자 이상 입력해주세요.'
                     }) 
             }
-            boards = this.boardsService.getAllBoardsByKeyword(keyword);
-        }
+            boards = await this.boardsService.getAllBoardsByKeyword(keyword);
+            if(boards['resultCnt']=='0개')
+                return res
+                    .status(HttpStatus.OK)
+                    .json({
+                        message:'검색 결과가 없어요 다른 검색어를 입력해보세요'
+                    })
+        }    
         else if(keyword==null && category!=null){ // 카테고리별 조회
-            console.log(category)
-            if(['부정','화','타협','슬픔','수용'].includes(category))
+            if(['부정','화','타협','슬픔','수용'].includes(category)){
                 boards = await this.boardsService.getAllBoardsByCategory(category);
+                if(boards.length == 0)
+                    return res
+                        .status(HttpStatus.OK)
+                        .json({
+                            message:`아직 글이 없어요 혹시 ${category}에 대한 감정이 있으신가요? 글을 통해 다른 분과 소통해보세요`
+                        })
+            }
             else
                 return res
                     .status(HttpStatus.BAD_REQUEST)
@@ -60,83 +79,101 @@ export class BoardsController {
                         message:'잘못된 카테고리입니다.'
                     })  
         }
-        
-        if(boards.length==0)
-            return res
-                .status(HttpStatus.NO_CONTENT)
-                .json({
-                    message:'검색 결과가 없습니다.'
-                })
         return res
             .status(HttpStatus.OK)
-            .json(boards)
+            .json(boards);
     }
 
     @Get('/:boardId') // 커뮤니티 특정 글 조회
-    @ApiOperation({ summary : '커뮤니티 특정 글 조회 API' })
+    @ApiOperation({ summary : '커뮤니티 글 상세페이지 조회 API' })
     @ApiParam({
         name: 'boardId',
         required: true,
-        description: '게시글 번호'
+        description: '게시글 번호',
     })
     async getBoard(
         @Res() res,
         @Param("boardId", new ParseIntPipe({
             errorHttpStatusCode: HttpStatus.BAD_REQUEST
         }))
-        boardId: number
+        boardId: number,
     ) {
-        const board = await this.boardsService.getBoardById(boardId);
+        const board = await this.boardsService.findByBoardId(boardId);
         if(!board)
             return res
                 .status(HttpStatus.NOT_FOUND)
                 .json({
-                    message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
+                    message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
                 })
+        const boardById = await this.boardsService.getBoardById(boardId);
         return res
             .status(HttpStatus.OK)
-            .json(board);
+            .json(boardById);
     }
 
     @Post() // 커뮤니티 글 작성
-    @ApiOperation({ summary : '커뮤니티 글 작성 API' })
-    @ApiBody({ type : CreateBoardDto })
+    @ApiOperation({ 
+        summary : '커뮤니티 글 작성 API',
+        description: '이미지가 포함된 테스트는 postman 을 이용해서 해야 합니다. \
+        userId는 원래 type이 number인데 postman 에서 이미지와 함께 테스트 할 때 \
+        불가피하게 text로 받아야 해서 string으로 처리했습니다.'
+    })
+    @ApiCreatedResponse({ description: '게시글을 생성합니다', type: Boards })
+    // @ApiCreatedResponse({ description: '게시글 생성 시 이미지를 저장합니다', type: BoardImages })
+    @ApiBody({ type : CreateBoardFirstDto })
     @UseInterceptors(
         FilesInterceptor('files', 3, {
             storage: multerS3({ 
-            s3: s3,
-            bucket: process.env.AWS_S3_BUCKET_NAME,
-            contentType: multerS3.AUTO_CONTENT_TYPE, 
-            acl: 'public-read',
-            key: function (request, file, cb) { // files  for문 돌듯이 먼저 실행
-                file.encoding = 'utf-8';
-                let S3ImageName = `boardImages/${Date.now().toString()}-${file.originalname}`; // 파일 올리면 해당 파일의 이름을 받아옴 -> S3에 저장되는 이름
-                cb(null, S3ImageName);   
-            },
-        }),
-    }))
+                s3: s3,
+                bucket: process.env.AWS_S3_BUCKET_NAME,
+                contentType: multerS3.AUTO_CONTENT_TYPE, 
+                acl: 'public-read',
+                key: function (request, file, cb) { // files  for문 돌듯이 먼저 실행
+                    file.encoding = 'utf-8';
+                    let S3ImageName = `boardImages/${Date.now().toString()}-${file.originalname}`; // 파일 올리면 해당 파일의 이름을 받아옴 -> S3에 저장되는 이름
+                    cb(null, S3ImageName);   
+                },
+            }),
+        })
+    )
     async createBoard(
         @Res() res, 
         @UploadedFiles() files: Express.Multer.File[], 
-        @Body() createBoardDto: CreateBoardDto
+        @Body() createBoardFirstDto: CreateBoardFirstDto,
     ): Promise<any> {
-        const board = await this.boardsService.createBoard(files, createBoardDto);
+        const userId = +createBoardFirstDto.userId
+        const user = await this.authService.findByUserId(userId);
+        if(!user)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+                })
+
+        const board = await this.boardsService.createBoard(files, createBoardFirstDto);
+
         return res
             .status(HttpStatus.CREATED)
             .json({
                 data: board,
-                message:'게시물을 등록했습니다.'
+                message:'게시글을 등록했습니다.'
             });
     }
 
     @Patch('/:boardId') // 커뮤니티 글 수정
-    @ApiOperation({ summary : '커뮤니티 특정 글 수정 API' })
-    @ApiBody({ type : UpdateBoardDto })
+    @ApiOperation({ 
+        summary : '커뮤니티 특정 글 수정 API',
+        description: '이미지가 포함된 테스트는 postman 을 이용해서 해야 합니다. \
+        userId는 원래 type이 number인데 postman 에서 이미지와 함께 테스트 할 때 \
+        불가피하게 text로 받아야 해서 string으로 처리했습니다.'
+    })
     @ApiParam({
         name: 'boardId',
         required: true,
-        description: '게시글 번호'
+        description: '게시글 번호',
     })
+    @ApiBody({ type : CreateBoardFirstDto })
+    @ApiCreatedResponse({ description: '게시글 수정 시 이미지를 업데이트합니다 (', type: BoardImages })
     @UseInterceptors(
         FilesInterceptor('files', 3, {
             storage: multerS3({ 
@@ -145,6 +182,21 @@ export class BoardsController {
             contentType: multerS3.AUTO_CONTENT_TYPE, 
             acl: 'public-read',
             key: function (request, file, cb) { // files  for문 돌듯이 먼저 실행
+                // var params = {
+                //     Bucket: process.env.AWS_S3_BUCKET_NAME, 
+                //     Key: "objectkey.jpg" //(하나면)
+                //     // Objects: [
+                //     //     { Key: "어쩌구" },
+                //     //     { Key: "저쩌구" }
+                //     // ],
+                // };
+                // s3.deleteObject(params, function(err, data) {
+                //     if (err) 
+                //        console.log(err, err.stack); // an error occurred
+                //     else     
+                //        console.log(data);           // successful response
+                // });
+                
                 file.encoding = 'utf-8';
                 let S3ImageName = `boardImages/${Date.now().toString()}-${file.originalname}`; // 파일 올리면 해당 파일의 이름을 받아옴 -> S3에 저장되는 이름
                 cb(null, S3ImageName);   
@@ -158,15 +210,31 @@ export class BoardsController {
         }))
         boardId: number, 
         @Body() updateBoardDto: UpdateBoardDto
-    ){
-        console.log(updateBoardDto);
-        const board = await this.boardsService.getBoardById(boardId);
+    ){ 
+        const userId = +updateBoardDto.userId
+        const user = await this.authService.findByUserId(userId);
+        if(!user)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+                })
+
+        const board = await this.boardsService.findByBoardId(boardId);
         if(!board)
             return res
                 .status(HttpStatus.NOT_FOUND)
                 .json({
-                    message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
+                    message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
                 })
+
+        if(board.userId != userId) // 글 작성자와 현재 로그인한 사람이 다른 경우 
+            return res
+                .status(HttpStatus.BAD_REQUEST)
+                .json({
+                    message:`게시글을 수정할 권한이 없습니다.`
+                })  
+
         const updatedBoard = await this.boardsService.updateBoard(boardId, updateBoardDto);
         return res
             .status(HttpStatus.OK)
@@ -181,27 +249,267 @@ export class BoardsController {
     @ApiParam({
         name: 'boardId',
         required: true,
-        description: '게시글 번호'
+        description: '게시글 번호',
+    })
+    @ApiBody({
+        description: "글 삭제하는 유저 ID", 
+        schema: {
+          properties: {
+            userId: { 
+                type: "number",
+            },
+          }
+        }
     })
     async deleteBoard(
         @Res() res, 
         @Param("boardId", new ParseIntPipe({
             errorHttpStatusCode: HttpStatus.BAD_REQUEST
         }))
-        boardId: number
+        boardId: number,
+        @Body('userId') userId: number,
     ){
-        const board = await this.boardsService.getBoardById(boardId);
+        const board = await this.boardsService.findByBoardId(boardId);
         if(!board)
             return res
                 .status(HttpStatus.NOT_FOUND)
                 .json({
-                    message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
+                    message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
                 })
+
+        const user = await this.authService.findByUserId(userId);
+        if(!user)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+                })
+
+        if(board.userId != userId) // 글 작성자와 현재 로그인한 사람이 다른 경우 
+            return res
+                .status(HttpStatus.BAD_REQUEST)
+                .json({
+                    message:`게시글을 삭제할 권한이 없습니다.`
+                })  
+
+        // 게시글 삭제 될 때 s3에 있는 이미지도 삭제 -> rds image 도 삭제
         this.boardsService.deleteBoard(boardId);
         return res
             .status(HttpStatus.OK)
             .json({
                 message:'게시글이 삭제되었습니다'
             })
+    }
+
+    @Post('/:boardId/likes')
+    @ApiOperation({ 
+        summary : '커뮤니티 특정 글 좋아요 API',
+        description: '좋아요 처음 누른 경우'
+    })
+    @ApiParam({
+        name: 'boardId',
+        required: true,
+        description: '게시글 번호'
+    })
+    @ApiBody({
+        description: "좋아요 누르는 유저 ID", 
+        schema: {
+          properties: {
+            userId: { 
+                type: "number",
+            },
+          }
+        }
+    })
+    @ApiCreatedResponse({ description: '게시글에 좋아요를 누릅니다', type: Likes })
+    async createLike(
+        @Res() res,
+        @Param("boardId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        boardId: number,
+        @Body('userId') userId: number
+    ): Promise<any>{
+        const board = await this.boardsService.findByBoardId(boardId);
+        if(!board)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
+                })
+
+        const user = await this.authService.findByUserId(userId);
+        if(!user)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+                })
+        
+        const like = await this.boardsService.createLike(boardId, user.userId);
+        return res
+            .status(HttpStatus.CREATED)
+            .json({
+                data: like,
+                message:'좋아요를 눌렀습니다.'
+            });
+    }
+
+    @Patch('/:boardId/likes')
+    @ApiOperation({ 
+        summary : '커뮤니티 특정 글 좋아요 상태 수정 API',
+        description: '좋아요 누른 후 취소하거나 / 취소했다가 다시 누른 경우'
+    })
+    @ApiParam({
+        name: 'boardId',
+        required: true,
+        description: '게시글 번호'
+    })
+    @ApiBody({
+        description: "좋아요 상태변경한 유저 ID", 
+        schema: {
+          properties: {
+            userId: { 
+                type: "number",
+            },
+          }
+        }
+    })
+    async changeLikeStatus(
+        @Res() res,
+        @Param("boardId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        boardId: number,
+        @Body('userId') userId: number
+    ){
+        const board = await this.boardsService.findByBoardId(boardId);
+        if(!board)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
+                })
+
+        const user = await this.authService.findByUserId(userId);
+        if(!user)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+                })
+        
+        await this.boardsService.changeLikeStatus(boardId, user.userId);
+        return res
+            .status(HttpStatus.OK)
+            .json({
+                message:'좋아요 상태 변경'
+            });
+    }
+
+    @Post('/:boardId/bookmarks')
+    @ApiOperation({ 
+        summary : '커뮤니티 특정 글 북마크 API',
+        description: '북마크 처음 누른 경우'
+    })
+    @ApiParam({
+        name: 'boardId',
+        required: true,
+        description: '게시글 번호'
+    })
+    @ApiBody({
+        description: "북마크 누르는 유저 ID", 
+        schema: {
+          properties: {
+            userId: { 
+                type: "number",
+            },
+          }
+        }
+    })
+    @ApiCreatedResponse({ description: '게시글에 북마크를 누릅니다', type: Bookmarks })
+    async createBookmark(
+        @Res() res,
+        @Param("boardId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        boardId: number,
+        @Body('userId') userId: number
+    ){
+        const board = await this.boardsService.findByBoardId(boardId);
+        if(!board)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
+                })
+
+        const user = await this.authService.findByUserId(userId);
+        if(!user)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+                })
+        
+        const bookmark = await this.boardsService.createBookmark(boardId, user.userId);
+        return res
+            .status(HttpStatus.CREATED)
+            .json({
+                data: bookmark,
+                message:'북마크 완료'
+            });
+    }
+
+    @Patch('/:boardId/bookmarks')
+    @ApiOperation({ 
+        summary : '커뮤니티 특정 글 북마크 상태 수정 API',
+        description: '북마크 누른 후 취소하거나 / 취소했다가 다시 누른 경우'
+    })
+    @ApiParam({
+        name: 'boardId',
+        required: true,
+        description: '게시글 번호'
+    })
+    @ApiBody({
+        description: "북마크 상태변경한 유저 ID", 
+        schema: {
+          properties: {
+            userId: { 
+                type: "number",
+            },
+          }
+        }
+    })
+    async changeBookmarkStatus(
+        @Res() res,
+        @Param("boardId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        boardId: number,
+        @Body('userId') userId: number
+    ){
+        const board = await this.boardsService.findByBoardId(boardId);
+        if(!board)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
+                })
+        
+        const user = await this.authService.findByUserId(userId);
+        if(!user)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+                })        
+
+        await this.boardsService.changeBookmarkStatus(boardId, user.userId);
+        return res
+            .status(HttpStatus.OK)
+            .json({
+                message:'북마크 상태 변경'
+            });
     }
 }
