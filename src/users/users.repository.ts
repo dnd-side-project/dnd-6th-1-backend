@@ -6,7 +6,7 @@ import * as bcrypt from "bcryptjs";
 
 
 @EntityRepository(Users)
-export class UserRepository extends Repository<Users> {
+export class UsersRepository extends Repository<Users> {
     
     // itzza
     async createUser(userCredentialsDto: UserCredentialsDto) : Promise<void> {

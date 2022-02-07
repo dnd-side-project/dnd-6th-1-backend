@@ -8,10 +8,10 @@ import * as multerS3 from 'multer-s3';
 import { ApiBody, ApiCreatedResponse, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateBoardFirstDto } from './dto/create-board-first.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
-import { AuthService } from 'src/auth/auth.service';
 import { BoardImages } from 'src/board-images/board-images.entity';
 import { Likes } from './entity/likes.entity';
 import { Bookmarks } from './entity/bookmarks.entity';
+import { UsersService } from 'src/users/users.service';
 require("dotenv").config();
 
 const s3 = new AWS.S3();
@@ -21,7 +21,7 @@ const s3 = new AWS.S3();
 export class BoardsController {
     constructor(
         private readonly boardsService: BoardsService, 
-        private readonly authService : AuthService    
+        private readonly usersService : UsersService    
     ){}
 
     @Get() // 커뮤니티 전체 글 조회 / 카테고리별 조회 / 검색어별 조회
@@ -142,7 +142,7 @@ export class BoardsController {
         @Body() createBoardFirstDto: CreateBoardFirstDto,
     ): Promise<any> {
         const userId = +createBoardFirstDto.userId
-        const user = await this.authService.findByUserId(userId);
+        const user = await this.usersService.findByUserId(userId);
         if(!user)
             return res
                 .status(HttpStatus.NOT_FOUND)
@@ -212,7 +212,7 @@ export class BoardsController {
         @Body() updateBoardDto: UpdateBoardDto
     ){ 
         const userId = +updateBoardDto.userId
-        const user = await this.authService.findByUserId(userId);
+        const user = await this.usersService.findByUserId(userId);
         if(!user)
             return res
                 .status(HttpStatus.NOT_FOUND)
@@ -277,7 +277,7 @@ export class BoardsController {
                     message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
                 })
 
-        const user = await this.authService.findByUserId(userId);
+        const user = await this.usersService.findByUserId(userId);
         if(!user)
             return res
                 .status(HttpStatus.NOT_FOUND)
@@ -338,7 +338,7 @@ export class BoardsController {
                     message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
                 })
 
-        const user = await this.authService.findByUserId(userId);
+        const user = await this.usersService.findByUserId(userId);
         if(!user)
             return res
                 .status(HttpStatus.NOT_FOUND)
@@ -391,7 +391,7 @@ export class BoardsController {
                     message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
                 })
 
-        const user = await this.authService.findByUserId(userId);
+        const user = await this.usersService.findByUserId(userId);
         if(!user)
             return res
                 .status(HttpStatus.NOT_FOUND)
@@ -444,7 +444,7 @@ export class BoardsController {
                     message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
                 })
 
-        const user = await this.authService.findByUserId(userId);
+        const user = await this.usersService.findByUserId(userId);
         if(!user)
             return res
                 .status(HttpStatus.NOT_FOUND)
@@ -497,7 +497,7 @@ export class BoardsController {
                     message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
                 })
         
-        const user = await this.authService.findByUserId(userId);
+        const user = await this.usersService.findByUserId(userId);
         if(!user)
             return res
                 .status(HttpStatus.NOT_FOUND)
