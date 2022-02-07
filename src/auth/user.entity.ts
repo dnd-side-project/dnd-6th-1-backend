@@ -1,4 +1,6 @@
-import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity } from "typeorm";
+import { Bookmarks } from "src/boards/entity/bookmarks.entity";
+import { Likes } from "src/boards/entity/likes.entity";
+import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity, OneToMany } from "typeorm";
 
 
 @Entity()
@@ -22,8 +24,26 @@ export class User extends BaseEntity {
     @Column({default: true})
     userStatus: boolean;
 
+    @Column({ default : 0 })
+    loginStatus: boolean;
+
     @Column()
     breakupDate: string;
 
-    // 프로필 이미지 추가해야함
+    @Column()
+    profileImage: string;
+
+    // User(1) <> Likes(*)
+    @OneToMany(
+        () => Likes,
+        (like) => like.userId
+    )
+    likes: Likes[];
+
+    // User(1) <> Bookmarks(*)
+    @OneToMany(
+        () => Bookmarks,
+        (bookmark) => bookmark.userId
+    )
+    bookmarks: Bookmarks[];
 }

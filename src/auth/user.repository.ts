@@ -28,8 +28,10 @@ export class UserRepository extends Repository<User> {
             } else {
                 throw new InternalServerErrorException();
             }
-        }
-        
+        }        
     }
 
+    async findByUserId(userId: number){
+        return await this.findOne(userId);
+    }
 }

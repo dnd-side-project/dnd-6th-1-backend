@@ -1,7 +1,16 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsIn, IsNotEmpty, IsNumber, IsString, Length } from "class-validator";
+import { IsIn, IsNotEmpty, IsString, Length } from "class-validator";
 
-export class CreateBoardDto {
+export class CreateBoardFirstDto {
+    @ApiProperty({ 
+        example: 21,
+        description: '작성자 userId', 
+        required: true
+    })
+    @IsNotEmpty()
+    @IsString()
+    readonly userId: string; // 작성자
+
     @ApiProperty({ 
         example: '타협',
         description: '카테고리명', 
