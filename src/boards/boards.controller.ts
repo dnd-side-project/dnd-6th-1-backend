@@ -75,32 +75,6 @@ export class BoardsController {
             .json(boards);
     }
 
-    @Get('/:userId')
-    @ApiOperation({ summary : '커뮤니티 글 상세페이지 조회 API' })
-    @ApiQuery({
-        name: 'keyword',
-        required: true,
-        description: '검색어별',
-        example:'졸려'
-    })
-    @ApiParam({
-        name: 'userId',
-        required: true,
-        description: '특정 유저',
-    })
-    async getAllBoardsByNickname(
-        @Res() res, 
-        @Param("boardId", new ParseIntPipe({
-            errorHttpStatusCode: HttpStatus.BAD_REQUEST
-        }))
-        userId: number,
-        @Query() query) {
-            console.log(query.keyword)
-            console.log(userId);
-        
-    }
-        
-
     @Get('/:boardId') // 커뮤니티 특정 글 조회
     @ApiOperation({ summary : '커뮤니티 글 상세페이지 조회 API' })
     @ApiParam({

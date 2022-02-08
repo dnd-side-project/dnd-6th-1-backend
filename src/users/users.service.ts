@@ -9,8 +9,6 @@ export class UsersService {
     constructor(
         @InjectRepository(UsersRepository)
             private usersRepository: UsersRepository,
-        @InjectRepository(BoardsRepository) // boardservice 안에서 boardrepository 사용하기 위해서
-            private boardsRepository: BoardsRepository,
     ) { }
     
     async findByUserId(userId: number) {
@@ -28,4 +26,10 @@ export class UsersService {
         }
         return array;
     }
+
+    async getAllBoardsByComments(userId: number){
+        return await this.usersRepository.getBoardsByComments(userId);
+
+    }
+
 }

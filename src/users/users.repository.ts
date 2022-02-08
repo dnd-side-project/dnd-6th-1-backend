@@ -36,5 +36,18 @@ export class UsersRepository extends Repository<Users> {
             ])
             .getMany();
     }
+
+    // 댓글을 단 게시물 가져오기
+    async getBoardsByComments(userId: number){
+        return await this.createQueryBuilder("user") 
+            .innerJoinAndSelect("user.boards","boards") // user 테이블에 boards 게시물 join
+            .leftJoinAndSelect("boards.comments","comments") // board 테이블에 comment 게시물 join
+            .where("user.userId=:userId", {userId})
+            .select([
+                "user.nickname", 
+                "comments"
+            ])
+            .getMany();
+    }
 }
     
