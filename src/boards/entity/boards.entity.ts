@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { IsIn, IsNotEmpty, IsNumber, IsString, Length } from "class-validator";
 import { BoardImages } from "src/board-images/board-images.entity";
 import { Comments } from "src/comments/comments.entity";
 import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
@@ -18,6 +19,8 @@ export class Boards extends BaseEntity {
         example: 21,
         description: '게시글을 작성한 유저 ID', 
     })
+    @IsNotEmpty()
+    @IsNumber()
     @Column() //작성자 아이디 
     userId: number;
     
@@ -25,13 +28,18 @@ export class Boards extends BaseEntity {
         example: '화',
         description: '카테고리명', 
     })
+    @IsIn(['부정','화','타협','슬픔','수용'])
+    @IsNotEmpty()
+    @IsString()
     @Column()
     categoryName: string;
 
     @ApiProperty({ 
         example: '아오화나',
-        description: '게시글 제목', 
+        description: '게시글 제목',
     })
+    @IsNotEmpty()
+    @Length(2,20, { message : '2글자 이상 20자 미만으로 입력해주세요.'})
     @Column({type: 'varchar', length: 40}) 
     postTitle: string;
 
