@@ -16,12 +16,12 @@ import { UsersRepository } from 'src/users/users.repository';
 @Module({
   imports:[
     TypeOrmModule.forFeature([
-    CommentsRepository, 
-    BoardsRepository, 
-    BoardImagesRepository, 
-    UsersRepository,
-    LikesRepository,
-    BookmarksRepository
+      CommentsRepository, 
+      BoardsRepository, 
+      BoardImagesRepository, 
+      UsersRepository,
+      LikesRepository,
+      BookmarksRepository,
   ])],
   controllers: [CommentsController],
   providers: [CommentsService, BoardsService, UsersService]
