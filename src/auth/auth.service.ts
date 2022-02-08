@@ -12,8 +12,7 @@ export class AuthService {
     constructor(
         @InjectRepository(AuthRepository)
             private authRepository: AuthRepository,
-        @InjectRepository(JwtService)
-            private jwtService: JwtService
+        private jwtService : JwtService,
     ) { }
 
     // itzza

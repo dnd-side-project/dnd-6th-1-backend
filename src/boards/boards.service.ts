@@ -12,13 +12,10 @@ import { BookmarksRepository } from './bookmarks.repository';
 import { Likes } from './entity/likes.entity';
 import { Bookmarks } from './entity/bookmarks.entity';
 import { UsersRepository } from 'src/users/users.repository';
-import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class BoardsService {
     constructor(
-        @InjectRepository(JwtService)
-            private jwtService: JwtService,
         @InjectRepository(BoardsRepository) // boardservice 안에서 boardrepository 사용하기 위해서
             private boardsRepository: BoardsRepository,
         @InjectRepository(BoardImagesRepository) 
