@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Post, Req, Get, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
 import { UserCredentialsDto } from './dto/users-credential.dto';
@@ -20,9 +20,18 @@ export class UserController {
         return this.usersService.signUp(usercredentialsDto);
     }
 
+    @Get('/signup/check-nickname')
+    @ApiOperation({ summary: '닉네임 중복 조회', description: '닉네임 입력' })
+    @ApiCreatedResponse({ description: '닉네임 중복 조회', type: Users })
+    ckNickname(@Body(ValidationPipe) userCredentialsDto: UserCredentialsDto): Promise<void> {
+        const nickname = userCredentialsDto.nickname;
+        return this.usersService.ckNickname(nickname);
+    }
+
+    
     @Post('/signin')
-    signIn(@Body() userCredentialsDto: UserCredentialsDto) {
-        return this.usersService.signIn(userCredentialsDto)
+    signIn(@Body(ValidationPipe) userCredentialsDto: UserCredentialsDto): Promise<{accessToken:string}>{
+        return this.usersService.signIn(userCredentialsDto);
     }
 
     @Post('/test')

@@ -8,6 +8,11 @@ import { BoardsModule } from './boards/boards.module';
 import { typeORMConfig } from './configs/typeorm.config';
 import { UserModule} from './users/users.module'
 import { CommentsModule } from './comments/comments.module';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+
+
+
 
 @Module({
   imports: [

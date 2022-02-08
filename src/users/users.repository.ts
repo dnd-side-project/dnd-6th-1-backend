@@ -1,4 +1,5 @@
 import { EntityRepository, Repository } from "typeorm";
+import { UnauthorizedException } from '@nestjs/common';
 import { Users } from "./users.entity";
 import { UserCredentialsDto } from "./dto/users-credential.dto";
 import { ConflictException, InternalServerErrorException } from "@nestjs/common";
@@ -8,7 +9,7 @@ import * as bcrypt from "bcryptjs";
 @EntityRepository(Users)
 export class UsersRepository extends Repository<Users> {
     
-    // itzza
+    // 회원가입
     async createUser(userCredentialsDto: UserCredentialsDto) : Promise<void> {
         
         const { email, nickname, password } = userCredentialsDto;
@@ -34,4 +35,5 @@ export class UsersRepository extends Repository<Users> {
     async findByUserId(userId: number){
         return await this.findOne(userId);
     }
+
 }

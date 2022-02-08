@@ -12,7 +12,8 @@ import { CommentsRepository } from './comments.repository';
 import { CommentsService } from './comments.service';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([
+  imports:[
+    TypeOrmModule.forFeature([
     CommentsRepository, 
     BoardsRepository, 
     BoardImagesRepository, 
