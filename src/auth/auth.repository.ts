@@ -1,6 +1,6 @@
 import { EntityRepository, getRepository, Repository } from "typeorm";
 import { Users } from "./users.entity";
-import { UserCredentialsDto } from "./dto/users-credential.dto";
+import { AuthCredentialsDto } from "./dto/auth-credential.dto";
 import { ConflictException, InternalServerErrorException } from "@nestjs/common";
 import * as bcrypt from "bcryptjs";
 
@@ -9,9 +9,9 @@ import * as bcrypt from "bcryptjs";
 export class AuthRepository extends Repository<Users> {
     
     // itzza
-    async createUser(userCredentialsDto: UserCredentialsDto) : Promise<void> {
+    async createUser(authCredentialsDto: AuthCredentialsDto) : Promise<void> {
         
-        const { email, nickname, password } = userCredentialsDto;
+        const { email, nickname, password } = authCredentialsDto;
 
         // salt 생성 - 비밀번호 암호화
         const salt = await bcrypt.genSalt();

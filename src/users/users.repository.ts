@@ -1,12 +1,14 @@
 import { EntityRepository, getRepository, Repository } from "typeorm";
 import { Users } from "src/auth/users.entity";
-import { Boards } from "src/boards/entity/boards.entity";
+
+
 
 @EntityRepository(Users)
 export class UsersRepository extends Repository<Users> {
     async findByUserId(userId: number){
         return await this.findOne(userId);
     }
+
 
     async getAllUsers(): Promise<Users[]> {
         return await getRepository(Users)
@@ -36,5 +38,5 @@ export class UsersRepository extends Repository<Users> {
             ])
             .getMany();
     }
+
 }
-    

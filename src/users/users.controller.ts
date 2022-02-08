@@ -33,9 +33,5 @@ export class UsersController {
                     message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
                 })   
 
-        const boards = await this.usersService.getAllBoardsByUserId(userId);
-        return res
-            .status(HttpStatus.OK)
-            .json(boards);
-    }
+            } 
 }
