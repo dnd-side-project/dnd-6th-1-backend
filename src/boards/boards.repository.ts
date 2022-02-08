@@ -1,4 +1,5 @@
-import { EntityRepository, Like, Repository } from "typeorm";
+import { Users } from "src/auth/users.entity";
+import { EntityRepository, getRepository, Like, Repository } from "typeorm";
 import { CreateBoardFirstDto } from "./dto/create-board-first.dto";
 import { UpdateBoardDto } from "./dto/update-board.dto";
 import { Boards } from "./entity/boards.entity";
@@ -11,6 +12,19 @@ export class BoardsRepository extends Repository<Boards>{
         return await this.findOne({boardId, postStatus: true}, { relations: ["images"] });
     }
 
+    //
+    // async getAllBoardsByUserId(userId: number): Promise<Boards[]>{
+    //     return await getRepository(Boards)
+    //         .createQueryBuilder("board")
+    //         .innerJoinAndSelect(
+    //             "user.boards", "boards",
+    //             "board.postTitle"
+    //         )
+    //         .where("board.userId=:userId", {userId})
+    //         .getMany();
+    //         // 카테고리명, 제목, 닉네임, 내용, n시간전, 이미지 개수
+    // }
+    
     async getAllBoards(): Promise<Boards[]> {
         return await this.find({
             where: {

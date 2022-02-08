@@ -1,33 +1,41 @@
-import { Body, Controller, Post, Req, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { Body, Controller, Get, HttpStatus, Param, ParseIntPipe, Res } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { UserCredentialsDto } from './dto/users-credential.dto';
-import { GetUser } from './get-user.decorator';
-import { Users } from './users.entity';
-import { ApiTags, ApiOperation, ApiResponse, ApiCreatedResponse } from '@nestjs/swagger';
-
-
 
 @Controller('users')
-@ApiTags('유저 API')
-export class UserController {
-    constructor( private usersService: UsersService){}
+@ApiTags('마이페이지 API')
+export class UsersController {
+    constructor(
+        private readonly usersService : UsersService,
+    ){}
 
-    @Post('/signup')
-    @ApiOperation({ summary: '회원가입 API', description: '이메일, 비밀번호, 닉네임 입력' })
-    @ApiCreatedResponse({ description: '유저를 생성합니다', type: Users })
-    signUp(@Body(ValidationPipe) usercredentialsDto: UserCredentialsDto): Promise<void> {
-        return this.usersService.signUp(usercredentialsDto);
+    @Get('/:userId/boards')
+    @ApiOperation({ 
+        summary : '특정 유저가 쓴 글 조회 API',
+    })
+    @ApiParam({
+        name: 'userId',
+        required: true,
+        description: '유저 ID'
+    })
+    async getAllBoardsByUserId(
+        @Res() res,
+        @Param("userId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        userId: number,
+    ){
+        const user = await this.usersService.findByUserId(userId);
+        if(!user)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+                })   
+
+        const boards = await this.usersService.getAllBoardsByUserId(userId);
+        return res
+            .status(HttpStatus.OK)
+            .json(boards);
     }
-
-    @Post('/signin')
-    signIn(@Body() userCredentialsDto: UserCredentialsDto) {
-        return this.usersService.signIn(userCredentialsDto)
-    }
-
-    @Post('/test')
-    @UseGuards(AuthGuard())
-    test(@GetUser() user: Users) {
-        console.log('user', user);
-    } 
 }
