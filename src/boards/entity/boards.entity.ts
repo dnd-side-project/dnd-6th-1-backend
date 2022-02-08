@@ -1,8 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsIn, IsNotEmpty, IsNumber, IsString, Length } from "class-validator";
+import { Users } from "src/auth/users.entity";
 import { BoardImages } from "src/board-images/board-images.entity";
 import { Comments } from "src/comments/comments.entity";
-import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Bookmarks } from "./bookmarks.entity";
 import { Likes } from "./likes.entity";
 
@@ -21,6 +22,11 @@ export class Boards extends BaseEntity {
     })
     @IsNotEmpty()
     @IsNumber()
+    @ManyToOne(
+        () => Users,
+        (user) => user.boards
+    )
+    @JoinColumn({name:"userId"})
     @Column() //작성자 아이디 
     userId: number;
     
