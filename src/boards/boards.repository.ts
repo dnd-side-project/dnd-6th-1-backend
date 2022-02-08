@@ -1,4 +1,5 @@
-import { EntityRepository, Like, Repository } from "typeorm";
+import { Users } from "src/auth/users.entity";
+import { EntityRepository, getRepository, Like, Repository } from "typeorm";
 import { CreateBoardFirstDto } from "./dto/create-board-first.dto";
 import { UpdateBoardDto } from "./dto/update-board.dto";
 import { Boards } from "./entity/boards.entity";
@@ -11,6 +12,19 @@ export class BoardsRepository extends Repository<Boards>{
         return await this.findOne({boardId, postStatus: true}, { relations: ["images"] });
     }
 
+    //
+    // async getAllBoardsByUserId(userId: number): Promise<Boards[]>{
+    //     return await getRepository(Boards)
+    //         .createQueryBuilder("board")
+    //         .innerJoinAndSelect(
+    //             "user.boards", "boards",
+    //             "board.postTitle"
+    //         )
+    //         .where("board.userId=:userId", {userId})
+    //         .getMany();
+    //         // 카테고리명, 제목, 닉네임, 내용, n시간전, 이미지 개수
+    // }
+    
     async getAllBoards(): Promise<Boards[]> {
         return await this.find({
             where: {
@@ -36,10 +50,15 @@ export class BoardsRepository extends Repository<Boards>{
     }
 
     // 커뮤니티 글 수정 - 편집 가능한 요소 : 감정 카테고리, 제목, 글 내용, 이미지 
-    async updateBoard(boardId: number, updateBoardDto: UpdateBoardDto) {  
+    async updateBoard(boardId: number, updateBoardDto: UpdateBoardDto) {
+        const board = await this.findOne(boardId);
         const { userId, categoryName, postTitle, postContent } = updateBoardDto;
-        let userIdToNumber = +userId;        
-        await this.update({boardId}, {userId: userIdToNumber, categoryName, postTitle, postContent});
+        // userId를 string->number로 바꿔야 해서 ...updateBoardDto 로 못쓰기 때문에 일일히 null 값이면 db에 이미 저장된 값으로 초기화해줌
+        let category = (categoryName==null) ? board.categoryName : categoryName
+        let title = (postTitle==null) ? board.postTitle : postTitle
+        let content = (postContent==null) ? board.postContent : postContent
+        let userIdToNumber = +userId;       
+        await this.update({boardId}, {userId: userIdToNumber, categoryName: category, postTitle: title, postContent: content});
     }
 
     // 커뮤니티 글 삭제 -> postStatus = false 로 변경

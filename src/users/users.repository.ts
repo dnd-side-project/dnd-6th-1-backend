@@ -1,39 +1,42 @@
-import { EntityRepository, Repository } from "typeorm";
-import { UnauthorizedException } from '@nestjs/common';
-import { Users } from "./users.entity";
-import { UserCredentialsDto } from "./dto/users-credential.dto";
-import { ConflictException, InternalServerErrorException } from "@nestjs/common";
-import * as bcrypt from "bcryptjs";
+import { EntityRepository, getRepository, Repository } from "typeorm";
+import { Users } from "src/auth/users.entity";
+
 
 
 @EntityRepository(Users)
 export class UsersRepository extends Repository<Users> {
-    
-    // 회원가입
-    async createUser(userCredentialsDto: UserCredentialsDto) : Promise<void> {
-        
-        const { email, nickname, password } = userCredentialsDto;
-
-        // salt 생성 - 비밀번호 암호화
-        const salt = await bcrypt.genSalt();
-        const hashedPassword = await bcrypt.hash(password, salt);
-        const user = this.create({email, nickname, password: hashedPassword});
-
-        try {
-            // user 생성
-            await this.save(user);
-        } catch (error) {
-            // 이미 존재하는 nickname
-            if(error.code === '23505') {
-                throw new ConflictException('이미 존재하는 닉네임입니다.');
-            } else {
-                throw new InternalServerErrorException();
-            }
-        }        
-    }
-
     async findByUserId(userId: number){
         return await this.findOne(userId);
+    }
+
+
+    async getAllUsers(): Promise<Users[]> {
+        return await getRepository(Users)
+            .createQueryBuilder("user")
+            .select([
+                "user.nickname",
+                "user.breakUpdate",
+                "user.profileImage"
+            ])
+            .where("user.userStatus =:status", {status: true})
+            .getMany();
+    }
+
+    // 카테고리명, 제목, 닉네임, 내용,              n시간전, 이미지 개수
+    async getAllBoardsByUserId(userId: number){
+        return await this.createQueryBuilder("user") 
+            .innerJoinAndSelect("user.boards","boards") // user 테이블에 boards 게시물 join
+            .leftJoinAndSelect("boards.images","images") // board 테이블에 image 게시물 join
+            .where("user.userId=:userId", {userId})
+            .select([
+                "user.nickname", 
+                "boards.categoryName", 
+                "boards.postTitle", 
+                "boards.postCreated", 
+                "boards.postContent", 
+                "images"
+            ])
+            .getMany();
     }
 
 }

@@ -1,16 +1,13 @@
-import { HttpStatus, ParseIntPipe, Req, Res, UploadedFiles } from '@nestjs/common';
+import { HttpStatus, ParseIntPipe, Res, UploadedFiles } from '@nestjs/common';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor} from '@nestjs/platform-express';
 import { Boards } from './entity/boards.entity';
 import { BoardsService } from './boards.service';
 import * as AWS from 'aws-sdk';
 import * as multerS3 from 'multer-s3';
-import { ApiBody, ApiCreatedResponse, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CreateBoardFirstDto } from './dto/create-board-first.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
-import { BoardImages } from 'src/board-images/board-images.entity';
-import { Likes } from './entity/likes.entity';
-import { Bookmarks } from './entity/bookmarks.entity';
 import { UsersService } from 'src/users/users.service';
 require("dotenv").config();
 
@@ -55,12 +52,6 @@ export class BoardsController {
                     }) 
             }
             boards = await this.boardsService.getAllBoardsByKeyword(keyword);
-            if(boards['resultCnt']=='0개')
-                return res
-                    .status(HttpStatus.OK)
-                    .json({
-                        message:'검색 결과가 없어요 다른 검색어를 입력해보세요'
-                    })
         }    
         else if(keyword==null && category!=null){ // 카테고리별 조회
             if(['부정','화','타협','슬픔','수용'].includes(category)){
@@ -68,7 +59,7 @@ export class BoardsController {
                 if(boards.length == 0)
                     return res
                         .status(HttpStatus.OK)
-                        .json({
+                        .json({ // 여기 메세지 바꾸기 
                             message:`아직 글이 없어요 혹시 ${category}에 대한 감정이 있으신가요? 글을 통해 다른 분과 소통해보세요`
                         })
             }
@@ -83,6 +74,32 @@ export class BoardsController {
             .status(HttpStatus.OK)
             .json(boards);
     }
+
+    @Get('/:userId')
+    @ApiOperation({ summary : '커뮤니티 글 상세페이지 조회 API' })
+    @ApiQuery({
+        name: 'keyword',
+        required: true,
+        description: '검색어별',
+        example:'졸려'
+    })
+    @ApiParam({
+        name: 'userId',
+        required: true,
+        description: '특정 유저',
+    })
+    async getAllBoardsByNickname(
+        @Res() res, 
+        @Param("boardId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        userId: number,
+        @Query() query) {
+            console.log(query.keyword)
+            console.log(userId);
+        
+    }
+        
 
     @Get('/:boardId') // 커뮤니티 특정 글 조회
     @ApiOperation({ summary : '커뮤니티 글 상세페이지 조회 API' })
@@ -118,8 +135,6 @@ export class BoardsController {
         userId는 원래 type이 number인데 postman 에서 이미지와 함께 테스트 할 때 \
         불가피하게 text로 받아야 해서 string으로 처리했습니다.'
     })
-    @ApiCreatedResponse({ description: '게시글을 생성합니다', type: Boards })
-    // @ApiCreatedResponse({ description: '게시글 생성 시 이미지를 저장합니다', type: BoardImages })
     @ApiBody({ type : CreateBoardFirstDto })
     @UseInterceptors(
         FilesInterceptor('files', 3, {
@@ -173,7 +188,6 @@ export class BoardsController {
         description: '게시글 번호',
     })
     @ApiBody({ type : CreateBoardFirstDto })
-    @ApiCreatedResponse({ description: '게시글 수정 시 이미지를 업데이트합니다 (', type: BoardImages })
     @UseInterceptors(
         FilesInterceptor('files', 3, {
             storage: multerS3({ 
@@ -321,7 +335,6 @@ export class BoardsController {
           }
         }
     })
-    @ApiCreatedResponse({ description: '게시글에 좋아요를 누릅니다', type: Likes })
     async createLike(
         @Res() res,
         @Param("boardId", new ParseIntPipe({
@@ -427,7 +440,6 @@ export class BoardsController {
           }
         }
     })
-    @ApiCreatedResponse({ description: '게시글에 북마크를 누릅니다', type: Bookmarks })
     async createBookmark(
         @Res() res,
         @Param("boardId", new ParseIntPipe({

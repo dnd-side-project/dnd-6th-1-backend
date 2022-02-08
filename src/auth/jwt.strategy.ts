@@ -1,9 +1,9 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { InjectRepository } from "@nestjs/typeorm";
-import { validate } from "class-validator";
 import { ExtractJwt, Strategy } from "passport-jwt";
-import { UsersRepository } from "./users.repository";
+import { UsersRepository } from "src/users/users.repository";
+import { AuthRepository } from "./auth.repository";
 import { Users } from "./users.entity";
 
 
@@ -12,7 +12,9 @@ import { Users } from "./users.entity";
 export class JwtStrategy extends PassportStrategy(Strategy) {
     constructor(
         @InjectRepository(UsersRepository)
-        private userRepository: UsersRepository
+        private userRepository: UsersRepository,
+        @InjectRepository(AuthRepository)
+        private authRepository: AuthRepository
     ) {
         super({
             // 토큰 유효한지 체크
@@ -23,7 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     async validate(payload) {
         const { email } = payload;
-        const user: Users = await this.userRepository.findOne({ email });
+        const user: Users = await this.authRepository.findOne({ email });
 
         if(!user) {
             throw new UnauthorizedException();
