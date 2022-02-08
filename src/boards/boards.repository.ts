@@ -36,10 +36,15 @@ export class BoardsRepository extends Repository<Boards>{
     }
 
     // 커뮤니티 글 수정 - 편집 가능한 요소 : 감정 카테고리, 제목, 글 내용, 이미지 
-    async updateBoard(boardId: number, updateBoardDto: UpdateBoardDto) {  
+    async updateBoard(boardId: number, updateBoardDto: UpdateBoardDto) {
+        const board = await this.findOne(boardId);
         const { userId, categoryName, postTitle, postContent } = updateBoardDto;
-        let userIdToNumber = +userId;        
-        await this.update({boardId}, {userId: userIdToNumber, categoryName, postTitle, postContent});
+        // userId를 string->number로 바꿔야 해서 ...updateBoardDto 로 못쓰기 때문에 일일히 null 값이면 db에 이미 저장된 값으로 초기화해줌
+        let category = (categoryName==null) ? board.categoryName : categoryName
+        let title = (postTitle==null) ? board.postTitle : postTitle
+        let content = (postContent==null) ? board.postContent : postContent
+        let userIdToNumber = +userId;       
+        await this.update({boardId}, {userId: userIdToNumber, categoryName: category, postTitle: title, postContent: content});
     }
 
     // 커뮤니티 글 삭제 -> postStatus = false 로 변경
