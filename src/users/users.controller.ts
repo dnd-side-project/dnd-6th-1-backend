@@ -1,34 +1,23 @@
 import { Body, Controller, Get, HttpStatus, Param, ParseIntPipe, Res } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam } from '@nestjs/swagger';
-import { BoardsService } from 'src/boards/boards.service';
+import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 
 @Controller('users')
+@ApiTags('마이페이지 API')
 export class UsersController {
     constructor(
         private readonly usersService : UsersService,
     ){}
 
-    @Get('/:userId/posts')
-    // @ApiOperation({ 
-    //     summary : '커뮤니티 특정 글 북마크 API',
-    //     description: '북마크 처음 누른 경우'
-    // })
-    // @ApiParam({
-    //     name: 'boardId',
-    //     required: true,
-    //     description: '게시글 번호'
-    // })
-    // @ApiBody({
-    //     description: "북마크 누르는 유저 ID", 
-    //     schema: {
-    //       properties: {
-    //         userId: { 
-    //             type: "number",
-    //         },
-    //       }
-    //     }
-    // })
+    @Get('/:userId/boards')
+    @ApiOperation({ 
+        summary : '특정 유저가 쓴 글 조회 API',
+    })
+    @ApiParam({
+        name: 'userId',
+        required: true,
+        description: '유저 ID'
+    })
     async getAllBoardsByUserId(
         @Res() res,
         @Param("userId", new ParseIntPipe({
