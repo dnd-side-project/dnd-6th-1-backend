@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthService } from 'src/auth/auth.service';
-import { UserRepository } from 'src/auth/user.repository';
 import { BoardImagesRepository } from 'src/board-images/board-images.repository';
 import { BoardsRepository } from 'src/boards/boards.repository';
 import { BoardsService } from 'src/boards/boards.service';
@@ -10,17 +8,22 @@ import { LikesRepository } from 'src/boards/likes.repository';
 import { CommentsController } from './comments.controller';
 import { CommentsRepository } from './comments.repository';
 import { CommentsService } from './comments.service';
+import { UsersService } from 'src/users/users.service';
+import { UsersRepository } from 'src/users/users.repository';
+
+
 
 @Module({
-  imports:[TypeOrmModule.forFeature([
+  imports:[
+    TypeOrmModule.forFeature([
     CommentsRepository, 
     BoardsRepository, 
     BoardImagesRepository, 
-    UserRepository,
+    UsersRepository,
     LikesRepository,
     BookmarksRepository
   ])],
   controllers: [CommentsController],
-  providers: [CommentsService, BoardsService, AuthService]
+  providers: [CommentsService, BoardsService, UsersService]
 })
 export class CommentsModule {}

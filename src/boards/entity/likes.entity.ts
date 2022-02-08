@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { User } from "src/auth/user.entity";
+import { Users } from "src/auth/users.entity";
 import { BaseEntity, Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Boards } from "./boards.entity";
 
@@ -17,7 +17,7 @@ export class Likes extends BaseEntity {
         description: '좋아요한 유저 ID', 
     })
     @ManyToOne(
-        () => User,
+        () => Users,
         (user) => user.likes
     )
     @JoinColumn({name:"userId"})

@@ -1,3 +1,4 @@
+import { Boards } from "src/boards/entity/boards.entity";
 import { Bookmarks } from "src/boards/entity/bookmarks.entity";
 import { Likes } from "src/boards/entity/likes.entity";
 import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity, OneToMany } from "typeorm";
@@ -23,20 +24,21 @@ export class Users extends BaseEntity {
     @Column({ default: true })
     userStatus: boolean;
 
-    @Column({ default : 0 })
-    loginStatus: boolean;
-
     @Column()
     breakupDate: string;
 
-<<<<<<< HEAD:src/users/users.entity.ts
     @Column({ default: false })
     loginStatus: boolean;
 
-    // 프로필 이미지 추가해야함
-=======
     @Column()
     profileImage: string;
+
+    // User(1) <> Likes(*)
+    @OneToMany(
+        () => Boards,
+        (board) => board.userId
+    )
+    boards: Boards[];
 
     // User(1) <> Likes(*)
     @OneToMany(
@@ -51,5 +53,4 @@ export class Users extends BaseEntity {
         (bookmark) => bookmark.userId
     )
     bookmarks: Bookmarks[];
->>>>>>> a27003bd552940b7dbe86bb6f77f92a6850924a1:src/auth/user.entity.ts
 }

@@ -1,29 +1,26 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserController } from './users.controller';
-import { UserService } from './users.service';
-import { UserRepository } from './user.repository';
-import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
-import { JwtStrategy } from './jwt.strategy';
-
+import { UsersController } from './users.controller';
+import { UsersService } from './users.service';
+import { UsersRepository } from './users.repository';
+import { BoardImagesRepository } from 'src/board-images/board-images.repository';
+import { BoardsRepository } from 'src/boards/boards.repository';
+import { BoardsService } from 'src/boards/boards.service';
+import { BookmarksRepository } from 'src/boards/bookmarks.repository';
+import { LikesRepository } from 'src/boards/likes.repository';
+import { CommentsRepository } from 'src/comments/comments.repository';
 
 
 @Module({
-  imports: [
-    PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.register({
-      // screte 토큰을 만들때 이용하는 Secret 텍스트
-      secret: 'Secret1234',
-      signOptions: {
-        // 1시간 이후에는 이 토큰이 더 이상 유효x
-        expiresIn: 60 * 60,
-      }
-    }),
-    TypeOrmModule.forFeature([UserRepository])
-  ],
-  controllers: [UserController],
-  providers: [UserService, JwtStrategy],
-  exports: [JwtStrategy, PassportModule]
+  imports:[TypeOrmModule.forFeature([
+    UsersRepository,
+    BoardsRepository,
+    BoardImagesRepository,
+    CommentsRepository,
+    LikesRepository,
+    BookmarksRepository
+  ])], // 데이터베이스 커넥션 맺으며 사용할 엔티티를 리스트로 받기
+  controllers: [UsersController],
+  providers: [UsersService, BoardsService]
 })
-export class UserModule {}
+export class UsersModule {}

@@ -1,8 +1,8 @@
 import { HttpStatus, ParseIntPipe, Req, Res, UploadedFiles } from '@nestjs/common';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { AuthService } from 'src/auth/auth.service';
 import { BoardsService } from 'src/boards/boards.service';
+import { UsersService } from 'src/users/users.service';
 import { Comments } from './comments.entity';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
@@ -15,7 +15,7 @@ export class CommentsController {
     constructor(
         private readonly commentsService: CommentsService,
         private readonly boardsService: BoardsService,
-        private readonly authService : AuthService    
+        private readonly usersService : UsersService    
     ){}
 
     // @Get() // 특정 글의 댓글 조회
@@ -73,7 +73,7 @@ export class CommentsController {
         boardId: number
     ): Promise<any> {
         const userId = createCommentDto.userId;
-        const user = await this.authService.findByUserId(userId);
+        const user = await this.usersService.findByUserId(userId);
         if(!user)
             return res
                 .status(HttpStatus.NOT_FOUND)
@@ -124,7 +124,7 @@ export class CommentsController {
         commentId: number
     ): Promise<any> {
         const userId = createReplyDto.userId;
-        const user = await this.authService.findByUserId(userId);
+        const user = await this.usersService.findByUserId(userId);
         if(!user)
             return res
                 .status(HttpStatus.NOT_FOUND)
@@ -173,7 +173,7 @@ export class CommentsController {
         commentId: number
     ){
         const userId = updateCommentDto.userId;
-        const user = await this.authService.findByUserId(userId);
+        const user = await this.usersService.findByUserId(userId);
         if(!user)
             return res
                 .status(HttpStatus.NOT_FOUND)
@@ -247,7 +247,7 @@ export class CommentsController {
         commentId: number,
         @Body('userId') userId: number,
     ){
-        const user = await this.authService.findByUserId(userId);
+        const user = await this.usersService.findByUserId(userId);
         if(!user)
             return res
                 .status(HttpStatus.NOT_FOUND)

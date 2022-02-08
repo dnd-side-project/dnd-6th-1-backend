@@ -1,6 +1,15 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, PickType } from "@nestjs/swagger";
 import { IsIn, IsNotEmpty, IsString, Length } from "class-validator";
+import { Boards } from "../entity/boards.entity";
 
+// export class CreateBoardFirstDto extends PickType(Boards, [
+//     'userId',
+//     'categoryName',
+//     'postTitle',
+//     'postContent'
+// ] as const) {}
+
+// postman 으로 테스트 할 때는 userId 를 text로 밖에 못받아서 string 으로 선언함
 export class CreateBoardFirstDto {
     @ApiProperty({ 
         example: 21,

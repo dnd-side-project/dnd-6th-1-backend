@@ -6,24 +6,20 @@ import { AppService } from './app.service';
 import { BoardImagesModule } from './board-images/board-images.module';
 import { BoardsModule } from './boards/boards.module';
 import { typeORMConfig } from './configs/typeorm.config';
-<<<<<<< HEAD
-import { UserModule} from './users/users.module'
-=======
+import { AuthModule } from './auth/auth.module'
 import { CommentsModule } from './comments/comments.module';
-import { AuthModule } from './auth/auth.module';
->>>>>>> a27003bd552940b7dbe86bb6f77f92a6850924a1
+import { UsersModule } from './users/users.module';
+
+
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(typeORMConfig),
     BoardsModule,
     BoardImagesModule,
-<<<<<<< HEAD
-    UserModule
-=======
+    AuthModule,
     CommentsModule,
-    AuthModule
->>>>>>> a27003bd552940b7dbe86bb6f77f92a6850924a1
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [
