@@ -1,6 +1,5 @@
 import { Body, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BoardsRepository } from 'src/boards/boards.repository';
 import { BoardsService } from 'src/boards/boards.service';
 import { UsersRepository } from './users.repository';
 
@@ -25,10 +24,18 @@ export class UsersService {
     }
 
     async getAllBoardsByComments(userId: number){
-        const boardsByComment = await this.usersRepository.getBoardsByComments(userId);
+        const boardsByComment = await this.usersRepository.getAllBoardsByComments(userId);
         for(var i=0;i<boardsByComment.length;i++){
             boardsByComment[i]['createdAt'] = await BoardsService.calculateTime(new Date(), boardsByComment[i]['createdAt']);
         }
         return boardsByComment;
+    }
+
+    async getAllBoardsByBookmark(userId: number){
+        const boardsByBookmark = await this.usersRepository.getAllBoardsByBookmark(userId);
+        for(var i=0;i<boardsByBookmark.length;i++){
+            boardsByBookmark[i]['createdAt'] = await BoardsService.calculateTime(new Date(), boardsByBookmark[i]['createdAt']);
+        }
+        return boardsByBookmark;
     }
 }
