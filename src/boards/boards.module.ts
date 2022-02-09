@@ -9,9 +9,23 @@ import { LikesRepository } from './likes.repository';
 import { BookmarksRepository } from './bookmarks.repository';
 import { UsersService } from 'src/users/users.service';
 import { UsersRepository } from 'src/users/users.repository';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+
+
 
 @Module({
-  imports:[TypeOrmModule.forFeature([
+  imports:[
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.register({
+      // screte 토큰을 만들때 이용하는 Secret 텍스트
+      secret: 'Secret1234',
+      signOptions: {
+        // 1시간 이후에는 이 토큰이 더 이상 유효x
+        expiresIn: 60 * 60,
+      }
+    }),
+    TypeOrmModule.forFeature([
     BoardsRepository, 
     BoardImagesRepository, 
     CommentsRepository, 

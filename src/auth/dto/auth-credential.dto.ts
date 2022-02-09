@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsNotEmpty, IsString, Length, Matches, MaxLength, MinLength } from "class-validator";
 
-export class UserCredentialsDto {
+export class AuthCredentialsDto {
     
     // itzza
     // email, password, nickname, userStatus, breakupDate

@@ -27,7 +27,7 @@ export class BoardsService {
         @InjectRepository(LikesRepository)
             private likesRepository: LikesRepository,
         @InjectRepository(BookmarksRepository)
-            private bookmarksRepository: BookmarksRepository     
+            private bookmarksRepository: BookmarksRepository        
     ){}
 
     async findByBoardId(boardId: number){
