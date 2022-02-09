@@ -36,7 +36,6 @@ export class BoardsService {
 
     // 날짜계산 -> 2초전 / 1분전 / 1시간전 / 1일전 / 
     static async calculateTime(date: Date, created: Date): Promise<string>{
-        console.log(date, created);
         var distance = date.getTime() - created.getTime();
         var day = Math.floor(distance / (1000 * 60 * 60 * 24));
         var hour = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
