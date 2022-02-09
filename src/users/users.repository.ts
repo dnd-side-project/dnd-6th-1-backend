@@ -6,9 +6,8 @@ import { Users } from "src/auth/users.entity";
 @EntityRepository(Users)
 export class UsersRepository extends Repository<Users> {
     async findByUserId(userId: number){
-        return await this.findOne(userId);
+        return await this.findOne({userId, userStatus: true});
     }
-
 
     async getAllUsers(): Promise<Users[]> {
         return await getRepository(Users)
@@ -27,16 +26,16 @@ export class UsersRepository extends Repository<Users> {
         return await this.createQueryBuilder("user") 
             .innerJoinAndSelect("user.boards","boards") // user 테이블에 boards 게시물 join
             .leftJoinAndSelect("boards.images","images") // board 테이블에 image 게시물 join
-            .where("user.userId=:userId", {userId})
             .select([
-                "user.nickname", 
-                "boards.categoryName", 
-                "boards.postTitle", 
-                "boards.postCreated", 
-                "boards.postContent", 
-                "images"
+                "user.nickname AS nickname", 
+                "boards.categoryName AS categoryName", 
+                "boards.postTitle AS postTitle", 
+                "boards.postCreated AS createdAt", 
+                "boards.postContent AS postContent",
+                "COUNT(images.originalName) AS imageCnt"
             ])
-            .getMany();
+            .where("user.userId=:userId", {userId})
+            .groupBy("boards.boardId")
+            .getRawMany();    
     }
-
 }

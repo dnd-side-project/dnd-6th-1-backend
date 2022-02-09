@@ -12,17 +12,27 @@ export class BoardsRepository extends Repository<Boards>{
         return await this.findOne({boardId, postStatus: true}, { relations: ["images"] });
     }
 
-    //
     // async getAllBoardsByUserId(userId: number): Promise<Boards[]>{
-    //     return await getRepository(Boards)
+    //     return await this
     //         .createQueryBuilder("board")
-    //         .innerJoinAndSelect(
-    //             "user.boards", "boards",
-    //             "board.postTitle"
-    //         )
-    //         .where("board.userId=:userId", {userId})
+    //         .select([
+    //             "board.categoryName",
+    //             "board.postTitle",
+    //             "board.postContent",
+    //             "board.postCreated",
+    //         ])
+    //         .where("user.userStatus =:status", {status: true})
+    //         .andWhere("user.userId =:userId", {userId})
     //         .getMany();
-    //         // 카테고리명, 제목, 닉네임, 내용, n시간전, 이미지 개수
+
+        // return await this
+        //     .createQueryBuilder("board")
+        //     .select("board.postTitle")
+        //     .addSelect("board.postContent") // select 문 더하기
+
+        //     .where("board.userId=:userId", {userId})
+        //     .getMany();
+            // 카테고리명, 제목, 닉네임, 내용, n시간전, 이미지 개수
     // }
     
     async getAllBoards(): Promise<Boards[]> {
