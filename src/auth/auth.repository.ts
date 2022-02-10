@@ -18,9 +18,11 @@ export class AuthRepository extends Repository<Users> {
         const hashedPassword = await bcrypt.hash(password, salt);
         const user = this.create({email, nickname, password: hashedPassword});
 
+        
         try {
             // user 생성
             await this.save(user);
+            
         } catch (error) {
             // 이미 존재하는 nickname
             if(error.code === '23505') {

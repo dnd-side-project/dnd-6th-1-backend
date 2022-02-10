@@ -18,8 +18,8 @@ export class AuthService {
     // itzza
     // 회원가입
     async signUp(authCredentialsDto: AuthCredentialsDto) : Promise<void> {
-
-        return this.authRepository.createUser(authCredentialsDto);
+        const user = await this.authRepository.createUser(authCredentialsDto);      // User DB에 저장
+        return user;
     }
 
     // 로그인 : email, pw 입력

@@ -3,7 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthCredentialsDto } from './dto/auth-credential.dto';
 import { GetUser } from './get-user.decorator';
 import { Users } from './users.entity';
-import { ApiTags, ApiOperation, ApiCreatedResponse, } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiCreatedResponse, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 
 
@@ -16,11 +16,27 @@ export class AuthController {
     ){}
 
     @Post('/signup')
-    @ApiOperation({ summary: '회원가입 API', description: '이메일, 비밀번호, 닉네임 입력' })
+    @ApiOperation({ 
+        summary: '회원가입 API', 
+        description: '이메일, 비밀번호, 닉네임 입력'
+    })
+    @ApiBody({ type: AuthCredentialsDto})
     @ApiCreatedResponse({ description: '유저를 생성합니다', type: Users })
-    signUp(@Body(ValidationPipe) authcredentialsDto: AuthCredentialsDto): Promise<void> {
-        return this.authService.signUp(authcredentialsDto);
+    signUp(
+        @Res() res,
+        @Body(ValidationPipe) authcredentialsDto: AuthCredentialsDto
+        ): Promise<void> {
+            const user = this.authService.signUp(authcredentialsDto);
+            
+            return res
+                .status(HttpStatus.CREATED)
+                .json({
+                    data: user,
+                    message: '회원가입을 완료했습니다.',
+                    flag: 1
+                })
     }
+
 
     /*
     @Get('/signup/check-nickname')
