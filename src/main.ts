@@ -5,7 +5,9 @@ import * as config from 'config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    cors: true
+  });
 
   //Global Middleware 설정 -> Cors 속성 활성화
   app.enableCors({

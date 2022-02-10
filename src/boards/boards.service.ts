@@ -1,25 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BoardImagesRepository } from 'src/board-images/board-images.repository';
 import { Comments } from 'src/comments/comments.entity';
 import { CommentsRepository } from 'src/comments/comments.repository';
 import { Boards } from './entity/boards.entity';
 import { BoardsRepository } from './boards.repository';
-import { CreateBoardFirstDto } from './dto/create-board-first.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
 import { LikesRepository } from './likes.repository';
 import { BookmarksRepository } from './bookmarks.repository';
 import { Likes } from './entity/likes.entity';
 import { Bookmarks } from './entity/bookmarks.entity';
 import { UsersRepository } from 'src/users/users.repository';
+import { CreateBoardDto } from './dto/create-board.dto';
 
 @Injectable()
 export class BoardsService {
     constructor(
         @InjectRepository(BoardsRepository) // boardservice 안에서 boardrepository 사용하기 위해서
             private boardsRepository: BoardsRepository,
-        @InjectRepository(BoardImagesRepository) 
-            private boardImagesRepository: BoardImagesRepository,
         @InjectRepository(CommentsRepository)
             private commentsRepository: CommentsRepository,
         @InjectRepository(UsersRepository)
@@ -30,11 +27,11 @@ export class BoardsService {
             private bookmarksRepository: BookmarksRepository        
     ){}
 
-    async findByBoardId(boardId: number){
-        return this.boardsRepository.findByBoardId(boardId);
+    async findByBoardId(boardId: number): Promise<Boards> {
+        return await this.boardsRepository.findByBoardId(boardId);
     }
 
-    // 날짜계산 -> 2초전 / 1분전 / 1시간전 / 1일전 / 
+    // 날짜계산 -> 1초전 / 1분전 / 1시간전 / 1일전 / 
     static async calculateTime(date: Date, created: Date): Promise<string>{
         var distance = date.getTime() - created.getTime();
         var day = Math.floor(distance / (1000 * 60 * 60 * 24));
@@ -188,11 +185,9 @@ export class BoardsService {
         );
         return boardsByCategory;
     }
-
-    async createBoard(files: Express.Multer.File[], createBoardFirstDto: CreateBoardFirstDto): Promise<Boards> {
-        const board = await this.boardsRepository.createBoard(createBoardFirstDto); // board DB에 저장
-        await this.boardImagesRepository.createBoardImage(files, board.boardId); // boardImage DB에 저장        
-        return board;
+    
+    async createBoard(createBoardDto: CreateBoardDto): Promise<Boards> {
+        return await this.boardsRepository.createBoard(createBoardDto); // board DB에 저장
     }
 
     async updateBoard(boardId: number, updateBoardDto: UpdateBoardDto) {

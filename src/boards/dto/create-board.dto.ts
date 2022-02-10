@@ -1,16 +1,8 @@
-import { ApiProperty, PickType } from "@nestjs/swagger";
-import { IsIn, IsNotEmpty, IsString, Length } from "class-validator";
-import { Boards } from "../entity/boards.entity";
+import { ExpressAdapter } from "@nestjs/platform-express";
+import { ApiBody, ApiProperty, PickType } from "@nestjs/swagger";
+import { IsArray, IsIn, IsNotEmpty, IsNumber, IsString, Length } from "class-validator";
 
-// export class CreateBoardFirstDto extends PickType(Boards, [
-//     'userId',
-//     'categoryName',
-//     'postTitle',
-//     'postContent'
-// ] as const) {}
-
-// postman 으로 테스트 할 때는 userId 를 text로 밖에 못받아서 string 으로 선언함
-export class CreateBoardFirstDto {
+export class CreateBoardDto {
     @ApiProperty({ 
         example: 21,
         description: '작성자 userId', 
@@ -18,6 +10,7 @@ export class CreateBoardFirstDto {
     })
     @IsNotEmpty()
     @IsString()
+    // @IsNumber()
     readonly userId: string; // 작성자
 
     @ApiProperty({ 
@@ -46,4 +39,19 @@ export class CreateBoardFirstDto {
     })
     @IsNotEmpty()
     readonly postContent: string;
+
+    @ApiProperty({
+        description: '업로드 할 이미지',
+        type: 'array',
+        // minItems:1,
+        // maxItems, maxLength (string에서 길이제한), maximum (숫자 범위), multipleOf
+        // maxProperties:3, // 이미지 업로드 제한...
+        items: {
+            type: 'string',
+            format: 'binary'
+        },
+        maxItems:3,
+        required: false
+    })
+    readonly files: Express.Multer.File[];
 }
