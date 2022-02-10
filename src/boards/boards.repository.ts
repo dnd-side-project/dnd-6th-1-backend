@@ -1,4 +1,5 @@
 import { Users } from "src/auth/users.entity";
+import { BoardImages } from "src/board-images/board-images.entity";
 import { EntityRepository, getRepository, Like, Repository } from "typeorm";
 import { CreateBoardDto } from "./dto/create-board.dto";
 import { UpdateBoardDto } from "./dto/update-board.dto";
@@ -9,18 +10,22 @@ import { Boards } from "./entity/boards.entity";
 export class BoardsRepository extends Repository<Boards>{
     // const user = await this.users.findOne({ email }, { select: ['id', 'password'] });
 
-    //board- image 를 가져오는데 여기서 imageStatus가 true인 애들만 가져오기
-    async findByBoardId(boardId: number){ // 삭제 안 된 게시물들만 반환
-        const query = await this.createQueryBuilder("boards") 
-            .leftJoinAndSelect("boards.images","images") // board 테이블에 image 게시물 join (이미지가 없는 애도 갯수 세야 하므로)
+    async findByBoardId(boardId: number){ 
+        const board = await this.createQueryBuilder("boards")
+            .leftJoinAndSelect("boards.images", "images")
             .where("boards.boardId=:boardId", {boardId})
-            .andWhere("images.imageStatus=:status", {status: true}) // 이미지가 삭제되지 않은 경우만
-            .andWhere("boards.postStatus=:status", {status: true}) // 게시글이 삭제되지 않은 경우만
-            .getMany();
-        return query[0];   
+            .andWhere("images.imageStatus=:status", {status: true})
+            .getOne();
+
+        if(!board) {// 이미지가 없는 경우 
+            return await this.createQueryBuilder("boards")
+                .leftJoinAndSelect("boards.images", "images")
+                .where("boards.boardId=:boardId", {boardId})
+                .getOne();
+        }
+        return board;
     }
 
-    
     async getAllBoards(): Promise<Boards[]> {
         return await this.find({
             where: {

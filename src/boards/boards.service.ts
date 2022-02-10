@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BoardImagesRepository } from 'src/board-images/board-images.repository';
 import { Comments } from 'src/comments/comments.entity';
 import { CommentsRepository } from 'src/comments/comments.repository';
 import { Boards } from './entity/boards.entity';
@@ -18,8 +17,6 @@ export class BoardsService {
     constructor(
         @InjectRepository(BoardsRepository) // boardservice 안에서 boardrepository 사용하기 위해서
             private boardsRepository: BoardsRepository,
-        @InjectRepository(BoardImagesRepository) 
-            private boardImagesRepository: BoardImagesRepository,
         @InjectRepository(CommentsRepository)
             private commentsRepository: CommentsRepository,
         @InjectRepository(UsersRepository)
@@ -30,7 +27,7 @@ export class BoardsService {
             private bookmarksRepository: BookmarksRepository        
     ){}
 
-    async findByBoardId(boardId: number){
+    async findByBoardId(boardId: number): Promise<Boards> {
         return await this.boardsRepository.findByBoardId(boardId);
     }
 
@@ -189,7 +186,7 @@ export class BoardsService {
         return boardsByCategory;
     }
     
-    async createBoard(files: Express.Multer.File[], createBoardDto: CreateBoardDto): Promise<Boards> {
+    async createBoard(createBoardDto: CreateBoardDto): Promise<Boards> {
         return await this.boardsRepository.createBoard(createBoardDto); // board DB에 저장
     }
 

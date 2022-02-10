@@ -4,7 +4,6 @@ import { FileFieldsInterceptor, FilesInterceptor} from '@nestjs/platform-express
 import { Boards } from './entity/boards.entity';
 import { BoardsService } from './boards.service';
 import * as AWS from 'aws-sdk';
-import * as multerS3 from 'multer-s3';
 import { ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { UpdateBoardDto } from './dto/update-board.dto';
 import { UsersService } from 'src/users/users.service';
@@ -123,10 +122,11 @@ export class BoardsController {
                     message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
                 })
 
-        const board = await this.boardsService.createBoard(files, createBoardDto); // 내용만 board에 업로드
-        await this.uploadService.uploadFile(files, board.boardId); // s3에 이미지 업로드 후 boardImage 에 업로드 (boardId 받아서 해야돼서 뒤에 위치)
+        const board = await this.boardsService.createBoard(createBoardDto); // 내용만 board에 업로드
+        if(files.length!=0) // 파일이 있는 경우만 업로드 진행
+            await this.uploadService.uploadFile(files, board.boardId); // s3에 이미지 업로드 후 boardImage 에 업로드 (boardId 받아서 해야돼서 뒤에 위치)
         const createdboard = await this.boardsService.findByBoardId(board.boardId);
-        
+
         return res
             .status(HttpStatus.CREATED)
             .json({
@@ -180,7 +180,8 @@ export class BoardsController {
                     message:`게시글을 수정할 권한이 없습니다.`
                 })  
         
-        await this.uploadService.updateFile(files, board.boardId); // s3에 이미지 업로드 후 boardImage 에 업로드
+        if(files.length!=0) // 파일이 있는 경우만 파일 수정 업로드 진행
+            await this.uploadService.updateFile(files, board.boardId); // s3에 이미지 업로드 후 boardImage 에 업로드
         const updatedBoard = await this.boardsService.updateBoard(boardId, updateBoardDto);
 
         return res

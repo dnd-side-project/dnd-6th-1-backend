@@ -43,12 +43,14 @@ export class CreateBoardDto {
     @ApiProperty({
         description: '업로드 할 이미지',
         type: 'array',
-        minItems:1,
-        maxItems:3,
+        // minItems:1,
+        // maxItems, maxLength (string에서 길이제한), maximum (숫자 범위), multipleOf
+        // maxProperties:3, // 이미지 업로드 제한...
         items: {
             type: 'string',
             format: 'binary'
         },
+        maxItems:3,
         required: false
     })
     readonly files: Express.Multer.File[];

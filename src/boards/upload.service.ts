@@ -38,7 +38,6 @@ export class UploadService {
     // flag=0으로 바꿔주고 이미지 재업로드 후 디비에 저장
     async updateFile(files: Express.Multer.File[], boardId: number) {
         await this.deleteFile(boardId); // 기존의 boardImage에 boardId 에 해당하는 이미지명을 s3에서 찾아서 삭제하고 
-
         // flag=0으로 바꿔주고 
         await this.boardImagesRepository.deleteImages(boardId);
         await this.uploadFile(files, boardId); // 이미지 재업로드
