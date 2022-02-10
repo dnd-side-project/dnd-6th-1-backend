@@ -4,11 +4,7 @@ import * as AWS from 'aws-sdk';
 import { BoardImagesRepository } from "src/board-images/board-images.repository";
 require("dotenv").config();
 
-const s3 = new AWS.S3({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: process.env.AWS_REGION
-});
+const s3 = new AWS.S3();
 
 @Injectable()
 export class UploadService {
@@ -21,9 +17,9 @@ export class UploadService {
         let s3ImageUrl = "";
         for(var i=0;i<files.length;i++){
             let s3ImageName = `${Date.now()}-${files[i].originalname}`;
-            s3ImageUrl = `${process.env.AWS_S3_URL}/image/${s3ImageName}`;
+            s3ImageUrl = `${process.env.AWS_S3_URL}/boardImages/${s3ImageName}`;
             const params = {
-                Bucket: process.env.AWS_S3_BUCKET_NAME+'/image',
+                Bucket: process.env.AWS_S3_BUCKET_NAME+'/boardImages',
                 Key: s3ImageName,
                 Body: files[i].buffer, // buffer로 해야 잘 올라감
                 ACL: 'public-read', // bucket에 조회 public 권한
@@ -50,7 +46,7 @@ export class UploadService {
 
         for(var i=0;i<images.length;i++){
             imageObject[i]={
-                Key: `image/${images[i].uploadedName}` // 키가 폴더까지 포함하고 있어야 함
+                Key: `boardImages/${images[i].uploadedName}` // 키가 폴더까지 포함하고 있어야 함
             }
         }
  

@@ -1,17 +1,14 @@
 import { HttpStatus, ParseIntPipe, Res, UploadedFiles } from '@nestjs/common';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
-import { FileFieldsInterceptor, FilesInterceptor} from '@nestjs/platform-express';
+import { FilesInterceptor} from '@nestjs/platform-express';
 import { Boards } from './entity/boards.entity';
 import { BoardsService } from './boards.service';
-import * as AWS from 'aws-sdk';
 import { ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { UpdateBoardDto } from './dto/update-board.dto';
 import { UsersService } from 'src/users/users.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UploadService } from './upload.service';
 require("dotenv").config();
-
-const s3 = new AWS.S3();
 
 @Controller('boards')
 @ApiTags('커뮤니티 글 API')
