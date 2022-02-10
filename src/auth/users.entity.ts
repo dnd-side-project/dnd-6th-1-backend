@@ -1,5 +1,6 @@
 import { Boards } from "src/boards/entity/boards.entity";
 import { Bookmarks } from "src/boards/entity/bookmarks.entity";
+import { Histories } from "src/boards/entity/histories.entity";
 import { Likes } from "src/boards/entity/likes.entity";
 import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity, OneToMany } from "typeorm";
 
@@ -53,4 +54,11 @@ export class Users extends BaseEntity {
         (bookmark) => bookmark.userId
     )
     bookmarks: Bookmarks[];
+
+    // User(1) <> Keywords(*)
+    @OneToMany(
+        () => Histories,
+        (history) => history.userId
+    )
+    histories: Histories[];
 }

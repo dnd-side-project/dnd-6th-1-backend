@@ -1,10 +1,7 @@
-import { Users } from "src/auth/users.entity";
-import { BoardImages } from "src/board-images/board-images.entity";
 import { EntityRepository, getRepository, Like, Repository } from "typeorm";
-import { CreateBoardDto } from "./dto/create-board.dto";
-import { UpdateBoardDto } from "./dto/update-board.dto";
-import { Boards } from "./entity/boards.entity";
-
+import { CreateBoardDto } from "../dto/create-board.dto";
+import { UpdateBoardDto } from "../dto/update-board.dto";
+import { Boards } from "../entity/boards.entity";
 
 @EntityRepository(Boards) // 이 클래스가 Board를 관리하는 repository 라는 것을 알려줌
 export class BoardsRepository extends Repository<Boards>{

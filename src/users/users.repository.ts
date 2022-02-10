@@ -21,6 +21,10 @@ export class UsersRepository extends Repository<Users> {
             .getMany();
     }
 
+    async createHistory(keyword: string){
+        
+    }
+
     // 작성한 글 가져오기 _ 카테고리명, 제목, 닉네임, 내용, n시간전, 이미지 개수
     async getAllBoardsByUserId(userId: number){
         return await this.createQueryBuilder("user") 
