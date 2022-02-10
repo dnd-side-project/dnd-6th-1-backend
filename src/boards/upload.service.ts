@@ -35,4 +35,34 @@ export class UploadService {
         }
     }
 
+    // flag=0으로 바꿔주고 이미지 재업로드 후 디비에 저장
+    async updateFile(files: Express.Multer.File[], boardId: number) {
+        await this.deleteFile(boardId); // 기존의 boardImage에 boardId 에 해당하는 이미지명을 s3에서 찾아서 삭제하고 
+
+        // flag=0으로 바꿔주고 
+        await this.boardImagesRepository.deleteImages(boardId);
+        await this.uploadFile(files, boardId); // 이미지 재업로드
+    }
+
+    async deleteFile(boardId: number){ // 수정할 때 어차피 삭제도 해야 함. 
+        // 기존의 boardImage에 boardId 에 해당하는 이미지명을 s3에서 찾아서 삭제하고 
+        const images = await this.boardImagesRepository.findByBoardId(boardId);
+        const imageObject = new Array();
+
+        for(var i=0;i<images.length;i++){
+            imageObject[i]={
+                Key: `image/${images[i].uploadedName}` // 키가 폴더까지 포함하고 있어야 함
+            }
+        }
+ 
+        const params = {
+            Bucket: process.env.AWS_S3_BUCKET_NAME, // 얘는 버킷 이름 그대로
+            Delete: {
+                Objects: imageObject,
+                Quiet: false
+            }
+        };
+
+        await s3.deleteObjects(params).promise();
+    }
 }

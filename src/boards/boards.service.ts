@@ -31,11 +31,7 @@ export class BoardsService {
     ){}
 
     async findByBoardId(boardId: number){
-        return this.boardsRepository.findByBoardId(boardId);
-    }
-
-    async getAllImages(boardId: number){
-        // 기존 boardImages에 boardId에 저장된 이미지 명을 찾아오기 ..!!! 
+        return await this.boardsRepository.findByBoardId(boardId);
     }
 
     // 날짜계산 -> 1초전 / 1분전 / 1시간전 / 1일전 / 
@@ -195,8 +191,10 @@ export class BoardsService {
     
     async createBoard(files: Express.Multer.File[], createBoardDto: CreateBoardDto): Promise<Boards> {
         const board = await this.boardsRepository.createBoard(createBoardDto); // board DB에 저장
-        // await this.boardImagesRepository.createBoardImage(files, board.boardId); // boardImage DB에 저장        
-        return board;
+        console.log(board.boardId);
+        const createdBoard = await this.findByBoardId(board.boardId);
+        console.log(createdBoard);
+        return createdBoard;
     }
 
     async updateBoard(boardId: number, updateBoardDto: UpdateBoardDto) {

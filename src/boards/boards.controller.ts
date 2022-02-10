@@ -124,13 +124,17 @@ export class BoardsController {
                 .json({
                     message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
                 })
-        
+
         const board = await this.boardsService.createBoard(files, createBoardDto); // 내용만 board에 업로드
+        console.log(board);
         await this.uploadService.uploadFile(files, board.boardId); // s3에 이미지 업로드 후 boardImage 에 업로드
 
         return res
             .status(HttpStatus.CREATED)
-            .json(board);
+            .json({
+                data: board,
+                message:'게시글을 업로드했습니다'
+            })
     }
 
     @Patch('/:boardId') // 커뮤니티 글 수정
@@ -156,39 +160,41 @@ export class BoardsController {
     ): Promise<any>{ 
         console.log(files); // 얘네도 boardImage에 저장하고
         console.log(updateBoardDto); // 얘네만 board에 저장하고
+    
+        const userId = +updateBoardDto.userId
+        const user = await this.usersService.findByUserId(userId);
+        if(!user)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+                })
+
+        const board = await this.boardsService.findByBoardId(boardId);
+        if(!board)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
+                })
+
+        if(board.userId != userId) // 글 작성자와 현재 로그인한 사람이 다른 경우 
+            return res
+                .status(HttpStatus.BAD_REQUEST)
+                .json({
+                    message:`게시글을 수정할 권한이 없습니다.`
+                })  
+        
+        await this.uploadService.updateFile(files, board.boardId); // s3에 이미지 업로드 후 boardImage 에 업로드
+        const updatedBoard = await this.boardsService.updateBoard(boardId, updateBoardDto);
+
+        return res
+            .status(HttpStatus.OK)
+            .json({
+                data: updatedBoard,
+                message:'게시글을 수정했습니다'
+            })
     }
-    //     const userId = +updateBoardDto.userId
-    //     const user = await this.usersService.findByUserId(userId);
-    //     if(!user)
-    //         return res
-    //             .status(HttpStatus.NOT_FOUND)
-    //             .json({
-    //                 message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
-    //             })
-
-    //     const board = await this.boardsService.findByBoardId(boardId);
-    //     if(!board)
-    //         return res
-    //             .status(HttpStatus.NOT_FOUND)
-    //             .json({
-    //                 message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
-    //             })
-
-    //     if(board.userId != userId) // 글 작성자와 현재 로그인한 사람이 다른 경우 
-    //         return res
-    //             .status(HttpStatus.BAD_REQUEST)
-    //             .json({
-    //                 message:`게시글을 수정할 권한이 없습니다.`
-    //             })  
-
-    //     const updatedBoard = await this.boardsService.updateBoard(boardId, updateBoardDto);
-    //     return res
-    //         .status(HttpStatus.OK)
-    //         .json({
-    //             data: updatedBoard,
-    //             message:'게시글을 수정했습니다'
-    //         })
-    // }
 
     @Delete('/:boardId')
     @ApiOperation({ summary : '커뮤니티 특정 글 삭제 API' })
@@ -239,7 +245,9 @@ export class BoardsController {
                 })  
 
         // 게시글 삭제 될 때 s3에 있는 이미지도 삭제 -> rds image 도 삭제
+        await this.uploadService.deleteFile(boardId); 
         this.boardsService.deleteBoard(boardId);
+
         return res
             .status(HttpStatus.OK)
             .json({

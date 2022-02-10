@@ -15,5 +15,15 @@ export class BoardImagesRepository extends Repository<BoardImages> {
         await this.save(image);
     }
 
-    // 게시글 수정 시 boardImage 처리
+    async findByBoardId(boardId: number){
+        return await this.createQueryBuilder("boardImage")
+            .select("boardImage.uploadedName")
+            .where("boardImage.boardId =:boardId", {boardId})
+            .getMany();
+    }
+
+    // 이미지 삭제 imageStatus = false 로 변경
+    async deleteImages(boardId: number) {
+        await this.update({boardId}, {imageStatus: false});
+    }
 }
