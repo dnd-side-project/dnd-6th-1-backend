@@ -42,7 +42,9 @@ export class CreateBoardDto {
 
     @ApiProperty({
         description: '업로드 할 이미지',
-        type: 'array',     
+        type: 'array',
+        minItems:1,
+        maxItems:3,
         items: {
             type: 'string',
             format: 'binary'

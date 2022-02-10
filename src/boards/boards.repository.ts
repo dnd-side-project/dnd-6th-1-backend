@@ -9,21 +9,14 @@ import { Boards } from "./entity/boards.entity";
 export class BoardsRepository extends Repository<Boards>{
     // const user = await this.users.findOne({ email }, { select: ['id', 'password'] });
 
-    // async findByBoardId(boardId: number): Promise<Boards>{ // 삭제 안 된 게시물들만 반환
-        // return await this.findOne({boardId, postStatus: true}, { 
-        //     relations: ["images"],
-        // });
-    // }
-
-    // 이미지의 
+    //board- image 를 가져오는데 여기서 imageStatus가 true인 애들만 가져오기
     async findByBoardId(boardId: number){ // 삭제 안 된 게시물들만 반환
         const query = await this.createQueryBuilder("boards") 
             .leftJoinAndSelect("boards.images","images") // board 테이블에 image 게시물 join (이미지가 없는 애도 갯수 세야 하므로)
-            .where("images.imageStatus=:status", {status: true}) // 이미지가 삭제되지 않은 경우만
-            .andWhere("boards.boardId=:boardId", {boardId})
+            .where("boards.boardId=:boardId", {boardId})
+            .andWhere("images.imageStatus=:status", {status: true}) // 이미지가 삭제되지 않은 경우만
             .andWhere("boards.postStatus=:status", {status: true}) // 게시글이 삭제되지 않은 경우만
             .getMany();
-        console.log(query);
         return query[0];   
     }
 

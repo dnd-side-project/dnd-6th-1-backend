@@ -114,8 +114,6 @@ export class BoardsController {
         @UploadedFiles() files: Express.Multer.File[],
         @Body() createBoardDto: CreateBoardDto
     ): Promise<any> {
-        // console.log(files); // 얘네도 boardImage에 저장하고
-        // console.log(createBoardDto); // 얘네만 board에 저장하고
         const userId = +createBoardDto.userId
         const user = await this.usersService.findByUserId(userId);
         if(!user)
@@ -126,13 +124,13 @@ export class BoardsController {
                 })
 
         const board = await this.boardsService.createBoard(files, createBoardDto); // 내용만 board에 업로드
-        console.log(board);
-        await this.uploadService.uploadFile(files, board.boardId); // s3에 이미지 업로드 후 boardImage 에 업로드
-
+        await this.uploadService.uploadFile(files, board.boardId); // s3에 이미지 업로드 후 boardImage 에 업로드 (boardId 받아서 해야돼서 뒤에 위치)
+        const createdboard = await this.boardsService.findByBoardId(board.boardId);
+        
         return res
             .status(HttpStatus.CREATED)
             .json({
-                data: board,
+                data: createdboard,
                 message:'게시글을 업로드했습니다'
             })
     }
@@ -158,9 +156,6 @@ export class BoardsController {
         @UploadedFiles() files: Express.Multer.File[],
         @Body() updateBoardDto: UpdateBoardDto
     ): Promise<any>{ 
-        console.log(files); // 얘네도 boardImage에 저장하고
-        console.log(updateBoardDto); // 얘네만 board에 저장하고
-    
         const userId = +updateBoardDto.userId
         const user = await this.usersService.findByUserId(userId);
         if(!user)

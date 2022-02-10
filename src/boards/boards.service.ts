@@ -190,11 +190,7 @@ export class BoardsService {
     }
     
     async createBoard(files: Express.Multer.File[], createBoardDto: CreateBoardDto): Promise<Boards> {
-        const board = await this.boardsRepository.createBoard(createBoardDto); // board DB에 저장
-        console.log(board.boardId);
-        const createdBoard = await this.findByBoardId(board.boardId);
-        console.log(createdBoard);
-        return createdBoard;
+        return await this.boardsRepository.createBoard(createBoardDto); // board DB에 저장
     }
 
     async updateBoard(boardId: number, updateBoardDto: UpdateBoardDto) {

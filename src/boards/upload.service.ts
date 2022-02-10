@@ -64,5 +64,6 @@ export class UploadService {
         };
 
         await s3.deleteObjects(params).promise();
+        await this.boardImagesRepository.deleteImages(boardId);
     }
 }
