@@ -1,14 +1,15 @@
 import { HttpStatus, ParseIntPipe, Res, UploadedFiles } from '@nestjs/common';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
-import { FilesInterceptor} from '@nestjs/platform-express';
+import { FileFieldsInterceptor, FilesInterceptor} from '@nestjs/platform-express';
 import { Boards } from './entity/boards.entity';
 import { BoardsService } from './boards.service';
 import * as AWS from 'aws-sdk';
 import * as multerS3 from 'multer-s3';
-import { ApiBody, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { CreateBoardFirstDto } from './dto/create-board-first.dto';
+import { ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { UpdateBoardDto } from './dto/update-board.dto';
 import { UsersService } from 'src/users/users.service';
+import { CreateBoardDto } from './dto/create-board.dto';
+import { UploadService } from './upload.service';
 require("dotenv").config();
 
 const s3 = new AWS.S3();
@@ -18,7 +19,8 @@ const s3 = new AWS.S3();
 export class BoardsController {
     constructor(
         private readonly boardsService: BoardsService, 
-        private readonly usersService : UsersService    
+        private readonly usersService : UsersService,
+        private readonly uploadService: UploadService
     ){}
 
     @Get() // 커뮤니티 전체 글 조회 / 카테고리별 조회 / 검색어별 조회
@@ -103,34 +105,18 @@ export class BoardsController {
     }
 
     @Post() // 커뮤니티 글 작성
-    @ApiOperation({ 
-        summary : '커뮤니티 글 작성 API',
-        description: '이미지가 포함된 테스트는 postman 을 이용해서 해야 합니다. \
-        userId는 원래 type이 number인데 postman 에서 이미지와 함께 테스트 할 때 \
-        불가피하게 text로 받아야 해서 string으로 처리했습니다.'
-    })
-    @ApiBody({ type : CreateBoardFirstDto })
-    @UseInterceptors(
-        FilesInterceptor('files', 3, {
-            storage: multerS3({ 
-                s3: s3,
-                bucket: process.env.AWS_S3_BUCKET_NAME,
-                contentType: multerS3.AUTO_CONTENT_TYPE, 
-                acl: 'public-read',
-                key: function (request, file, cb) { // files  for문 돌듯이 먼저 실행
-                    file.encoding = 'utf-8';
-                    let S3ImageName = `boardImages/${Date.now().toString()}-${file.originalname}`; // 파일 올리면 해당 파일의 이름을 받아옴 -> S3에 저장되는 이름
-                    cb(null, S3ImageName);   
-                },
-            }),
-        })
-    )
+    @ApiOperation({ summary : '커뮤니티 글 작성 API' })
+    @UseInterceptors(FilesInterceptor('files'))
+    @ApiConsumes('multipart/form-data') // swagger에 input file 추가
+    @ApiBody({ type : CreateBoardDto })
     async createBoard(
-        @Res() res, 
-        @UploadedFiles() files: Express.Multer.File[], 
-        @Body() createBoardFirstDto: CreateBoardFirstDto,
+        @Res() res,
+        @UploadedFiles() files: Express.Multer.File[],
+        @Body() createBoardDto: CreateBoardDto
     ): Promise<any> {
-        const userId = +createBoardFirstDto.userId
+        console.log(files); // 얘네도 boardImage에 저장하고
+        console.log(createBoardDto); // 얘네만 board에 저장하고
+        const userId = +createBoardDto.userId
         const user = await this.usersService.findByUserId(userId);
         if(!user)
             return res
@@ -138,99 +124,71 @@ export class BoardsController {
                 .json({
                     message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
                 })
+        
+        await this.uploadService.uploadFile(files); // s3에 이미지 업로드 
+        const board = await this.boardsService.createBoard(files, createBoardDto);
 
-        const board = await this.boardsService.createBoard(files, createBoardFirstDto);
-
-        return res
-            .status(HttpStatus.CREATED)
-            .json({
-                data: board,
-                message:'게시글을 등록했습니다.'
-            });
+        // return res
+        //     .status(HttpStatus.CREATED)
+        //     .json(h);
     }
 
     @Patch('/:boardId') // 커뮤니티 글 수정
-    @ApiOperation({ 
-        summary : '커뮤니티 특정 글 수정 API',
-        description: '이미지가 포함된 테스트는 postman 을 이용해서 해야 합니다. \
-        userId는 원래 type이 number인데 postman 에서 이미지와 함께 테스트 할 때 \
-        불가피하게 text로 받아야 해서 string으로 처리했습니다.'
-    })
+    @ApiOperation({ summary : '커뮤니티 특정 글 수정 API' })
     @ApiParam({
         name: 'boardId',
         required: true,
         description: '게시글 번호',
     })
-    @ApiBody({ type : CreateBoardFirstDto })
-    @UseInterceptors(
-        FilesInterceptor('files', 3, {
-            storage: multerS3({ 
-            s3: s3,
-            bucket: process.env.AWS_S3_BUCKET_NAME,
-            contentType: multerS3.AUTO_CONTENT_TYPE, 
-            acl: 'public-read',
-            key: function (request, file, cb) { // files  for문 돌듯이 먼저 실행
-                // var params = {
-                //     Bucket: process.env.AWS_S3_BUCKET_NAME, 
-                //     Key: "objectkey.jpg" //(하나면)
-                //     // Objects: [
-                //     //     { Key: "어쩌구" },
-                //     //     { Key: "저쩌구" }
-                //     // ],
-                // };
-                // s3.deleteObject(params, function(err, data) {
-                //     if (err) 
-                //        console.log(err, err.stack); // an error occurred
-                //     else     
-                //        console.log(data);           // successful response
-                // });
-                
-                file.encoding = 'utf-8';
-                let S3ImageName = `boardImages/${Date.now().toString()}-${file.originalname}`; // 파일 올리면 해당 파일의 이름을 받아옴 -> S3에 저장되는 이름
-                cb(null, S3ImageName);   
-            },
-        }),
-    }))
+    @UseInterceptors(FilesInterceptor('files'))
+    @ApiConsumes('multipart/form-data') // swagger에 input file 추가
+    @ApiBody({ type : CreateBoardDto })
+    //기존의 boardImage에 boardId 에 해당하는 이미지명을 s3에서 찾아서 삭제하고 
+    //flag=0으로 바꿔주고 이미지 재업로드 후 디비에 저장
     async updateBoard(
         @Res() res, 
         @Param("boardId", new ParseIntPipe({
             errorHttpStatusCode: HttpStatus.BAD_REQUEST
         }))
         boardId: number, 
+        @UploadedFiles() files: Express.Multer.File[],
         @Body() updateBoardDto: UpdateBoardDto
-    ){ 
-        const userId = +updateBoardDto.userId
-        const user = await this.usersService.findByUserId(userId);
-        if(!user)
-            return res
-                .status(HttpStatus.NOT_FOUND)
-                .json({
-                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
-                })
-
-        const board = await this.boardsService.findByBoardId(boardId);
-        if(!board)
-            return res
-                .status(HttpStatus.NOT_FOUND)
-                .json({
-                    message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
-                })
-
-        if(board.userId != userId) // 글 작성자와 현재 로그인한 사람이 다른 경우 
-            return res
-                .status(HttpStatus.BAD_REQUEST)
-                .json({
-                    message:`게시글을 수정할 권한이 없습니다.`
-                })  
-
-        const updatedBoard = await this.boardsService.updateBoard(boardId, updateBoardDto);
-        return res
-            .status(HttpStatus.OK)
-            .json({
-                data: updatedBoard,
-                message:'게시글을 수정했습니다'
-            })
+    ): Promise<any>{ 
+        console.log(files); // 얘네도 boardImage에 저장하고
+        console.log(updateBoardDto); // 얘네만 board에 저장하고
     }
+    //     const userId = +updateBoardDto.userId
+    //     const user = await this.usersService.findByUserId(userId);
+    //     if(!user)
+    //         return res
+    //             .status(HttpStatus.NOT_FOUND)
+    //             .json({
+    //                 message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+    //             })
+
+    //     const board = await this.boardsService.findByBoardId(boardId);
+    //     if(!board)
+    //         return res
+    //             .status(HttpStatus.NOT_FOUND)
+    //             .json({
+    //                 message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
+    //             })
+
+    //     if(board.userId != userId) // 글 작성자와 현재 로그인한 사람이 다른 경우 
+    //         return res
+    //             .status(HttpStatus.BAD_REQUEST)
+    //             .json({
+    //                 message:`게시글을 수정할 권한이 없습니다.`
+    //             })  
+
+    //     const updatedBoard = await this.boardsService.updateBoard(boardId, updateBoardDto);
+    //     return res
+    //         .status(HttpStatus.OK)
+    //         .json({
+    //             data: updatedBoard,
+    //             message:'게시글을 수정했습니다'
+    //         })
+    // }
 
     @Delete('/:boardId')
     @ApiOperation({ summary : '커뮤니티 특정 글 삭제 API' })

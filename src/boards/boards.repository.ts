@@ -1,6 +1,6 @@
 import { Users } from "src/auth/users.entity";
 import { EntityRepository, getRepository, Like, Repository } from "typeorm";
-import { CreateBoardFirstDto } from "./dto/create-board-first.dto";
+import { CreateBoardDto } from "./dto/create-board.dto";
 import { UpdateBoardDto } from "./dto/update-board.dto";
 import { Boards } from "./entity/boards.entity";
 
@@ -22,9 +22,9 @@ export class BoardsRepository extends Repository<Boards>{
     }
 
     // 게시글 등록시 board DB
-    async createBoard(createBoardFirstDto: CreateBoardFirstDto): Promise<Boards> {
-        const { userId, categoryName, postTitle, postContent } = createBoardFirstDto;
-        const userIdToNumber: number = +userId;
+    async createBoard(createBoardDto: CreateBoardDto): Promise<Boards> {
+        const { userId, categoryName, postTitle, postContent } = createBoardDto;
+        const userIdToNumber: number = +userId; // form-data 형태로 받아야해서 userId가 string 값이므로 number로 변환
         const board = {
             userId: userIdToNumber,
             categoryName,

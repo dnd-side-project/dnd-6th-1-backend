@@ -5,13 +5,13 @@ import { Comments } from 'src/comments/comments.entity';
 import { CommentsRepository } from 'src/comments/comments.repository';
 import { Boards } from './entity/boards.entity';
 import { BoardsRepository } from './boards.repository';
-import { CreateBoardFirstDto } from './dto/create-board-first.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
 import { LikesRepository } from './likes.repository';
 import { BookmarksRepository } from './bookmarks.repository';
 import { Likes } from './entity/likes.entity';
 import { Bookmarks } from './entity/bookmarks.entity';
 import { UsersRepository } from 'src/users/users.repository';
+import { CreateBoardDto } from './dto/create-board.dto';
 
 @Injectable()
 export class BoardsService {
@@ -34,7 +34,11 @@ export class BoardsService {
         return this.boardsRepository.findByBoardId(boardId);
     }
 
-    // 날짜계산 -> 2초전 / 1분전 / 1시간전 / 1일전 / 
+    async getAllImages(boardId: number){
+        // 기존 boardImages에 boardId에 저장된 이미지 명을 찾아오기 ..!!! 
+    }
+
+    // 날짜계산 -> 1초전 / 1분전 / 1시간전 / 1일전 / 
     static async calculateTime(date: Date, created: Date): Promise<string>{
         var distance = date.getTime() - created.getTime();
         var day = Math.floor(distance / (1000 * 60 * 60 * 24));
@@ -188,9 +192,9 @@ export class BoardsService {
         );
         return boardsByCategory;
     }
-
-    async createBoard(files: Express.Multer.File[], createBoardFirstDto: CreateBoardFirstDto): Promise<Boards> {
-        const board = await this.boardsRepository.createBoard(createBoardFirstDto); // board DB에 저장
+    
+    async createBoard(files: Express.Multer.File[], createBoardDto: CreateBoardDto): Promise<Boards> {
+        const board = await this.boardsRepository.createBoard(createBoardDto); // board DB에 저장
         await this.boardImagesRepository.createBoardImage(files, board.boardId); // boardImage DB에 저장        
         return board;
     }

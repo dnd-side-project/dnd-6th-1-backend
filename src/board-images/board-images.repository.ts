@@ -8,19 +8,25 @@ export class BoardImagesRepository extends Repository<BoardImages> {
 
     // 게시글 등록 시 boardImage DB에 이미지 저장
     async createBoardImage(files: Express.Multer.File[], boardId: number){
-        try {
-            if(files==null)
-                return;
-            for(const element of files){
-                const image = new BoardImages();
-                image.originalName = element.originalname
-                image.imageUrl = element['location']
-                image.boardId = boardId; 
-                await this.save(image);
+        if(files==null)
+            return;
+        for(const element of files){
+            // const image = new BoardImages();
+            console.log(element);
+            const image = {
+                imageUrl: element['location'],
+                originalName: element.originalname,
+                uploadedName: element['location'].split('images/')[1],
+                boardId 
             }
-        } catch (error) {
-            Logger.error(error)
-            throw new BadRequestException(error.message)
+
+            // image.imageUrl = element['location']
+            // image.originalName = element.originalname
+            // image.uploadedName = element['location'].split('boardImages/')[1];
+            // image.boardId = boardId; 
+            await this.save(image);
         }
     }
+
+    // 게시글 수정 시 boardImage 처리 
 }
