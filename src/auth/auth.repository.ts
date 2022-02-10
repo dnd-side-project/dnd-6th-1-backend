@@ -21,8 +21,7 @@ export class AuthRepository extends Repository<Users> {
         
         try {
             // user 생성
-            await this.save(user);
-            
+            await this.save(user); 
         } catch (error) {
             // 이미 존재하는 nickname
             if(error.code === '23505') {

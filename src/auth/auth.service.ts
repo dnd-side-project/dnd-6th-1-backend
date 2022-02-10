@@ -4,6 +4,7 @@ import { AuthCredentialsDto } from './dto/auth-credential.dto';
 import * as bcrypt from 'bcryptjs';
 import { AuthRepository } from './auth.repository';
 import { JwtService } from '@nestjs/jwt';
+import { AuthSignInDto } from './dto/auth-signin.dto';
 
 
 
@@ -11,7 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 export class AuthService {
     constructor(
         @InjectRepository(AuthRepository)
-            private authRepository: AuthRepository,
+        private authRepository: AuthRepository,
         private jwtService : JwtService,
     ) { }
 
@@ -24,8 +25,8 @@ export class AuthService {
 
     // 로그인 : email, pw 입력
     // 로그인
-    async signIn(authCredentialsDto: AuthCredentialsDto): Promise<{accessToken: string}> {
-        const {email, password} = authCredentialsDto;
+    async signIn(authsigninDto: AuthSignInDto): Promise<string> {
+        const {email, password} = authsigninDto;
         // username 찾기
         const user = await this.authRepository.findOne({email});
 
@@ -34,10 +35,9 @@ export class AuthService {
             // 유저 토큰 생성 (Secret + Payload) -> payload에 중요한 정보는 넣으면 안됨
             const payload = { email };
             const accessToken = await this.jwtService.sign(payload);
-
-            return { accessToken };
+            return accessToken;
         } else {        // 로그인 실패
-            throw new UnauthorizedException('login faild')
+            throw new UnauthorizedException('login faild');
         }
     }
 }

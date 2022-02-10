@@ -1,10 +1,12 @@
 import { Body, Controller, Get, HttpStatus, Param, ParseIntPipe, Post, Req, Res, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthCredentialsDto } from './dto/auth-credential.dto';
+import { AuthSignInDto } from './dto/auth-signin.dto';
 import { GetUser } from './get-user.decorator';
 import { Users } from './users.entity';
 import { ApiTags, ApiOperation, ApiCreatedResponse, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
+import { AccessToken } from 'aws-sdk/clients/amplify';
 
 
 
@@ -47,11 +49,25 @@ export class AuthController {
         return this.authService.ckNickname(nickname);
     }
     */
+    
 
     
     @Post('/signin')
-    signIn(@Body(ValidationPipe) authcredentialsDto: AuthCredentialsDto) {
-        return this.authService.signIn(authcredentialsDto)
+    async signIn(
+        @Res() res,
+        @Body(ValidationPipe) authsigninDto: AuthSignInDto
+        ): Promise<string> {
+            
+            const accessToken = await this.authService.signIn(authsigninDto);
+            if(accessToken){
+                console.log(accessToken);
+                return res
+                        .json({
+                            accessToken: accessToken,
+                            message: '로그인 성공',
+                            flag: 1
+                        })
+            }
     }
 
     @Post('/test')
