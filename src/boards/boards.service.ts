@@ -195,7 +195,7 @@ export class BoardsService {
     
     async createBoard(files: Express.Multer.File[], createBoardDto: CreateBoardDto): Promise<Boards> {
         const board = await this.boardsRepository.createBoard(createBoardDto); // board DB에 저장
-        await this.boardImagesRepository.createBoardImage(files, board.boardId); // boardImage DB에 저장        
+        // await this.boardImagesRepository.createBoardImage(files, board.boardId); // boardImage DB에 저장        
         return board;
     }
 

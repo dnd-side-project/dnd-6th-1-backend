@@ -114,8 +114,8 @@ export class BoardsController {
         @UploadedFiles() files: Express.Multer.File[],
         @Body() createBoardDto: CreateBoardDto
     ): Promise<any> {
-        console.log(files); // 얘네도 boardImage에 저장하고
-        console.log(createBoardDto); // 얘네만 board에 저장하고
+        // console.log(files); // 얘네도 boardImage에 저장하고
+        // console.log(createBoardDto); // 얘네만 board에 저장하고
         const userId = +createBoardDto.userId
         const user = await this.usersService.findByUserId(userId);
         if(!user)
@@ -125,12 +125,12 @@ export class BoardsController {
                     message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
                 })
         
-        await this.uploadService.uploadFile(files); // s3에 이미지 업로드 
-        const board = await this.boardsService.createBoard(files, createBoardDto);
+        const board = await this.boardsService.createBoard(files, createBoardDto); // 내용만 board에 업로드
+        await this.uploadService.uploadFile(files, board.boardId); // s3에 이미지 업로드 후 boardImage 에 업로드
 
-        // return res
-        //     .status(HttpStatus.CREATED)
-        //     .json(h);
+        return res
+            .status(HttpStatus.CREATED)
+            .json(board);
     }
 
     @Patch('/:boardId') // 커뮤니티 글 수정
