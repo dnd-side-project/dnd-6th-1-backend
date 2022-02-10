@@ -11,19 +11,6 @@ export class BoardsRepository extends Repository<Boards>{
     async findByBoardId(boardId: number){ // 삭제 안 된 게시물들만 반환
         return await this.findOne({boardId, postStatus: true}, { relations: ["images"] });
     }
-
-    //
-    // async getAllBoardsByUserId(userId: number): Promise<Boards[]>{
-    //     return await getRepository(Boards)
-    //         .createQueryBuilder("board")
-    //         .innerJoinAndSelect(
-    //             "user.boards", "boards",
-    //             "board.postTitle"
-    //         )
-    //         .where("board.userId=:userId", {userId})
-    //         .getMany();
-    //         // 카테고리명, 제목, 닉네임, 내용, n시간전, 이미지 개수
-    // }
     
     async getAllBoards(): Promise<Boards[]> {
         return await this.find({
