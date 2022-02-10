@@ -1,19 +1,13 @@
 import { Body, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BoardsRepository } from 'src/boards/boards.repository';
 import { BoardsService } from 'src/boards/boards.service';
 import { UsersRepository } from './users.repository';
-
-
-
 
 @Injectable()
 export class UsersService {
     constructor(
         @InjectRepository(UsersRepository)
-        private usersRepository: UsersRepository,
-        @InjectRepository(BoardsRepository) // boardservice 안에서 boardrepository 사용하기 위해서
-            private boardsRepository: BoardsRepository,
+            private usersRepository: UsersRepository,
     ) { }
     
 
@@ -22,14 +16,26 @@ export class UsersService {
     } 
 
     async getAllBoardsByUserId(userId: number) {
-        const boardsByUserId = await this.usersRepository.getAllBoardsByUserId(userId);
-        const array = new Array();
-        array[0] = boardsByUserId[0];
-        for(var i=0;i<boardsByUserId[0]['boards'].length;i++){
-            var createdAt = boardsByUserId[0]['boards'][i].postCreated;
-            var imageCnt = boardsByUserId[0]['boards'][i].images.length;
-            array[0]['boards'][i].postCreated = await BoardsService.calculateTime(new Date(), createdAt);
+        const boardsById = await this.usersRepository.getAllBoardsByUserId(userId);
+        for(var i=0;i<boardsById.length;i++){
+            boardsById[i]['createdAt'] = await BoardsService.calculateTime(new Date(), boardsById[i]['createdAt']);
         }
-        return array;
+        return boardsById;
+    }
+
+    async getAllBoardsByComments(userId: number){
+        const boardsByComment = await this.usersRepository.getAllBoardsByComments(userId);
+        for(var i=0;i<boardsByComment.length;i++){
+            boardsByComment[i]['createdAt'] = await BoardsService.calculateTime(new Date(), boardsByComment[i]['createdAt']);
+        }
+        return boardsByComment;
+    }
+
+    async getAllBoardsByBookmark(userId: number){
+        const boardsByBookmark = await this.usersRepository.getAllBoardsByBookmark(userId);
+        for(var i=0;i<boardsByBookmark.length;i++){
+            boardsByBookmark[i]['createdAt'] = await BoardsService.calculateTime(new Date(), boardsByBookmark[i]['createdAt']);
+        }
+        return boardsByBookmark;
     }
 }
