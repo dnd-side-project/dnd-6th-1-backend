@@ -11,6 +11,7 @@ import { UsersService } from 'src/users/users.service';
 import { UsersRepository } from 'src/users/users.repository';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { UploadService } from './upload.service';
 
 
 
@@ -34,6 +35,6 @@ import { PassportModule } from '@nestjs/passport';
     BookmarksRepository
   ])], // 데이터베이스 커넥션 맺으며 사용할 엔티티를 리스트로 받기
   controllers: [BoardsController],
-  providers: [BoardsService, UsersService]
+  providers: [BoardsService, UsersService, UploadService]
 })
 export class BoardsModule {}
