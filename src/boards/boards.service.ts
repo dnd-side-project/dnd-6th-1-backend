@@ -3,14 +3,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Comments } from 'src/comments/comments.entity';
 import { CommentsRepository } from 'src/comments/comments.repository';
 import { Boards } from './entity/boards.entity';
-import { BoardsRepository } from './boards.repository';
+import { BoardsRepository } from './repository/boards.repository';
 import { UpdateBoardDto } from './dto/update-board.dto';
-import { LikesRepository } from './likes.repository';
-import { BookmarksRepository } from './bookmarks.repository';
+import { LikesRepository } from './repository/likes.repository';
+import { BookmarksRepository } from './repository/bookmarks.repository';
 import { Likes } from './entity/likes.entity';
 import { Bookmarks } from './entity/bookmarks.entity';
 import { UsersRepository } from 'src/users/users.repository';
 import { CreateBoardDto } from './dto/create-board.dto';
+import { HistoriesRepository } from './repository/histories.repository';
 
 @Injectable()
 export class BoardsService {
@@ -24,7 +25,9 @@ export class BoardsService {
         @InjectRepository(LikesRepository)
             private likesRepository: LikesRepository,
         @InjectRepository(BookmarksRepository)
-            private bookmarksRepository: BookmarksRepository        
+            private bookmarksRepository: BookmarksRepository,
+        @InjectRepository(HistoriesRepository)
+            private historiesRepository: HistoriesRepository      
     ){}
 
     async findByBoardId(boardId: number): Promise<Boards> {
@@ -158,7 +161,6 @@ export class BoardsService {
         return totalBoards;
     }
 
-    // 게시판 글 조회 ( )
     async getAllBoardsByKeyword(keyword: string) { // 검색어별 조회
         const totalBoards = await this.getAllBoards();
         const boardsByKeyword = totalBoards.filter(board =>  // true를 반환하는 요소를 기준으로 신규 배열을 만들어 반환

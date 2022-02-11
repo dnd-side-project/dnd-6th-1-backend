@@ -19,6 +19,9 @@ export class BoardsController {
         private readonly uploadService: UploadService
     ){}
 
+// 커뮤니티 검색을 그대로 가고 
+// keyword 받아와서 그대로 /users/{userId}/history로 호출하는ㅂ ㅏㅇ식
+
     @Get() // 커뮤니티 전체 글 조회 / 카테고리별 조회 / 검색어별 조회
     @ApiOperation({ 
         summary: '커뮤니티 메인화면에서 전체 글 조회 API'
@@ -49,7 +52,7 @@ export class BoardsController {
                         message:'2글자 이상 입력해주세요.'
                     }) 
             }
-            boards = await this.boardsService.getAllBoardsByKeyword(keyword);
+            boards = await this.boardsService.getAllBoardsByKeyword(keyword); // 검색결과 반환
         }    
         else if(keyword==null && category!=null){ // 카테고리별 조회
             if(['부정','화','타협','슬픔','수용'].includes(category)){
