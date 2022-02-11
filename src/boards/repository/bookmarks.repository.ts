@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from "typeorm";
-import { Bookmarks } from "./entity/bookmarks.entity";
+import { Bookmarks } from "../entity/bookmarks.entity";
 
 @EntityRepository(Bookmarks) 
 export class BookmarksRepository extends Repository<Bookmarks>{

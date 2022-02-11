@@ -1,6 +1,5 @@
 import { EntityRepository, Like, Repository } from "typeorm";
-import { UpdateBoardDto } from "./dto/update-board.dto";
-import { Likes } from "./entity/likes.entity";
+import { Likes } from "../entity/likes.entity";
 
 
 @EntityRepository(Likes) 

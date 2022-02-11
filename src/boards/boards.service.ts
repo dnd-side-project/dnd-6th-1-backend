@@ -3,14 +3,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Comments } from 'src/comments/comments.entity';
 import { CommentsRepository } from 'src/comments/comments.repository';
 import { Boards } from './entity/boards.entity';
-import { BoardsRepository } from './boards.repository';
+import { BoardsRepository } from './repository/boards.repository';
 import { UpdateBoardDto } from './dto/update-board.dto';
-import { LikesRepository } from './likes.repository';
-import { BookmarksRepository } from './bookmarks.repository';
+import { LikesRepository } from './repository/likes.repository';
+import { BookmarksRepository } from './repository/bookmarks.repository';
 import { Likes } from './entity/likes.entity';
 import { Bookmarks } from './entity/bookmarks.entity';
 import { UsersRepository } from 'src/users/users.repository';
 import { CreateBoardDto } from './dto/create-board.dto';
+import { HistoriesRepository } from './repository/histories.repository';
 
 @Injectable()
 export class BoardsService {
@@ -24,7 +25,9 @@ export class BoardsService {
         @InjectRepository(LikesRepository)
             private likesRepository: LikesRepository,
         @InjectRepository(BookmarksRepository)
-            private bookmarksRepository: BookmarksRepository        
+            private bookmarksRepository: BookmarksRepository,
+        @InjectRepository(HistoriesRepository)
+            private historiesRepository: HistoriesRepository      
     ){}
 
     async findByBoardId(boardId: number): Promise<Boards> {
@@ -58,10 +61,10 @@ export class BoardsService {
         const board = await this.boardsRepository.findByBoardId(boardId);
         const parentComments = await this.commentsRepository.getParentComments(boardId); // 부모 댓글 가져오기
         for(var i=0;i<parentComments.length;i++){ // 부모 댓글 for문 돌고 
-            const { commentContent, userId } = parentComments[i]; // 댓글 작성자
+            const { commentCreated, commentContent, userId } = parentComments[i]; // 댓글 작성자
             const commentUser = await this.usersRepository.findByUserId(userId);
-            const { nickname, profileImage } = commentUser;
-            const createdAt = await BoardsService.calculateTime(new Date(), parentComments[i].commentCreated); // 부모 댓글 시간 계산
+            const { nickname, profileImage } = commentUser;            
+            const createdAt = await BoardsService.calculateTime(new Date(), commentCreated); // 부모 댓글 시간 계산
             var canEdit = (commentUser.loginStatus == true)? true : false // 댓글 작성자 / 로그인한 사용자가 동일한 경우
             var writerOrNot = (userId == board.userId) ? true : false // 댓글 작성자 / 글 작성자가 동일한 경우
             const comment = { // 부모댓글
@@ -76,10 +79,12 @@ export class BoardsService {
             const allReplies = new Array();
             const replies = await this.commentsRepository.getChildComments(boardId, parentComments[i].groupId); // 각 부모댓글에 해당하는 대댓글 가져오기
             for(var j=0;j<replies.length;j++){
-                const { commentContent, userId } = replies[j];
+                console.log(replies[j]);
+                const { commentCreated, commentContent, userId } = replies[j];
                 const replyUser = await this.usersRepository.findByUserId(userId);
                 const { nickname, profileImage } = replyUser;
-                const createdAt = await BoardsService.calculateTime(new Date(), replies[i].commentCreated); // 자식 댓글 시간 계산
+
+                const createdAt = await BoardsService.calculateTime(new Date(), commentCreated); // 자식 댓글 시간 계산
                 var canEdit = (replyUser.loginStatus == true) ? true : false // 대댓글 작성자 / 로그인한 사용자가 동일한 경우
                 var writerOrNot = (userId == board.userId) ? true : false // 대댓글 작성자와 글 작성자가 동일한 경우
                  const reply = {
@@ -158,7 +163,6 @@ export class BoardsService {
         return totalBoards;
     }
 
-    // 게시판 글 조회 ( )
     async getAllBoardsByKeyword(keyword: string) { // 검색어별 조회
         const totalBoards = await this.getAllBoards();
         const boardsByKeyword = totalBoards.filter(board =>  // true를 반환하는 요소를 기준으로 신규 배열을 만들어 반환
