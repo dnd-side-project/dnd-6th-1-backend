@@ -61,10 +61,10 @@ export class BoardsService {
         const board = await this.boardsRepository.findByBoardId(boardId);
         const parentComments = await this.commentsRepository.getParentComments(boardId); // 부모 댓글 가져오기
         for(var i=0;i<parentComments.length;i++){ // 부모 댓글 for문 돌고 
-            const { commentContent, userId } = parentComments[i]; // 댓글 작성자
+            const { commentCreated, commentContent, userId } = parentComments[i]; // 댓글 작성자
             const commentUser = await this.usersRepository.findByUserId(userId);
-            const { nickname, profileImage } = commentUser;
-            const createdAt = await BoardsService.calculateTime(new Date(), parentComments[i].commentCreated); // 부모 댓글 시간 계산
+            const { nickname, profileImage } = commentUser;            
+            const createdAt = await BoardsService.calculateTime(new Date(), commentCreated); // 부모 댓글 시간 계산
             var canEdit = (commentUser.loginStatus == true)? true : false // 댓글 작성자 / 로그인한 사용자가 동일한 경우
             var writerOrNot = (userId == board.userId) ? true : false // 댓글 작성자 / 글 작성자가 동일한 경우
             const comment = { // 부모댓글
@@ -79,10 +79,12 @@ export class BoardsService {
             const allReplies = new Array();
             const replies = await this.commentsRepository.getChildComments(boardId, parentComments[i].groupId); // 각 부모댓글에 해당하는 대댓글 가져오기
             for(var j=0;j<replies.length;j++){
-                const { commentContent, userId } = replies[j];
+                console.log(replies[j]);
+                const { commentCreated, commentContent, userId } = replies[j];
                 const replyUser = await this.usersRepository.findByUserId(userId);
                 const { nickname, profileImage } = replyUser;
-                const createdAt = await BoardsService.calculateTime(new Date(), replies[i].commentCreated); // 자식 댓글 시간 계산
+
+                const createdAt = await BoardsService.calculateTime(new Date(), commentCreated); // 자식 댓글 시간 계산
                 var canEdit = (replyUser.loginStatus == true) ? true : false // 대댓글 작성자 / 로그인한 사용자가 동일한 경우
                 var writerOrNot = (userId == board.userId) ? true : false // 대댓글 작성자와 글 작성자가 동일한 경우
                  const reply = {
