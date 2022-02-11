@@ -8,7 +8,6 @@ import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity, OneToMany }
 @Entity()
 @Unique(['email'])
 export class Users extends BaseEntity {
-    
 
     @PrimaryGeneratedColumn()
     userId: number;
@@ -34,7 +33,7 @@ export class Users extends BaseEntity {
     @Column()
     profileImage: string;
 
-    // User(1) <> Likes(*)
+    // User(1) <> Boards(*)
     @OneToMany(
         () => Boards,
         (board) => board.userId
@@ -55,7 +54,7 @@ export class Users extends BaseEntity {
     )
     bookmarks: Bookmarks[];
 
-    // User(1) <> Keywords(*)
+    // User(1) <> Histories(*)
     @OneToMany(
         () => Histories,
         (history) => history.userId

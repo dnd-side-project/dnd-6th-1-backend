@@ -4,6 +4,7 @@ import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColu
 
 @Entity()
 export class Histories extends BaseEntity{
+    
     @ApiProperty({ 
         example: 1,
         description: '최근 검색어 ID', 
@@ -14,6 +15,7 @@ export class Histories extends BaseEntity{
     @ApiProperty({ 
         example: '헤어진지 2주',
         description: '검색 키워드', 
+        required: true
     })
     @Column()
     keyword: string;
@@ -26,6 +28,13 @@ export class Histories extends BaseEntity{
     keywordSearched: Date;
 
     @ApiProperty({ 
+        example: true,
+        description: '검색 기록 삭제 여부 _ 기록 삭제한 경우 : false', 
+    })
+    @Column({ default : 1 })
+    historyStatus: boolean;
+
+    @ApiProperty({ 
         example: 21,
         description: '검색한 유저 ID', 
     })
@@ -33,6 +42,6 @@ export class Histories extends BaseEntity{
         () => Users,
         (user) => user.histories
     )
-    @JoinColumn({name:"boardId"})
+    @JoinColumn({ name: "userId" })
     userId: number;
 }

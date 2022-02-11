@@ -13,13 +13,32 @@ export class UsersService {
             private historiesRepository: HistoriesRepository,
     ) { }
     
-
     async findByUserId(userId: number) {
-        return this.usersRepository.findByUserId(userId);
+        return await this.usersRepository.findByUserId(userId);
     } 
+
+    async findByHistoryId(historyId: number) {
+        return await this.historiesRepository.findByHistoryId(historyId);
+    } 
+
+    async findByKeyword(keyword: string){
+        return await this.historiesRepository.findByKeyword(keyword);
+    }
+
+    async getAllHistories(userId: number){
+        return await this.historiesRepository.getAllHistories(userId);
+    }
 
     async createHistory(userId: number, keyword: string){
         return await this.historiesRepository.createHistory(userId, keyword);
+    }
+
+    async deleteHistory(userId: number, historyId: number){
+        return await this.historiesRepository.deleteHistory(userId, historyId);
+    }
+
+    async deleteHistories(userId: number){
+        return await this.historiesRepository.deleteAllHistories(userId);
     }
 
     async getAllBoardsByUserId(userId: number) {
