@@ -324,7 +324,7 @@ export class BoardsController {
           }
         }
     })
-    async changeLikeStatus(
+    async updateLikeStatus(
         @Res() res,
         @Param("boardId", new ParseIntPipe({
             errorHttpStatusCode: HttpStatus.BAD_REQUEST
@@ -348,7 +348,7 @@ export class BoardsController {
                     message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
                 })
         
-        await this.boardsService.changeLikeStatus(boardId, user.userId);
+        await this.boardsService.updateLikeStatus(boardId, user.userId);
         return res
             .status(HttpStatus.OK)
             .json({
@@ -429,7 +429,7 @@ export class BoardsController {
           }
         }
     })
-    async changeBookmarkStatus(
+    async updateBookmarkStatus(
         @Res() res,
         @Param("boardId", new ParseIntPipe({
             errorHttpStatusCode: HttpStatus.BAD_REQUEST
@@ -453,7 +453,7 @@ export class BoardsController {
                     message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
                 })        
 
-        await this.boardsService.changeBookmarkStatus(boardId, user.userId);
+        await this.boardsService.updateBookmarkStatus(boardId, user.userId);
         return res
             .status(HttpStatus.OK)
             .json({
