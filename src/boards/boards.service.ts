@@ -208,15 +208,15 @@ export class BoardsService {
         return this.likesRepository.createLike(boardId, userId);
     }
 
-    async changeLikeStatus(boardId: number, userId: number) {
-        this.likesRepository.changeLikeStatus(boardId, userId);
+    async updateLikeStatus(boardId: number, userId: number) {
+        this.likesRepository.updateLikeStatus(boardId, userId);
     }
 
     async createBookmark(boardId: number, userId: number): Promise<Bookmarks>{
         return this.bookmarksRepository.createBookmark(boardId, userId);
     }
 
-    async changeBookmarkStatus(boardId: number, userId: number) {
-        this.bookmarksRepository.changeBookmarkStatus(boardId, userId);
+    async updateBookmarkStatus(boardId: number, userId: number) {
+        this.bookmarksRepository.updateBookmarkStatus(boardId, userId);
     }
 }
