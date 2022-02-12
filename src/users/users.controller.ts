@@ -32,13 +32,10 @@ export class UsersController {
                 .json({
                     message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
                 })  
-        const h =await this.usersService.getAllBoardsByUserId(userId);
-        console.log(h);
-        // // const histories = await this.usersService.getMyPage(userId);
-
-        // return res
-        //     .status(HttpStatus.OK)
-        //     .json(histories);
+        const myPage =await this.usersService.getMyPage(userId);
+        return res
+            .status(HttpStatus.OK)
+            .json(myPage);
     }
 
     @Get('/:userId/histories')   // 최근 검색어 기록 조회 (커뮤니티에서 검색 버튼을 누른 경우)

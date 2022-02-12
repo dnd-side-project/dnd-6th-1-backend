@@ -26,10 +26,29 @@ export class UsersService {
     }
 
     async getMyPage(userId: number){
+        const myPage = new Object();
+
         // 프로필 이미지, 이메일, 비밀번호
+        const user = await this.usersRepository.findByUserId(userId);
+        const { email, nickname, profileImage } = user;
+        myPage['user'] = {
+            email,
+            nickname,
+            profileImage
+        }
+        
         // 내가 쓴 글 갯수
+        const boardsById = await this.usersRepository.getAllBoardsByUserId(userId);
+        myPage['writeCnt'] = boardsById.length;
+
         // 댓글 단 글의 개수
+        const boardsByComment = await this.usersRepository.getAllBoardsByComments(userId);
+        myPage['commentCnt'] = boardsByComment.length;
+
         // 북마크 한 글의 개수
+        const boardsByBookmark = await this.usersRepository.getAllBoardsByBookmark(userId);
+        myPage['bookmarkCnt'] = boardsByBookmark.length;
+        return myPage;
     }
 
     async getAllHistories(userId: number){
