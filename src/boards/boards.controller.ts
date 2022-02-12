@@ -20,7 +20,7 @@ export class BoardsController {
     ){}
 
 // 커뮤니티 검색을 그대로 가고 
-// keyword 받아와서 그대로 /users/{userId}/history로 호출하는ㅂ ㅏㅇ식
+// keyword 받아와서 그대로 /users/{userId}/history로 호출하는 방식
 
     @Get() // 커뮤니티 전체 글 조회 / 카테고리별 조회 / 검색어별 조회
     @ApiOperation({ 
@@ -30,7 +30,7 @@ export class BoardsController {
         name: 'category',
         required: false,
         description: '카테고리별',
-        example:'슬픔'
+        example:1,
     })
     @ApiQuery({
         name: 'keyword',
@@ -41,6 +41,7 @@ export class BoardsController {
     async getAllBoards(@Res() res, @Query() query): Promise <Boards[]>{
         const { category, keyword } = query; // @Query()'에서 해당 쿼리문을 받아 query에 저장하고 변수 받아옴
         let boards;
+
         if(keyword==null && category==null){ // 전체 글 조회
             boards = await this.boardsService.getAllBoards();
         }
@@ -55,13 +56,15 @@ export class BoardsController {
             boards = await this.boardsService.getAllBoardsByKeyword(keyword); // 검색결과 반환
         }    
         else if(keyword==null && category!=null){ // 카테고리별 조회
-            if(['부정','화','타협','슬픔','수용'].includes(category)){
-                boards = await this.boardsService.getAllBoardsByCategory(category);
+            let categoryId = +category;
+
+            if([1,2,3,4,5].includes(categoryId)){
+                boards = await this.boardsService.getAllBoardsByCategory(categoryId);
                 if(boards.length == 0)
                     return res
                         .status(HttpStatus.OK)
-                        .json({ // 여기 메세지 바꾸기 
-                            message:`아직 글이 없어요 혹시 ${category}에 대한 감정이 있으신가요? 글을 통해 다른 분과 소통해보세요`
+                        .json({
+                            message:'아직 글이 없어요'
                         })
             }
             else
@@ -324,7 +327,7 @@ export class BoardsController {
           }
         }
     })
-    async changeLikeStatus(
+    async updateLikeStatus(
         @Res() res,
         @Param("boardId", new ParseIntPipe({
             errorHttpStatusCode: HttpStatus.BAD_REQUEST
@@ -348,7 +351,7 @@ export class BoardsController {
                     message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
                 })
         
-        await this.boardsService.changeLikeStatus(boardId, user.userId);
+        await this.boardsService.updateLikeStatus(boardId, user.userId);
         return res
             .status(HttpStatus.OK)
             .json({
@@ -429,7 +432,7 @@ export class BoardsController {
           }
         }
     })
-    async changeBookmarkStatus(
+    async updateBookmarkStatus(
         @Res() res,
         @Param("boardId", new ParseIntPipe({
             errorHttpStatusCode: HttpStatus.BAD_REQUEST
@@ -453,7 +456,7 @@ export class BoardsController {
                     message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
                 })        
 
-        await this.boardsService.changeBookmarkStatus(boardId, user.userId);
+        await this.boardsService.updateBookmarkStatus(boardId, user.userId);
         return res
             .status(HttpStatus.OK)
             .json({
