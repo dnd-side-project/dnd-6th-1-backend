@@ -31,14 +31,14 @@ export class Boards extends BaseEntity {
     userId: number;
     
     @ApiProperty({ 
-        example: '화',
-        description: '카테고리명', 
+        example: 1,
+        description: '카테고리 번호', 
     })
-    @IsIn(['부정','화','타협','슬픔','수용'])
+    @IsIn([0,1,2,3,4,5])
     @IsNotEmpty()
-    @IsString()
+    @IsNumber()
     @Column()
-    categoryName: string;
+    categoryId: number;
 
     @ApiProperty({ 
         example: '아오화나',
