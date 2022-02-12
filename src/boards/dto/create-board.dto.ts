@@ -14,14 +14,14 @@ export class CreateBoardDto {
     readonly userId: string; // 작성자
 
     @ApiProperty({ 
-        example: '타협',
-        description: '카테고리명', 
+        example: 1,
+        description: '카테고리 번호 _ 1:부정/2:분노/3:타협/4:슬픔/5:수용',
         required: true
     })
-    @IsIn(['부정','화','타협','슬픔','수용'])
+    @IsIn(['1','2','3','4','5'])
     @IsNotEmpty()
     @IsString()
-    readonly categoryName: string;
+    readonly categoryId: string;
 
     @ApiProperty({ 
         example: '제자신과 타협하겠습니다',
