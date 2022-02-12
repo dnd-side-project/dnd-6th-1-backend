@@ -25,6 +25,13 @@ export class UsersService {
         return await this.historiesRepository.findByKeyword(keyword);
     }
 
+    async getMyPage(userId: number){
+        // 프로필 이미지, 이메일, 비밀번호
+        // 내가 쓴 글 갯수
+        // 댓글 단 글의 개수
+        // 북마크 한 글의 개수
+    }
+
     async getAllHistories(userId: number){
         return await this.historiesRepository.getAllHistories(userId);
     }

@@ -3,6 +3,12 @@ import { Users } from "src/auth/users.entity";
 
 @EntityRepository(Users)
 export class UsersRepository extends Repository<Users> {
+    async getMyPage(userId: number){
+        // 내가 쓴 글 개수
+        // 댓글 개수
+        // 북마크 개수
+    }
+
     async findByUserId(userId: number){
         return await this.createQueryBuilder("user")
             .where("user.userId =:userId", {userId})

@@ -9,6 +9,38 @@ export class UsersController {
         private readonly usersService : UsersService,
     ){}
 
+    @Get('/:userId') 
+    @ApiOperation({ 
+        summary : '마이페이지 메인 화면 조회',
+    })
+    @ApiParam({
+        name: 'userId',
+        required: true, 
+        description: '유저 ID'
+    })
+    async getMyPage(
+        @Res() res,
+        @Param("userId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        userId: number,
+    ){
+        const user = await this.usersService.findByUserId(userId);
+        if(!user)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+                })  
+        const h =await this.usersService.getAllBoardsByUserId(userId);
+        console.log(h);
+        // // const histories = await this.usersService.getMyPage(userId);
+
+        // return res
+        //     .status(HttpStatus.OK)
+        //     .json(histories);
+    }
+
     @Get('/:userId/histories')   // 최근 검색어 기록 조회 (커뮤니티에서 검색 버튼을 누른 경우)
     @ApiOperation({ 
         summary : '특정 유저의 최근 검색어 조회',
