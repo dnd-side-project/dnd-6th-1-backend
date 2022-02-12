@@ -108,7 +108,7 @@ export class BoardsService {
     // 커뮤니티 특정 글 조회
     async getBoardById(boardId: number) {
         const boardById = await this.findByBoardId(boardId);
-        const { userId, categoryName, postTitle, postContent, postCreated, images }= boardById;
+        const { userId, categoryId, postTitle, postContent, postCreated, images }= boardById;
         const user = await this.usersRepository.findByUserId(userId);
         const { nickname, profileImage } = user;   // 사용자  프로필이미지, 닉네임
         const createdAt = await BoardsService.calculateTime(new Date(), postCreated); // 게시글 쓴 시간        
@@ -120,7 +120,7 @@ export class BoardsService {
         const board = {
             profileImage,
             nickname,
-            categoryName,
+            categoryId,
             createdAt,
             postTitle,
             postContent,
@@ -138,7 +138,7 @@ export class BoardsService {
         const totalBoards = new Array();
         const boards = await this.boardsRepository.getAllBoards(); // 전체 게시글 다가져오기
         for(var i=0;i<boards.length;i++){
-            const { boardId, categoryName, postTitle, postContent, postCreated } = boards[i];
+            const { boardId, categoryId, postTitle, postContent, postCreated } = boards[i];
             var createdAt = await BoardsService.calculateTime(new Date(), postCreated);        
             const user = await this.usersRepository.findByUserId(boards[i].userId);
             const { userId, nickname, profileImage } = user;
@@ -148,7 +148,7 @@ export class BoardsService {
             const board = {
                 userId,
                 boardId,
-                categoryName,
+                categoryId,
                 profileImage,
                 nickname,
                 postTitle,
@@ -182,10 +182,10 @@ export class BoardsService {
         return keywordResults;
     }
 
-    async getAllBoardsByCategory(category: string) { // 카테고리별 조회
+    async getAllBoardsByCategory(category: number) { // 카테고리별 조회
         const totalBoards = await this.getAllBoards();
         const boardsByCategory = totalBoards.filter(board => 
-            board.categoryName === category
+            board.categoryId == category
         );
         return boardsByCategory;
     }

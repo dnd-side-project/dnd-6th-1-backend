@@ -34,11 +34,12 @@ export class BoardsRepository extends Repository<Boards>{
 
     // 게시글 등록시 board DB
     async createBoard(createBoardDto: CreateBoardDto): Promise<Boards> {
-        const { userId, categoryName, postTitle, postContent } = createBoardDto;
+        const { userId, categoryId, postTitle, postContent } = createBoardDto;
         const userIdToNumber = +userId; // form-data 형태로 받아야해서 userId가 string 값이므로 number로 변환
+        const categoryIdToNumber = +categoryId;
         const board = {
             userId: userIdToNumber,
-            categoryName,
+            categoryId: categoryIdToNumber,
             postTitle, 
             postContent,
             postCreated: new Date(),
@@ -49,13 +50,14 @@ export class BoardsRepository extends Repository<Boards>{
     // 커뮤니티 글 수정 - 편집 가능한 요소 : 감정 카테고리, 제목, 글 내용, 이미지 
     async updateBoard(boardId: number, updateBoardDto: UpdateBoardDto) {
         const board = await this.findOne(boardId);
-        const { userId, categoryName, postTitle, postContent } = updateBoardDto;
+        const { userId, categoryId, postTitle, postContent } = updateBoardDto;
         // userId를 string->number로 바꿔야 해서 ...updateBoardDto 로 못쓰기 때문에 일일히 null 값이면 db에 이미 저장된 값으로 초기화해줌
         const userIdToNumber = +userId;       
-        const category = (categoryName==null) ? board.categoryName : categoryName
+        const category = (categoryId==null) ? board.categoryId : categoryId
+        const categoryIdToNumber = +category; // category (string)
         const title = (postTitle==null) ? board.postTitle : postTitle
         const content = (postContent==null) ? board.postContent : postContent
-        await this.update({boardId}, {userId: userIdToNumber, categoryName: category, postTitle: title, postContent: content});
+        await this.update({boardId}, {userId: userIdToNumber, categoryId: categoryIdToNumber, postTitle: title, postContent: content});
     }
 
     // 커뮤니티 글 삭제 -> postStatus = false 로 변경
