@@ -18,14 +18,14 @@ export class CommentsService {
     }   
 
     // 특정 글에 댓글 작성
-    async createComment(boardId: number, createCommentDto: CreateCommentDto): Promise<Comments> {
-        const comment = await this.commentsRepository.createComment(boardId, createCommentDto); // board DB에 저장
+    async createComment(userId: number, boardId: number, createCommentDto: CreateCommentDto): Promise<Comments> {
+        const comment = await this.commentsRepository.createComment(userId, boardId, createCommentDto); // board DB에 저장
         return comment;
     }
 
     // 특정 댓글에 대댓글 작성
-    async createReply(boardId: number, commentId: number, createReplyDto: CreateCommentDto): Promise<Comments> {
-        const reply = await this.commentsRepository.createReply(boardId, commentId, createReplyDto); // board DB에 저장
+    async createReply(userId: number, boardId: number, commentId: number, createReplyDto: CreateCommentDto): Promise<Comments> {
+        const reply = await this.commentsRepository.createReply(userId, boardId, commentId, createReplyDto); // board DB에 저장
         return reply;
     }
 
