@@ -2,7 +2,7 @@ import { Boards } from "src/boards/entity/boards.entity";
 import { Bookmarks } from "src/boards/entity/bookmarks.entity";
 import { Histories } from "src/boards/entity/histories.entity";
 import { Likes } from "src/boards/entity/likes.entity";
-import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity, OneToMany } from "typeorm";
+import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity, OneToMany, OneToOne, JoinColumn } from "typeorm";
 
 
 @Entity()

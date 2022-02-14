@@ -29,4 +29,12 @@ export class LikesRepository extends Repository<Likes>{
             await this.update({boardId, userId},{likeStatus: true});
         }
     }
+
+    // 좋아요 여부
+    async findByUserId(boardId: number, loginUserId: number) {
+        const status = await this.findOne({boardId, userId: loginUserId, likeStatus: true});
+        if(!status)
+            return false;
+        return true;
+    }
 }

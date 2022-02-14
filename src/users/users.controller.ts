@@ -1,5 +1,7 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Post, Res } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Post, Res, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { GetUser } from 'src/auth/get-user.decorator';
+import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -68,49 +70,6 @@ export class UsersController {
             .json(histories);
     }
 
-    @Post('/:userId/histories') // 검색어 입력한 경우 최근 검색어 db에 넣기
-    @ApiOperation({ 
-        summary : '특정 유저가 검색어 입력한 경우',
-    })
-    @ApiParam({
-        name: 'userId',
-        required: true, 
-        description: '유저 ID'
-    })
-    @ApiBody({
-        description: "검색 키워드", 
-        schema: {
-          properties: {
-            keyword: { 
-                type: "string",
-                example: "테스트"
-            }
-          }
-        }
-    })
-    async createHistory(
-        @Res() res,
-        @Param("userId", new ParseIntPipe({
-            errorHttpStatusCode: HttpStatus.BAD_REQUEST
-        }))
-        userId: number,
-        @Body('keyword') keyword: string
-    ){
-        const user = await this.usersService.findByUserId(userId);
-        if(!user)
-            return res
-                .status(HttpStatus.NOT_FOUND)
-                .json({
-                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
-                })  
-        
-        const history = await this.usersService.createHistory(userId, keyword);
-
-        return res
-            .status(HttpStatus.OK)
-            .json(history);
-    }
-
     @Delete('/:userId/histories/:historyId') // 검색어 개별 삭제
     @ApiOperation({ 
         summary : '검색어 기록 개별 삭제 API',
@@ -155,7 +114,7 @@ export class UsersController {
                 })
         
                 console.log(history.userId)
-        if(history.userId != user.userId) // 검색한 사람 id랑 history 남긴 id가 다른 경우
+        if(history.userId != userId) // 검색한 사람 id랑 history 남긴 id가 다른 경우
             return res
                 .status(HttpStatus.BAD_REQUEST)
                 .json({

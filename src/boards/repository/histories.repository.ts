@@ -6,9 +6,7 @@ export class HistoriesRepository extends Repository<Histories>{
     
     // 특정 검색기록 번호 있는지
     async findByHistoryId(historyId: number){
-        return await this.findOne({historyId, historyStatus: true},
-            {relations: ['userId']}
-        );
+        return await this.findOne({historyId, historyStatus: true});
     }
 
     // 특정 키워드로 검색한 기록이 있는지

@@ -13,16 +13,17 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { UploadService } from './upload.service';
 import { HistoriesRepository } from './repository/histories.repository';
+require("dotenv").config();
 
 @Module({
   imports:[
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({
       // screte 토큰을 만들때 이용하는 Secret 텍스트
-      secret: 'Secret1234',
+      secret: process.env.SECRET_KEY,
       signOptions: {
         // 1시간 이후에는 이 토큰이 더 이상 유효x
-        expiresIn: 60 * 60,
+        expiresIn: "20d"
       }
     }),
     TypeOrmModule.forFeature([
