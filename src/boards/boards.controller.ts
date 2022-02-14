@@ -57,7 +57,10 @@ export class BoardsController {
                     }) 
             }
             boards = await this.boardsService.getAllBoardsByKeyword(userId, keyword); // 검색결과 반환
-        }    
+            const history = await this.usersService.createHistory(userId, keyword);
+            console.log(history)
+        }
+
         else if(keyword==null && category!=null){ // 카테고리별 조회
             let categoryId = +category;
 
