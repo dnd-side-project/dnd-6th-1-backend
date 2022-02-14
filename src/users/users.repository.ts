@@ -28,7 +28,7 @@ export class UsersRepository extends Repository<Users> {
             .leftJoinAndSelect("boards.images","images") // board 테이블에 image 게시물 join (이미지가 없는 애도 갯수 세야 하므로)
             .select([
                 "user.nickname AS nickname", 
-                "boards.categoryName AS categoryName", 
+                "boards.categoryId AS categoryId", 
                 "boards.postTitle AS postTitle", 
                 "boards.postCreated AS createdAt", 
                 "boards.postContent AS postContent",
@@ -49,7 +49,7 @@ export class UsersRepository extends Repository<Users> {
             .leftJoinAndSelect("boards.images","images") // board 테이블에 images join
             .select([
                 "user.nickname AS nickname",
-                "boards.categoryName AS categoryName", 
+                "boards.categoryId AS categoryId", 
                 "boards.postTitle AS postTitle", 
                 "boards.postCreated AS createdAt", 
                 "boards.postContent AS postContent",
@@ -69,7 +69,7 @@ export class UsersRepository extends Repository<Users> {
             .leftJoinAndSelect("boards.images","images") // board 테이블에 images join
             .select([
                 "user.nickname AS nickname",
-                "boards.categoryName AS categoryName", 
+                "boards.categoryId AS categoryId", 
                 "boards.postTitle AS postTitle", 
                 "boards.postCreated AS createdAt", 
                 "boards.postContent AS postContent",

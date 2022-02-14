@@ -3,15 +3,15 @@ import { ApiBody, ApiProperty, PickType } from "@nestjs/swagger";
 import { IsArray, IsIn, IsNotEmpty, IsNumber, IsString, Length } from "class-validator";
 
 export class CreateBoardDto {
-    @ApiProperty({ 
-        example: 21,
-        description: '작성자 userId', 
-        required: true
-    })
-    @IsNotEmpty()
-    @IsString()
-    // @IsNumber()
-    readonly userId: string; // 작성자
+    // @ApiProperty({ 
+    //     example: 21,
+    //     description: '작성자 userId', 
+    //     required: true
+    // })
+    // @IsNotEmpty()
+    // @IsString()
+    // // @IsNumber()
+    // readonly userId: string; // 작성자
 
     @ApiProperty({ 
         example: 1,
