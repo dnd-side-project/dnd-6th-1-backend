@@ -5,7 +5,6 @@ import * as bcrypt from 'bcryptjs';
 import { AuthRepository } from './auth.repository';
 import { JwtService } from '@nestjs/jwt';
 import { AuthSignInDto } from './dto/auth-signin.dto';
-import * as AWS from 'aws-sdk';
 
 @Injectable()
 export class AuthService {
