@@ -26,4 +26,6 @@ export class AuthSignInDto {
     @Length(4,20)   // 비밀번호 몇자이상?
     password: string;
 
+    
+
 }

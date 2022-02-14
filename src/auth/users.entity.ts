@@ -1,7 +1,8 @@
 import { Boards } from "src/boards/entity/boards.entity";
 import { Bookmarks } from "src/boards/entity/bookmarks.entity";
 import { Likes } from "src/boards/entity/likes.entity";
-import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity, OneToMany } from "typeorm";
+import { ProfileImage} from "src/profile-image/profile-image.entity";
+import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity, OneToMany, OneToOne, JoinColumn } from "typeorm";
 
 
 @Entity()
@@ -30,6 +31,15 @@ export class Users extends BaseEntity {
     @Column({ default: false })
     loginStatus: boolean;
 
+    /*
+    @OneToOne(type => ProfileImage, profileImage => profileImage.userId)
+    // @Column({default: S3 URL~~~})
+    @JoinColumn()
+    profileImage: ProfileImage
+
+    // S3에 올려놓고 URI 디폴트로 넣어주기
+    */
+
     @Column()
     profileImage: string;
 
@@ -53,4 +63,5 @@ export class Users extends BaseEntity {
         (bookmark) => bookmark.userId
     )
     bookmarks: Bookmarks[];
+
 }

@@ -5,8 +5,15 @@ import * as bcrypt from 'bcryptjs';
 import { AuthRepository } from './auth.repository';
 import { JwtService } from '@nestjs/jwt';
 import { AuthSignInDto } from './dto/auth-signin.dto';
+import { ConflictException, InternalServerErrorException } from "@nestjs/common";
+import * as AWS from 'aws-sdk';
 
 
+AWS.config.update({
+    "accessKeyId": process.env.AWS_ACCESS_KEY_ID,
+    "secretAccessKey": process.env.AWS_SECRET_ACCESS_KEY,
+    "region": process.env.AWS_REGION
+  })
 
 @Injectable()
 export class AuthService {
@@ -16,10 +23,22 @@ export class AuthService {
         private jwtService : JwtService,
     ) { }
 
-    // itzza
+
+    async findByAuthEmail(email: string) {
+        return this.authRepository.findByAuthEmail(email);
+    } 
+
     // 회원가입
-    async signUp(authCredentialsDto: AuthCredentialsDto) : Promise<void> {
-        const user = await this.authRepository.createUser(authCredentialsDto);      // User DB에 저장
+    async signUp(authCredentialsDto: AuthCredentialsDto) : Promise<any> {
+        // const user = await this.authRepository.createUser(authCredentialsDto);
+        
+        return await this.authRepository.createUser(authCredentialsDto);      // User DB에 저장
+    }   
+
+
+    // 닉네임 중복 조회
+    async findByAuthNickname(nickname: string) {
+        const user = this.authRepository.findByAuthNickname(nickname);
         return user;
     }
 
@@ -32,12 +51,16 @@ export class AuthService {
 
         //로그인 성공 - user가 데이터베이스에 있고, pw비교
         if(user && (await bcrypt.compare(password, user.password))) {
+            // 로그인 상태 업데이트
+            //await this.authRepository.signIn(userId, authsigninDto);
             // 유저 토큰 생성 (Secret + Payload) -> payload에 중요한 정보는 넣으면 안됨
             const payload = { email };
             const accessToken = await this.jwtService.sign(payload);
             return accessToken;
-        } else {        // 로그인 실패
-            throw new UnauthorizedException('login faild');
+        } else {
+
         }
     }
+
+    
 }
