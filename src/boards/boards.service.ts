@@ -11,7 +11,6 @@ import { Likes } from './entity/likes.entity';
 import { Bookmarks } from './entity/bookmarks.entity';
 import { UsersRepository } from 'src/users/users.repository';
 import { CreateBoardDto } from './dto/create-board.dto';
-import { HistoriesRepository } from './repository/histories.repository';
 
 @Injectable()
 export class BoardsService {
@@ -26,8 +25,6 @@ export class BoardsService {
             private likesRepository: LikesRepository,
         @InjectRepository(BookmarksRepository)
             private bookmarksRepository: BookmarksRepository,
-        @InjectRepository(HistoriesRepository)
-            private historiesRepository: HistoriesRepository      
     ){}
 
     async findByBoardId(boardId: number): Promise<Boards> {
@@ -79,7 +76,6 @@ export class BoardsService {
             const allReplies = new Array();
             const replies = await this.commentsRepository.getChildComments(boardId, parentComments[i].groupId); // 각 부모댓글에 해당하는 대댓글 가져오기
             for(var j=0;j<replies.length;j++){
-                console.log(replies[j]);
                 const { commentCreated, commentContent, userId } = replies[j];
                 const replyUser = await this.usersRepository.findByUserId(userId);
                 const { nickname, profileImage } = replyUser;
@@ -134,19 +130,20 @@ export class BoardsService {
     }      
     
     // 게시판 전체 글 조회 (메인화면)
-    async getAllBoards() {
+    async getAllBoards(loginUserId: number) {
         const totalBoards = new Array();
         const boards = await this.boardsRepository.getAllBoards(); // 전체 게시글 다가져오기
         for(var i=0;i<boards.length;i++){
             const { boardId, categoryId, postTitle, postContent, postCreated } = boards[i];
             var createdAt = await BoardsService.calculateTime(new Date(), postCreated);        
             const user = await this.usersRepository.findByUserId(boards[i].userId);
-            const { userId, nickname, profileImage } = user;
+            const { nickname, profileImage } = user;
             var commentCnt = (await this.commentsRepository.getAllComments(boardId)).length;
             const imageCnt = boards[i].images.length // 게시글 사진 개수
             const likeCnt = (await this.likesRepository.getAllLikes(boardId)).length; // 좋아요 수
+            const bookmarkStatus = await this.bookmarksRepository.findByUserId(boardId, loginUserId); // 북마크 여부 
+            const likeStatus = await this.likesRepository.findByUserId(boardId, loginUserId); // 좋아요 여부
             const board = {
-                userId,
                 boardId,
                 categoryId,
                 profileImage,
@@ -157,14 +154,16 @@ export class BoardsService {
                 imageCnt,
                 commentCnt,
                 likeCnt,
+                bookmarkStatus,
+                likeStatus
             }
             totalBoards[i] = board;
         }    
         return totalBoards;
     }
 
-    async getAllBoardsByKeyword(keyword: string) { // 검색어별 조회
-        const totalBoards = await this.getAllBoards();
+    async getAllBoardsByKeyword(loginUserId: number, keyword: string) { // 검색어별 조회
+        const totalBoards = await this.getAllBoards(loginUserId);
         const boardsByKeyword = totalBoards.filter(board =>  // true를 반환하는 요소를 기준으로 신규 배열을 만들어 반환
             board.postTitle.includes(keyword) || board.postContent.includes(keyword)
         );
@@ -182,8 +181,8 @@ export class BoardsService {
         return keywordResults;
     }
 
-    async getAllBoardsByCategory(category: number) { // 카테고리별 조회
-        const totalBoards = await this.getAllBoards();
+    async getAllBoardsByCategory(loginUserId: number, category: number) { // 카테고리별 조회
+        const totalBoards = await this.getAllBoards(loginUserId);
         const boardsByCategory = totalBoards.filter(board => 
             board.categoryId == category
         );

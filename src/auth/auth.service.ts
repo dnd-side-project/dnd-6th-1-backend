@@ -54,11 +54,12 @@ export class AuthService {
             // 로그인 상태 업데이트
             //await this.authRepository.signIn(userId, authsigninDto);
             // 유저 토큰 생성 (Secret + Payload) -> payload에 중요한 정보는 넣으면 안됨
-            const payload = { email };
+            const payload = { userId: user.userId, email };
             const accessToken = await this.jwtService.sign(payload);
             return accessToken;
         } else {
-
+            return { accessToken }; 
+            // JWT에 들어갈 payload에 User id와 account를 넣고 JWT를 생성하여 반환
         }
     }
 

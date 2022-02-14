@@ -1,15 +1,19 @@
-import { HttpStatus, ParseIntPipe, Res, UploadedFiles } from '@nestjs/common';
+import { HttpStatus, ParseIntPipe, Res, UploadedFiles, UseGuards } from '@nestjs/common';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor} from '@nestjs/platform-express';
 import { Boards } from './entity/boards.entity';
 import { BoardsService } from './boards.service';
-import { ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { UpdateBoardDto } from './dto/update-board.dto';
 import { UsersService } from 'src/users/users.service';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UploadService } from './upload.service';
+import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
+import { GetUser } from 'src/auth/get-user.decorator';
 require("dotenv").config();
 
+@ApiBearerAuth('accessToken')
+@UseGuards(JwtAuthGuard)
 @Controller('boards')
 @ApiTags('커뮤니티 글 API')
 export class BoardsController {
@@ -18,9 +22,6 @@ export class BoardsController {
         private readonly usersService : UsersService,
         private readonly uploadService: UploadService
     ){}
-
-// 커뮤니티 검색을 그대로 가고 
-// keyword 받아와서 그대로 /users/{userId}/history로 호출하는 방식
 
     @Get() // 커뮤니티 전체 글 조회 / 카테고리별 조회 / 검색어별 조회
     @ApiOperation({ 
@@ -38,12 +39,13 @@ export class BoardsController {
         description: '검색어별',
         example:'졸려'
     })
-    async getAllBoards(@Res() res, @Query() query): Promise <Boards[]>{
+    async getAllBoards(@Res() res, @Query() query, @GetUser() user): Promise <Boards[]>{
         const { category, keyword } = query; // @Query()'에서 해당 쿼리문을 받아 query에 저장하고 변수 받아옴
+        const { userId } = user;
         let boards;
 
         if(keyword==null && category==null){ // 전체 글 조회
-            boards = await this.boardsService.getAllBoards();
+            boards = await this.boardsService.getAllBoards(userId);
         }
         else if(keyword!=null && category==null){ // 검색어별 조회
             if(keyword.length < 2){
@@ -53,13 +55,13 @@ export class BoardsController {
                         message:'2글자 이상 입력해주세요.'
                     }) 
             }
-            boards = await this.boardsService.getAllBoardsByKeyword(keyword); // 검색결과 반환
+            boards = await this.boardsService.getAllBoardsByKeyword(userId, keyword); // 검색결과 반환
         }    
         else if(keyword==null && category!=null){ // 카테고리별 조회
             let categoryId = +category;
 
             if([1,2,3,4,5].includes(categoryId)){
-                boards = await this.boardsService.getAllBoardsByCategory(categoryId);
+                boards = await this.boardsService.getAllBoardsByCategory(userId, categoryId);
                 if(boards.length == 0)
                     return res
                         .status(HttpStatus.OK)
