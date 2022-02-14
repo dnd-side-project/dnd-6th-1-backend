@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from "typeorm";
-import { Bookmarks } from "./entity/bookmarks.entity";
+import { Bookmarks } from "../entity/bookmarks.entity";
 
 @EntityRepository(Bookmarks) 
 export class BookmarksRepository extends Repository<Bookmarks>{
@@ -15,7 +15,7 @@ export class BookmarksRepository extends Repository<Bookmarks>{
     }
 
     // 북마크 상태 변경
-    async changeBookmarkStatus(boardId: number, userId: number) {
+    async updateBookmarkStatus(boardId: number, userId: number) {
         const bookmark = await this.findOne({boardId, userId});
         if (bookmark.bookmarkStatus == true){ // 북마크가 눌려져 있으면 취소
             await this.update({boardId, userId},{bookmarkStatus: false});
