@@ -33,6 +33,7 @@ export class Bookmarks extends BaseEntity {
         (board) => board.bookmarks
     )
     @JoinColumn({name:"boardId"})
+    @Column()
     boardId: number;
 
     @ApiProperty({ 

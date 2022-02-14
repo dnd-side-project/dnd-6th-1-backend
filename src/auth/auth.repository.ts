@@ -32,5 +32,16 @@ export class AuthRepository extends Repository<Users> {
             }
         }        
     }
+
+    async findByUserId(userId: number, email: string){
+        return this.createQueryBuilder('user')
+            .select([
+                'user.userId',
+                'user.email',
+                'user.nickname',
+            ])
+            .where('user.userId =:userId', {userId})
+            .getOne();
+    }
 }
     

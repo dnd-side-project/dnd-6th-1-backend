@@ -33,6 +33,7 @@ export class Likes extends BaseEntity {
         (board) => board.likes
     )
     @JoinColumn({name:"boardId"})
+    @Column()
     boardId: number;
 
     @ApiProperty({ 
