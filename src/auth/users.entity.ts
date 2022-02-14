@@ -64,13 +64,10 @@ export class Users extends BaseEntity {
     )
     bookmarks: Bookmarks[];
 
-<<<<<<< HEAD
-=======
     // User(1) <> Histories(*)
     @OneToMany(
         () => Histories,
         (history) => history.userId
     )
     histories: Histories[];
->>>>>>> fbc2e0ee5fd31ffbddf9b1c26604fb54bb0a5e5e
 }
