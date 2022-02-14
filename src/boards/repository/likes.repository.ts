@@ -1,6 +1,5 @@
 import { EntityRepository, Like, Repository } from "typeorm";
-import { UpdateBoardDto } from "./dto/update-board.dto";
-import { Likes } from "./entity/likes.entity";
+import { Likes } from "../entity/likes.entity";
 
 
 @EntityRepository(Likes) 
@@ -21,7 +20,7 @@ export class LikesRepository extends Repository<Likes>{
     }
 
     // 좋아요 상태 변경
-    async changeLikeStatus(boardId: number, userId: number) {
+    async updateLikeStatus(boardId: number, userId: number) {
         const like = await this.findOne({boardId, userId});
         if (like.likeStatus == true){ // 좋아요가 눌려져 있으면 취소
             await this.update({boardId, userId},{likeStatus: false});

@@ -1,13 +1,14 @@
 import { Boards } from "src/boards/entity/boards.entity";
 import { Bookmarks } from "src/boards/entity/bookmarks.entity";
+import { Histories } from "src/boards/entity/histories.entity";
 import { Likes } from "src/boards/entity/likes.entity";
-import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity, OneToMany } from "typeorm";
+import { ProfileImage} from "src/profile-image/profile-image.entity";
+import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity, OneToMany, OneToOne, JoinColumn } from "typeorm";
 
 
 @Entity()
 @Unique(['email'])
 export class Users extends BaseEntity {
-    
 
     @PrimaryGeneratedColumn()
     userId: number;
@@ -30,10 +31,19 @@ export class Users extends BaseEntity {
     @Column({ default: false })
     loginStatus: boolean;
 
+    /*
+    @OneToOne(type => ProfileImage, profileImage => profileImage.userId)
+    // @Column({default: S3 URL~~~})
+    @JoinColumn()
+    profileImage: ProfileImage
+
+    // S3에 올려놓고 URI 디폴트로 넣어주기
+    */
+
     @Column()
     profileImage: string;
 
-    // User(1) <> Likes(*)
+    // User(1) <> Boards(*)
     @OneToMany(
         () => Boards,
         (board) => board.userId
@@ -53,4 +63,14 @@ export class Users extends BaseEntity {
         (bookmark) => bookmark.userId
     )
     bookmarks: Bookmarks[];
+
+<<<<<<< HEAD
+=======
+    // User(1) <> Histories(*)
+    @OneToMany(
+        () => Histories,
+        (history) => history.userId
+    )
+    histories: Histories[];
+>>>>>>> fbc2e0ee5fd31ffbddf9b1c26604fb54bb0a5e5e
 }
