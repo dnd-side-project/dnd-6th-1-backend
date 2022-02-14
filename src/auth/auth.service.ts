@@ -5,15 +5,7 @@ import * as bcrypt from 'bcryptjs';
 import { AuthRepository } from './auth.repository';
 import { JwtService } from '@nestjs/jwt';
 import { AuthSignInDto } from './dto/auth-signin.dto';
-import { ConflictException, InternalServerErrorException } from "@nestjs/common";
 import * as AWS from 'aws-sdk';
-
-
-AWS.config.update({
-    "accessKeyId": process.env.AWS_ACCESS_KEY_ID,
-    "secretAccessKey": process.env.AWS_SECRET_ACCESS_KEY,
-    "region": process.env.AWS_REGION
-  })
 
 @Injectable()
 export class AuthService {
@@ -57,11 +49,9 @@ export class AuthService {
             const payload = { userId: user.userId, email };
             const accessToken = await this.jwtService.sign(payload);
             return accessToken;
-        } else {
-            return { accessToken }; 
             // JWT에 들어갈 payload에 User id와 account를 넣고 JWT를 생성하여 반환
+        } else {
+            throw new UnauthorizedException('login faild');
         }
     }
-
-    
 }
