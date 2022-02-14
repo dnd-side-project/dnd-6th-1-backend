@@ -27,14 +27,15 @@ require("dotenv").config();
       }
     }),
     TypeOrmModule.forFeature([
-    BoardsRepository, 
-    BoardImagesRepository, 
-    CommentsRepository, 
-    UsersRepository,
-    LikesRepository,
-    BookmarksRepository,
-    HistoriesRepository
-  ])], // 데이터베이스 커넥션 맺으며 사용할 엔티티를 리스트로 받기
+      BoardsRepository, 
+      BoardImagesRepository, 
+      CommentsRepository, 
+      UsersRepository,
+      LikesRepository,
+      BookmarksRepository,
+      HistoriesRepository
+    ])
+  ], // 데이터베이스 커넥션 맺으며 사용할 엔티티를 리스트로 받기
   controllers: [BoardsController],
   providers: [BoardsService, UsersService, UploadService]
 })

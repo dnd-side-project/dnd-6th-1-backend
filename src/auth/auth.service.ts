@@ -16,20 +16,18 @@ export class AuthService {
 
 
     async findByAuthEmail(email: string) {
-        return this.authRepository.findByAuthEmail(email);
+        return await this.authRepository.findByAuthEmail(email);
     } 
 
     // 회원가입
-    async signUp(authCredentialsDto: AuthCredentialsDto) : Promise<any> {
-        // const user = await this.authRepository.createUser(authCredentialsDto);
-        
+    async signUp(authCredentialsDto: AuthCredentialsDto) : Promise<any> {        
         return await this.authRepository.createUser(authCredentialsDto);      // User DB에 저장
     }   
 
 
     // 닉네임 중복 조회
     async findByAuthNickname(nickname: string) {
-        const user = this.authRepository.findByAuthNickname(nickname);
+        const user = await this.authRepository.findByAuthNickname(nickname);
         return user;
     }
 

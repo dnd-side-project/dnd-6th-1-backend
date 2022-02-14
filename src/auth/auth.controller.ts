@@ -1,5 +1,4 @@
 import { Body, ConflictException, Controller, Get, Query, HttpStatus, Param, ParseIntPipe, Post, Req, Res, UseGuards, UsePipes, ValidationPipe, UploadedFile, UseInterceptors, UploadedFiles } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthCredentialsDto } from './dto/auth-credential.dto';
 import { AuthSignInDto } from './dto/auth-signin.dto';
@@ -76,15 +75,19 @@ export class AuthController {
         @Param("nickname") nickname: string,
     ): Promise<string> {
         const nickName = await this.authService.findByAuthNickname(nickname);
-        if(nickName) {
-            return res.json({
-                success: false,
-                message: "같은 닉네임이 존재합니다.",
-            })
-        } 
-        return res.json({
+        if(nickName) 
+            return res
+                .status(HttpStatus.CONFLICT)
+                .json({
+                    success: false,
+                    message: "같은 닉네임이 존재합니다.",
+                })
+        
+        return res
+            .status(HttpStatus.OK)
+            .json({
                 success: true,
-                message: "사용가능한 닉네임입니다.",
+                message: "사용 가능한 닉네임입니다.",
             })
     }
 

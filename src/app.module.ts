@@ -9,9 +9,6 @@ import { typeORMConfig } from './configs/typeorm.config';
 import { AuthModule } from './auth/auth.module'
 import { CommentsModule } from './comments/comments.module';
 import { UsersModule } from './users/users.module';
-import { ProfileImageModule } from './profile-image/profile-image.module';
-
-
 
 @Module({
   imports: [
@@ -21,7 +18,6 @@ import { ProfileImageModule } from './profile-image/profile-image.module';
     AuthModule,
     CommentsModule,
     UsersModule,
-    ProfileImageModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,7 +1,8 @@
-import { Body, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BoardsService } from 'src/boards/boards.service';
 import { HistoriesRepository } from 'src/boards/repository/histories.repository';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UsersRepository } from './users.repository';
 
 @Injectable()
@@ -36,19 +37,19 @@ export class UsersService {
             nickname,
             profileImage
         }
-        
-        // 내가 쓴 글 갯수
-        const boardsById = await this.usersRepository.getAllBoardsByUserId(userId);
+    
+        const boardsById = await this.usersRepository.getAllBoardsByUserId(userId); // 내가 쓴 글 갯수
         myPage['writeCnt'] = boardsById.length;
-
-        // 댓글 단 글의 개수
-        const boardsByComment = await this.usersRepository.getAllBoardsByComments(userId);
+        const boardsByComment = await this.usersRepository.getAllBoardsByComments(userId); // 댓글 단 글의 개수
         myPage['commentCnt'] = boardsByComment.length;
-
-        // 북마크 한 글의 개수
-        const boardsByBookmark = await this.usersRepository.getAllBoardsByBookmark(userId);
+        const boardsByBookmark = await this.usersRepository.getAllBoardsByBookmark(userId); // 북마크 한 글의 개수
         myPage['bookmarkCnt'] = boardsByBookmark.length;
         return myPage;
+    }
+
+    // 프로필 이미지 및 닉네임 변경 저장
+    async updateProfile(userId: number, updateProfileDto: UpdateProfileDto) {
+        return await this.usersRepository.updateProfile(userId, updateProfileDto);
     }
 
     async getAllHistories(userId: number){
