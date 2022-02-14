@@ -42,12 +42,20 @@ export class AuthRepository extends Repository<Users> {
         return await this.save(user);  
     }
 
+    async findByUserId(userId: number, email: string){
+        return this.createQueryBuilder('user')
+            .select([
+                'user.userId',
+                'user.email',
+                'user.nickname',
+            ])
+            .where('user.userId =:userId', {userId})
+            .getOne();
+    }
+  
     // 로그인
     async signIn(userId: number) {
         await this.update({userId},{loginStatus: true}); 
     }
-
-
-
 }
     

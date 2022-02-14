@@ -24,4 +24,13 @@ export class BookmarksRepository extends Repository<Bookmarks>{
             await this.update({boardId, userId},{bookmarkStatus: true});
         }
     }
+
+    // 좋아요 여부
+    async findByUserId(boardId: number, loginUserId: number) {
+
+        const status = await this.findOne({boardId, userId: loginUserId, bookmarkStatus: true});
+        if(!status)
+            return false;
+        return true;
+    }
 }

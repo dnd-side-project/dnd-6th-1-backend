@@ -34,6 +34,20 @@ async function bootstrap() {
     .setTitle('ITZZA API Docs')
     .setDescription('DND 1조 완성하조의 API 문서입니다.')
     .setVersion('1.0.0')
+    // .addBearerAuth({ 
+    //     type: 'http', scheme: 'bearer', bearerFormat: 'JWT'
+    //   },
+    //   'access-token',
+    // )
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'Token',
+        in: 'header',
+      },
+      'accessToken',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, options);
