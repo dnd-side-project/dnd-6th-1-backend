@@ -1,6 +1,8 @@
-import { HttpStatus, ParseIntPipe, Req, Res, UploadedFiles } from '@nestjs/common';
+import { HttpStatus, ParseIntPipe, Req, Res, UploadedFiles, UseGuards } from '@nestjs/common';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
-import { ApiBody, ApiCreatedResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { GetUser } from 'src/auth/get-user.decorator';
+import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import { BoardsService } from 'src/boards/boards.service';
 import { UsersService } from 'src/users/users.service';
 import { Comments } from './comments.entity';
@@ -9,6 +11,8 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 require("dotenv").config();
 
+@ApiBearerAuth('accessToken')
+@UseGuards(JwtAuthGuard)
 @Controller('boards/:boardId/comments')
 @ApiTags('커뮤니티 댓글 API')
 export class CommentsController {
@@ -17,43 +21,6 @@ export class CommentsController {
         private readonly boardsService: BoardsService,
         private readonly usersService : UsersService    
     ){}
-
-    // @Get() // 특정 글의 댓글 조회
-    // @ApiOperation({ 
-    //     summary: '커뮤니티 특정 글의 모든 댓글 조회 API'
-    // })
-    // @ApiParam({
-    //     name: 'boardId',
-    //     required: true,
-    //     description: '게시글 번호'
-    // })
-    // async getAllComments(
-    //     @Res() res, 
-    //     @Param("boardId", new ParseIntPipe({
-    //         errorHttpStatusCode: HttpStatus.BAD_REQUEST
-    //     }))
-    //     boardId: number
-    // ){
-    //     const board = await this.boardsService.findByBoardId(boardId);
-    //     console.log(board);
-    //     if(!board)
-    //         return res
-    //             .status(HttpStatus.NOT_FOUND)
-    //             .json({
-    //                 message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
-    //             })
-
-    //     const comments = await this.boardsService.getAllComments(boardId);
-    //     if(comments.length==0)
-    //         return res
-    //             .status(HttpStatus.OK)
-    //             .json({
-    //                 message:`게시물 번호 ${boardId}번 게시물에 댓글이 없습니다`
-    //             })
-    //     return res
-    //         .status(HttpStatus.OK)
-    //         .json(comments)
-    // }
 
     @Post() // 특정 글의 댓글 작성
     @ApiOperation({ summary : '커뮤니티 특정 글에 댓글 작성 API' })
@@ -70,17 +37,11 @@ export class CommentsController {
         @Param("boardId", new ParseIntPipe({
             errorHttpStatusCode: HttpStatus.BAD_REQUEST
         }))
-        boardId: number
+        boardId: number,
+        @GetUser() loginUser
     ): Promise<any> {
-        const userId = createCommentDto.userId;
-        const user = await this.usersService.findByUserId(userId);
-        if(!user)
-            return res
-                .status(HttpStatus.NOT_FOUND)
-                .json({
-                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
-                })
-
+        const { userId } = loginUser;
+    
         const board = await this.boardsService.findByBoardId(boardId);
         if(!board)
             return res
@@ -89,7 +50,7 @@ export class CommentsController {
                     message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
                 })
 
-        const comment = await this.commentsService.createComment(boardId, createCommentDto);
+        const comment = await this.commentsService.createComment(userId, boardId, createCommentDto);
         return res
             .status(HttpStatus.CREATED)
             .json({
@@ -121,17 +82,11 @@ export class CommentsController {
         @Param("commentId", new ParseIntPipe({
             errorHttpStatusCode: HttpStatus.BAD_REQUEST
         }))
-        commentId: number
+        commentId: number,
+        @GetUser() loginUser
     ): Promise<any> {
-        const userId = createReplyDto.userId;
-        const user = await this.usersService.findByUserId(userId);
-        if(!user)
-            return res
-                .status(HttpStatus.NOT_FOUND)
-                .json({
-                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
-                })
-
+        const { userId } = loginUser;
+        
         const board = await this.boardsService.findByBoardId(boardId);
         if(!board)
             return res
@@ -148,7 +103,7 @@ export class CommentsController {
                     message:`댓글 번호 ${commentId}번에 해당하는 댓글이 없습니다.`
                 })
 
-        const reply = await this.commentsService.createReply(boardId, commentId, createReplyDto);
+        const reply = await this.commentsService.createReply(userId, boardId, commentId, createReplyDto);
         
         return res
             .status(HttpStatus.CREATED)
@@ -170,9 +125,10 @@ export class CommentsController {
         @Param("commentId", new ParseIntPipe({
             errorHttpStatusCode: HttpStatus.BAD_REQUEST
         }))
-        commentId: number
+        commentId: number,
+        @GetUser() loginUser
     ){
-        const userId = updateCommentDto.userId;
+        const { userId } = loginUser;
         const user = await this.usersService.findByUserId(userId);
         if(!user)
             return res
@@ -224,17 +180,6 @@ export class CommentsController {
         required: true,
         description: '댓글 번호'
     })
-    @ApiBody({
-        description: "댓글 삭제하는 유저 ID", 
-        schema: {
-          properties: {
-            userId: { 
-                type: "number",
-                example: 9,
-            },
-          }
-        }
-    })
     async deleteBoard(
         @Res() res, 
         @Param("boardId", new ParseIntPipe({
@@ -245,8 +190,10 @@ export class CommentsController {
             errorHttpStatusCode: HttpStatus.BAD_REQUEST
         }))
         commentId: number,
-        @Body('userId') userId: number,
+        @GetUser() loginUser
     ){
+        const { userId } = loginUser;
+
         const user = await this.usersService.findByUserId(userId);
         if(!user)
             return res
