@@ -9,6 +9,8 @@ import { typeORMConfig } from './configs/typeorm.config';
 import { AuthModule } from './auth/auth.module'
 import { CommentsModule } from './comments/comments.module';
 import { UsersModule } from './users/users.module';
+import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
+import * as winston from 'winston';
 
 @Module({
   imports: [
@@ -18,6 +20,18 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     CommentsModule,
     UsersModule,
+    WinstonModule.forRoot({
+      transports: [
+        new winston.transports.Console({
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.ms(),
+            nestWinstonModuleUtilities.format.nestLike('ITZA', { prettyPrint: true }),
+          ),
+        }),
+        // new winston.transports.File({ filename: `${Date}`.log' })
+      ]
+    })
   ],
   controllers: [AppController],
   providers: [

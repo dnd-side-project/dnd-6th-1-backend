@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BoardsService } from 'src/boards/boards.service';
 import { HistoriesRepository } from 'src/boards/repository/histories.repository';
+import { PasswordDto } from './dto/password.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UsersRepository } from './users.repository';
 
@@ -55,6 +56,10 @@ export class UsersService {
     async updateProfile(userId: number, updateProfileDto: UpdateProfileDto) {
         return await this.usersRepository.updateProfile(userId, updateProfileDto);
     }
+
+    async updatePassword(userId: number, passwordDto: PasswordDto){
+        return await this.usersRepository.updatePassword(userId, passwordDto);
+    }   
 
     async getAllHistories(userId: number){
         return await this.historiesRepository.getAllHistories(userId);
