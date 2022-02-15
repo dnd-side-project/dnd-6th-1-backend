@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module'
 import { CommentsModule } from './comments/comments.module';
 import { UsersModule } from './users/users.module';
 import { ProfileImageModule } from './profile-image/profile-image.module';
+import { DiariesModule } from './diaries/diaries.module';
 
 
 
@@ -22,6 +23,7 @@ import { ProfileImageModule } from './profile-image/profile-image.module';
     CommentsModule,
     UsersModule,
     ProfileImageModule,
+    DiariesModule,
   ],
   controllers: [AppController],
   providers: [
