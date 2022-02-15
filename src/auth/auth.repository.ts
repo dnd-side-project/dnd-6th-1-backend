@@ -53,7 +53,11 @@ export class AuthRepository extends Repository<Users> {
   
     // 로그인
     async signIn(userId: number) {
-        await this.update({userId},{loginStatus: true}); 
+        await this.update({userId},{ loginStatus: true }); 
+    }
+
+    async signOut(userId: number) {
+        await this.update({userId},{ loginStatus: false }); 
     }
 }
     
