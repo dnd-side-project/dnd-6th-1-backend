@@ -1,6 +1,8 @@
-import { EntityRepository, getRepository, Repository } from "typeorm";
+import { EntityRepository, Repository } from "typeorm";
 import { Users } from "src/auth/users.entity";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
+import { PasswordDto } from "./dto/password.dto";
+import * as bcrypt from "bcryptjs";
 
 @EntityRepository(Users)
 export class UsersRepository extends Repository<Users> {
@@ -31,6 +33,13 @@ export class UsersRepository extends Repository<Users> {
     async updateProfile(userId: number, updateProfileDto: UpdateProfileDto){
         const { nickname } = updateProfileDto;
         await this.update({userId}, {nickname});
+    }
+
+    async updatePassword(userId: number, passwordDto: PasswordDto){
+        const { password } = passwordDto;
+        const salt = await bcrypt.genSalt();         // salt 생성 - 비밀번호 암호화
+        const hashedPassword = await bcrypt.hash(password, salt);
+        await this.update({userId}, {password: hashedPassword});
     }
 
     async updateProfileImage(userId: number, imageUrl: string){

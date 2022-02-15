@@ -1,3 +1,4 @@
+import { IsEmail } from "class-validator";
 import { Boards } from "src/boards/entity/boards.entity";
 import { Bookmarks } from "src/boards/entity/bookmarks.entity";
 import { Histories } from "src/boards/entity/histories.entity";
