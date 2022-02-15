@@ -25,6 +25,7 @@ import { UsersModule } from './users/users.module';
     {
       provide: APP_PIPE,
       useClass: ValidationPipe
-    }],
+    }
+  ],
 })
 export class AppModule {}

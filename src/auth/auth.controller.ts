@@ -3,10 +3,11 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthCredentialsDto } from './dto/auth-credential.dto';
 import { AuthSignInDto } from './dto/auth-signin.dto';
 import { Users } from './users.entity';
-import { ApiTags, ApiOperation, ApiCreatedResponse, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiCreatedResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { APIGateway } from 'aws-sdk';
 import { GetUser } from './get-user.decorator';
+import { JwtAuthGuard } from './jwt/jwt.guard';
+import { accessSync } from 'fs';
 require("dotenv").config();
 
 @Controller('auth')
@@ -21,7 +22,7 @@ export class AuthController {
         summary: '회원가입 API', 
         description: '이메일, 비밀번호, 닉네임 입력'
     })
-    @ApiBody({ type: AuthCredentialsDto})
+    @ApiBody({ type: AuthCredentialsDto })
     @ApiCreatedResponse({ description: '유저를 생성합니다', type: Users })
     async signUp(
         @Res() res,
@@ -125,35 +126,35 @@ export class AuthController {
         @Body(ValidationPipe) authsigninDto: AuthSignInDto
     ): Promise<string> {
             // async - await은 값을 가져올때 유용함.
-            const accessToken = await this.authService.signIn(authsigninDto);
-            if(accessToken){
-                return res
-                    .json({
-                        accessToken: accessToken,
-                        message: '로그인 성공',
-                        flag: 1
-                    })
-            } else {
-                const userEmail = authsigninDto.email;
-                console.log(userEmail);
-                const email = await this.authService.findByAuthEmail(userEmail);
-                console.log(email);
-                if(!email) {
-                    return res
-                        .json({
-                            message: '유효한 이메일이 없습니다.',
-                            flag: 0
-                        })
-                } else {
-                    return res
-                        .json({
-                            message: '비밀번호가 일치하지 않습니다.',
-                            flag: 0
-                        })
-                }
-            }   
+        const accessToken = await this.authService.signIn(authsigninDto);
+        if(accessToken)
+            return res
+                .json({
+                    accessToken: accessToken,
+                    message: '로그인 성공',
+                    flag: 1
+                })
+            
+        // 이메일 형식이 안맞는 경우
+        const userEmail = authsigninDto.email;
+        const email = await this.authService.findByAuthEmail(userEmail);
+        if(!email) {
+            return res
+                .json({
+                    message: '유효한 이메일이 없습니다.',
+                    flag: 0                        
+                })
+        } else {
+            return res
+                .json({
+                    message: '비밀번호가 일치하지 않습니다.',
+                    flag: 0
+                })
+        }
     }
 
+    @ApiBearerAuth('accessToken')
+    @UseGuards(JwtAuthGuard)
     @Patch('/signout')
     @ApiOperation({ 
         summary: '로그아웃 API', 

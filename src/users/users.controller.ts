@@ -8,7 +8,6 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UsersService } from './users.service';
 
 @Controller('users')
-@ApiTags('마이페이지 API')
 export class UsersController {
     constructor(
         private readonly usersService: UsersService,
@@ -16,6 +15,7 @@ export class UsersController {
         private readonly uploadService: UploadService
     ){}
 
+    @ApiTags('마이페이지 API')
     @Get('/:userId') 
     @ApiOperation({ 
         summary : '마이페이지 메인 화면 조회 API',
@@ -48,6 +48,7 @@ export class UsersController {
     // 결국 저장버튼을 눌렀을 때 닉네임,프로필 이미지가 저장되어야 함
     // 개인정보 설정
     // 1. 닉네임 중복확인
+    @ApiTags('마이페이지 API')
     @Get('/:userId/:nickname')
     @ApiOperation({ summary: '닉네임 중복 조회 API', description: '닉네임 입력' })
     @ApiParam({
@@ -81,8 +82,9 @@ export class UsersController {
             })
     }
 
+    @ApiTags('마이페이지 API')
     @Patch('/:userId/password') // 비밀번호 재설정
-    @ApiOperation({ summary: '닉네임 중복 조회 API', description: '닉네임 입력' })
+    @ApiOperation({ summary: '비밀번호 재설정 API' })
     @ApiParam({
         name: 'userId',
         required: true, 
@@ -99,6 +101,7 @@ export class UsersController {
         
     }
 
+    @ApiTags('마이페이지 API')
     @Patch('/:userId/profile') //프로필 이미지 및 닉네임 변경한 것 저장
     @ApiOperation({ summary : '마이페이지 개인정보 수정 API' })
     @UseInterceptors(FileInterceptor('file'))
@@ -136,6 +139,7 @@ export class UsersController {
             })
     }
 
+    @ApiTags('마이페이지 API')
     @Delete('/:userId')
     @ApiOperation({ summary : '회원 탈퇴 API' })
     @ApiParam({
@@ -158,6 +162,7 @@ export class UsersController {
             })
     }
 
+    @ApiTags('최근 검색어 API')
     @Get('/:userId/histories')   // 최근 검색어 기록 조회 (커뮤니티에서 검색 버튼을 누른 경우)
     @ApiOperation({ 
         summary : '특정 유저의 최근 검색어 조회 API',
@@ -188,6 +193,7 @@ export class UsersController {
             .json(histories);
     }
 
+    @ApiTags('최근 검색어 API')
     @Delete('/:userId/histories/:historyId') // 검색어 개별 삭제
     @ApiOperation({ 
         summary : '검색어 기록 개별 삭제 API',
@@ -248,6 +254,7 @@ export class UsersController {
             });
     }
 
+    @ApiTags('최근 검색어 API')
     @Delete('/:userId/histories') // 검색어 모두 삭제 
     @ApiOperation({ 
         summary : '검색어 기록 전체 삭제 API',
@@ -289,6 +296,7 @@ export class UsersController {
             });
     }
 
+    @ApiTags('마이페이지 API')
     @Get('/:userId/boards')
     @ApiOperation({ 
         summary : '특정 유저가 쓴 글 조회 API',
@@ -325,6 +333,7 @@ export class UsersController {
             .json(boards);
     }
 
+    @ApiTags('마이페이지 API')
     @Get('/:userId/comments')
     @ApiOperation({ 
         summary : '특정 유저가 댓글을 단 글 조회 API',
@@ -362,6 +371,7 @@ export class UsersController {
             .json(boards);
     }
 
+    @ApiTags('마이페이지 API')
     @Get('/:userId/bookmarks')
     @ApiOperation({ 
         summary : '특정 유저가 북마크한 글 조회 API',

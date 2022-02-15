@@ -39,8 +39,7 @@ async function bootstrap() {
     //   },
     //   'access-token',
     // )
-    .addBearerAuth(
-      {
+    .addBearerAuth({
         type: 'http',
         scheme: 'bearer',
         bearerFormat: 'Token',
