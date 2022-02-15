@@ -11,9 +11,10 @@ export class AuthSignInDto {
         description: 'email',
         required: true,
     })
-    @IsEmail()      // 이메일 유효성 검사
+    @IsEmail(/^(\w+)@(\w+)[.](\w+)$/, { 
+        message: '올바른 이메일 형식이 아닙니다' 
+    })      
     @IsNotEmpty()
-    @Matches(/^(\w+)@(\w+)[.](\w+)$/ig)
     email: string;
 
     @ApiProperty({
@@ -23,7 +24,9 @@ export class AuthSignInDto {
     })
     @IsString()
     @IsNotEmpty()
-    @Length(4,20)   // 비밀번호 몇자이상?
+    @Matches(/^[A-Za-z0-9\d]{8,20}$/, { 
+        message : '올바른 비밀번호 형식이 아닙니다'
+    })
     password: string;
 
 

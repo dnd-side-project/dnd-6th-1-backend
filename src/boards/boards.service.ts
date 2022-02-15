@@ -54,6 +54,7 @@ export class BoardsService {
 
     // 댓글 목록 가져오기
     async getAllComments(loginUserId, boardId: number): Promise <Comments[]> {
+        const deletedUserImageUrl = `${process.env.AWS_S3_URL}/profileImages/6.png`;
         const totalComments = new Array();
         const board = await this.boardsRepository.findByBoardId(boardId);
         const parentComments = await this.commentsRepository.getParentComments(boardId); // 부모 댓글 가져오기
@@ -67,7 +68,7 @@ export class BoardsService {
             var writerOrNot = (userId == board.userId) ? true : false // 댓글 작성자 / 글 작성자가 동일한 경우
             const comment = { // 부모댓글
                 nickname : ((userStatus == false) ? '탈퇴한 회원입니다' : nickname) ,
-                profileImage, // 바뀔 가능성 있음
+                profileImage: ((userStatus == false) ? deletedUserImageUrl : profileImage), // 바뀔 수 있음
                 commentContent,
                 createdAt,
                 canEdit,
@@ -86,7 +87,7 @@ export class BoardsService {
                 var writerOrNot = (userId == board.userId) ? true : false // 대댓글 작성자와 글 작성자가 동일한 경우
                  const reply = {
                     nickname : ((userStatus == false) ? '탈퇴한 회원입니다' : nickname),
-                    profileImage, // 바뀔 가능성 있음
+                    profileImage: ((userStatus == false) ? deletedUserImageUrl : profileImage), // 바뀔 수 있음
                     commentContent,
                     createdAt,
                     canEdit,
@@ -104,6 +105,7 @@ export class BoardsService {
      
     // 커뮤니티 특정 글 조회
     async getBoardById(loginUserId: number, boardId: number) {
+        const deletedUserImageUrl = `${process.env.AWS_S3_URL}/profileImages/6.png`;
         const boardById = await this.findByBoardId(boardId);
         const { userId, categoryId, postTitle, postContent, postCreated, images } = boardById;
         const user = await this.usersRepository.findByUserIdWithDeleted(userId); // 게시글 올린 사람
@@ -117,8 +119,8 @@ export class BoardsService {
         const canEdit = (userId == loginUserId)? true : false // 글 작성자 / 로그인한 사용자가 동일한 경우
         console.log(user.userId)
         const board = {
-            profileImage, // 바뀔 수 있음
-            nickname : ((userStatus == false) ? '탈퇴한 회원입니다' : nickname),
+            profileImage: ((userStatus == false) ? deletedUserImageUrl : profileImage), // 바뀔 수 있음
+            nickname: ((userStatus == false) ? '탈퇴한 회원입니다' : nickname),
             categoryId,
             createdAt,
             postTitle,
@@ -136,6 +138,7 @@ export class BoardsService {
     
     // 게시판 전체 글 조회 (메인화면)
     async getAllBoards(loginUserId: number) {
+        const deletedUserImageUrl = `${process.env.AWS_S3_URL}/profileImages/6.png`;
         const totalBoards = new Array();
         const boards = await this.boardsRepository.getAllBoards(); // 전체 게시글 다가져오기
         for(var i=0;i<boards.length;i++){
@@ -151,7 +154,7 @@ export class BoardsService {
             const board = {
                 boardId,
                 categoryId,
-                profileImage,
+                profileImage: ((userStatus == false) ? deletedUserImageUrl : profileImage), // 바뀔 수 있음
                 nickname : ((userStatus == false) ? '탈퇴한 회원입니다' : nickname),
                 postTitle,
                 postContent,
