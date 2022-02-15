@@ -19,8 +19,8 @@ export class CommentsRepository extends Repository<Comments>{
     }
 
     // 댓글 등록시 comment DB
-    async createComment(boardId: number, createCommentDto: CreateCommentDto): Promise<Comments> {
-        const { userId, commentContent } = createCommentDto;
+    async createComment(userId: number, boardId: number, createCommentDto: CreateCommentDto): Promise<Comments> {
+        const { commentContent } = createCommentDto;
         const comment = {
             userId,
             commentContent,
@@ -35,8 +35,8 @@ export class CommentsRepository extends Repository<Comments>{
     }
 
     // 대댓글 등록시
-    async createReply(boardId: number, commentId: number, createReplyDto: CreateCommentDto): Promise<Comments> {
-        const { userId, commentContent } = createReplyDto;
+    async createReply(userId: number, boardId: number, commentId: number, createReplyDto: CreateCommentDto): Promise<Comments> {
+        const { commentContent } = createReplyDto;
         const reply = {
             userId,
             commentContent,

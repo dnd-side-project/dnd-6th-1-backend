@@ -45,5 +45,6 @@ export class BoardImages extends BaseEntity{
         (board) => board.images
     )
     @JoinColumn({name:"boardId"})
+    @Column()
     boardId: number;
 }
