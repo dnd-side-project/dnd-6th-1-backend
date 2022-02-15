@@ -1,4 +1,4 @@
-import { HttpStatus, ParseIntPipe, Res, UploadedFiles, UseGuards } from '@nestjs/common';
+import { HttpStatus, Inject, ParseIntPipe, Res, UploadedFiles, UseGuards } from '@nestjs/common';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor} from '@nestjs/platform-express';
 import { Boards } from './entity/boards.entity';
@@ -10,6 +10,9 @@ import { CreateBoardDto } from './dto/create-board.dto';
 import { UploadService } from './upload.service';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import { GetUser } from 'src/auth/get-user.decorator';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+
 require("dotenv").config();
 
 @ApiBearerAuth('accessToken')
@@ -18,6 +21,7 @@ require("dotenv").config();
 @ApiTags('커뮤니티 글 API')
 export class BoardsController {
     constructor(
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
         private readonly boardsService: BoardsService, 
         private readonly usersService : UsersService,
         private readonly uploadService: UploadService

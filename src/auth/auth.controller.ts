@@ -1,5 +1,4 @@
-import { Body, ConflictException, Controller, Get, Query, HttpStatus, Param, ParseIntPipe, Post, Req, Res, UseGuards, UsePipes, ValidationPipe, UploadedFile, UseInterceptors, UploadedFiles, Patch } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { Body, Controller, Get, HttpStatus, Param, Post, Res, UseGuards, ValidationPipe, UploadedFile, UseInterceptors, UploadedFiles, Patch } from '@nestjs/common';
 import { AuthCredentialsDto } from './dto/auth-credential.dto';
 import { AuthSignInDto } from './dto/auth-signin.dto';
 import { Users } from './users.entity';
@@ -7,7 +6,6 @@ import { ApiTags, ApiOperation, ApiCreatedResponse, ApiBody, ApiBearerAuth } fro
 import { AuthService } from './auth.service';
 import { GetUser } from './get-user.decorator';
 import { JwtAuthGuard } from './jwt/jwt.guard';
-import { accessSync } from 'fs';
 require("dotenv").config();
 
 @Controller('auth')
@@ -119,8 +117,6 @@ export class AuthController {
         description: '이메일, 비밀번호 입력'
     })
     @ApiBody({ type: AuthSignInDto})
-    @ApiCreatedResponse({ description: '로그인을 수행합니다. token 값이 유효한 시간은 1시간으로 해두었는데, 말씀해주시면 수정이 가능합니다. \
-    로그인 유지시키는 (자동로그인)은 좀 더 개발해야 합니다.' })
     async signIn(
         @Res() res,
         @Body(ValidationPipe) authsigninDto: AuthSignInDto
@@ -136,7 +132,6 @@ export class AuthController {
                     flag: 1
                 })
             
-        
         return res
             .status(HttpStatus.BAD_REQUEST)
             .json({

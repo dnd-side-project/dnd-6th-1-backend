@@ -1,9 +1,11 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, Res, UploadedFile, UseGuards, UseInterceptors, ValidationPipe } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { Matches } from 'class-validator';
 import { AuthService } from 'src/auth/auth.service';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { UploadService } from 'src/boards/upload.service';
+import { PasswordDto } from './dto/password.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UsersService } from './users.service';
 
@@ -90,15 +92,22 @@ export class UsersController {
         required: true, 
         description: '유저 ID'
     })
+    @ApiBody({ type : PasswordDto })
     async updatePassword(
         @Res() res,
         @Param("userId", new ParseIntPipe({
             errorHttpStatusCode: HttpStatus.BAD_REQUEST
         }))
         userId: number,
-        @Body("password") password: string,
+        @Body() passwordDto: PasswordDto
     ) {
-        
+        await this.usersService.updatePassword(userId, passwordDto);
+        return res
+            .status(HttpStatus.OK)
+            .json({
+                success: true,
+                message: '비밀번호가 재설정되었습니다'
+            })
     }
 
     @ApiTags('마이페이지 API')
