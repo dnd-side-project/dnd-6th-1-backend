@@ -57,7 +57,10 @@ export class BoardsController {
                     }) 
             }
             boards = await this.boardsService.getAllBoardsByKeyword(userId, keyword); // 검색결과 반환
-        }    
+            const history = await this.usersService.createHistory(userId, keyword);
+            console.log(history)
+        }
+
         else if(keyword==null && category!=null){ // 카테고리별 조회
             let categoryId = +category;
 
@@ -126,7 +129,7 @@ export class BoardsController {
 
         const board = await this.boardsService.createBoard(userId, createBoardDto); // 내용만 board에 업로드
         if(files.length!=0) // 파일이 있는 경우만 업로드 진행
-            await this.uploadService.uploadFile(files, board.boardId); // s3에 이미지 업로드 후 boardImage 에 업로드 (boardId 받아서 해야돼서 뒤에 위치)
+            await this.uploadService.uploadFiles(files, board.boardId); // s3에 이미지 업로드 후 boardImage 에 업로드 (boardId 받아서 해야돼서 뒤에 위치)
         const createdboard = await this.boardsService.findByBoardId(board.boardId);
 
         return res
@@ -172,13 +175,13 @@ export class BoardsController {
 
         if(board.userId != userId) // 글 작성자와 현재 로그인한 사람이 다른 경우 
             return res
-                .status(HttpStatus.BAD_REQUEST)
+                .status(HttpStatus.FORBIDDEN)
                 .json({
                     message:`게시글을 수정할 권한이 없습니다.`
                 })  
         
         if(files.length!=0) // 파일이 있는 경우만 파일 수정 업로드 진행
-            await this.uploadService.updateFile(files, board.boardId); // s3에 이미지 업로드 후 boardImage 에 업로드
+            await this.uploadService.updateFiles(files, board.boardId); // s3에 이미지 업로드 후 boardImage 에 업로드
         const updatedBoard = await this.boardsService.updateBoard(boardId, updateBoardDto);
 
         return res
@@ -223,13 +226,13 @@ export class BoardsController {
 
         if(board.userId != userId) // 글 작성자와 현재 로그인한 사람이 다른 경우 
             return res
-                .status(HttpStatus.BAD_REQUEST)
+                .status(HttpStatus.FORBIDDEN)
                 .json({
                     message:`게시글을 삭제할 권한이 없습니다.`
                 })  
 
         // 게시글 삭제 될 때 s3에 있는 이미지도 삭제 -> rds image 도 삭제
-        await this.uploadService.deleteFile(boardId); 
+        await this.uploadService.deleteFiles(boardId); 
         this.boardsService.deleteBoard(boardId);
 
         return res

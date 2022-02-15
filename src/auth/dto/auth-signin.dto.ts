@@ -7,17 +7,17 @@ export class AuthSignInDto {
     // email, password, nickname, userStatus, breakupDate
     
     @ApiProperty({
-        example: 'test1@naver.con',
+        example: 'test1@naver.com',
         description: 'email',
         required: true,
     })
     @IsEmail()      // 이메일 유효성 검사
     @IsNotEmpty()
+    @Matches(/^(\w+)@(\w+)[.](\w+)$/ig)
     email: string;
 
-
     @ApiProperty({
-        example: '12345',
+        example: 'test12345',
         description: '비밀번호',
         required: true,
     })

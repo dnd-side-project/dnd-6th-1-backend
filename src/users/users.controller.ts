@@ -1,17 +1,171 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Post, Res } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { AuthService } from 'src/auth/auth.service';
+import { GetUser } from 'src/auth/get-user.decorator';
+import { UploadService } from 'src/boards/upload.service';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UsersService } from './users.service';
 
 @Controller('users')
-@ApiTags('마이페이지 API')
 export class UsersController {
     constructor(
-        private readonly usersService : UsersService,
+        private readonly usersService: UsersService,
+        private readonly authService: AuthService,
+        private readonly uploadService: UploadService
     ){}
 
+    @ApiTags('마이페이지 API')
+    @Get('/:userId') 
+    @ApiOperation({ 
+        summary : '마이페이지 메인 화면 조회 API',
+    })
+    @ApiParam({
+        name: 'userId',
+        required: true, 
+        description: '유저 ID'
+    })
+    async getMyPage(
+        @Res() res,
+        @Param("userId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        userId: number,
+    ){
+        const user = await this.usersService.findByUserId(userId);
+        if(!user)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+                })  
+        const myPage =await this.usersService.getMyPage(userId);
+        return res
+            .status(HttpStatus.OK)
+            .json(myPage);
+    }
+
+    // 결국 저장버튼을 눌렀을 때 닉네임,프로필 이미지가 저장되어야 함
+    // 개인정보 설정
+    // 1. 닉네임 중복확인
+    @ApiTags('마이페이지 API')
+    @Get('/:userId/:nickname')
+    @ApiOperation({ summary: '닉네임 중복 조회 API', description: '닉네임 입력' })
+    @ApiParam({
+        name: 'userId',
+        required: true, 
+        description: '유저 ID'
+    })
+    @ApiParam({
+        name: 'nickname',
+        required: true, 
+        description: '변경할 닉네임'
+    })
+    async checkNickname(
+        @Res() res,
+        @Param("nickname") nickname: string,
+    ): Promise<string> {
+        const nickName = await this.authService.findByAuthNickname(nickname);
+        if(nickName) 
+            return res
+                .status(HttpStatus.CONFLICT)
+                .json({
+                    success: false,
+                    message: "같은 닉네임이 존재합니다.",
+                })
+        
+        return res
+            .status(HttpStatus.OK)
+            .json({
+                success: true,
+                message: "사용 가능한 닉네임입니다.",
+            })
+    }
+
+    @ApiTags('마이페이지 API')
+    @Patch('/:userId/password') // 비밀번호 재설정
+    @ApiOperation({ summary: '비밀번호 재설정 API' })
+    @ApiParam({
+        name: 'userId',
+        required: true, 
+        description: '유저 ID'
+    })
+    async updatePassword(
+        @Res() res,
+        @Param("userId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        userId: number,
+        @Body("password") password: string,
+    ) {
+        
+    }
+
+    @ApiTags('마이페이지 API')
+    @Patch('/:userId/profile') //프로필 이미지 및 닉네임 변경한 것 저장
+    @ApiOperation({ summary : '마이페이지 개인정보 수정 API' })
+    @UseInterceptors(FileInterceptor('file'))
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({ type : UpdateProfileDto })
+    async updateProfile(
+        @Res() res, 
+        @Param("userId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        userId: number, 
+        @UploadedFile() file: Express.Multer.File,
+        @Body() updateProfileDto: UpdateProfileDto
+    ): Promise<any>{     
+        if(file) // 파일이 있는 경우만 파일 수정 업로드 진행
+            await this.uploadService.uploadFile(file, userId); 
+        
+        // 수정할 때는 닉네임 중복처리가 이미 된 상태에서 진행해야 함
+        const nickName = await this.authService.findByAuthNickname(updateProfileDto.nickname);
+        if(nickName) 
+            return res
+                .status(HttpStatus.CONFLICT)
+                .json({
+                    success: false,
+                    message: "같은 닉네임이 존재합니다.",
+                })
+
+        // 닉네임과 파일을 같이 함께 넘긴다. 
+        await this.usersService.updateProfile(userId, updateProfileDto);
+
+        return res
+            .status(HttpStatus.OK)
+            .json({
+                message:'프로필을 수정했습니다'
+            })
+    }
+
+    @ApiTags('마이페이지 API')
+    @Delete('/:userId')
+    @ApiOperation({ summary : '회원 탈퇴 API' })
+    @ApiParam({
+        name: 'userId',
+        required: true,
+        description: '유저 ID',
+    })
+    async deleteUser(
+        @Res() res, 
+        @Param("userId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        userId: number,
+    ){        
+        await this.usersService.deleteUser(userId);
+        return res
+            .status(HttpStatus.OK)
+            .json({
+                message:'회원탈퇴가 완료되었습니다'
+            })
+    }
+
+    @ApiTags('최근 검색어 API')
     @Get('/:userId/histories')   // 최근 검색어 기록 조회 (커뮤니티에서 검색 버튼을 누른 경우)
     @ApiOperation({ 
-        summary : '특정 유저의 최근 검색어 조회',
+        summary : '특정 유저의 최근 검색어 조회 API',
     })
     @ApiParam({
         name: 'userId',
@@ -39,49 +193,7 @@ export class UsersController {
             .json(histories);
     }
 
-    @Post('/:userId/histories') // 검색어 입력한 경우 최근 검색어 db에 넣기
-    @ApiOperation({ 
-        summary : '특정 유저가 검색어 입력한 경우',
-    })
-    @ApiParam({
-        name: 'userId',
-        required: true, 
-        description: '유저 ID'
-    })
-    @ApiBody({
-        description: "검색 키워드", 
-        schema: {
-          properties: {
-            keyword: { 
-                type: "string",
-                example: "테스트"
-            }
-          }
-        }
-    })
-    async createHistory(
-        @Res() res,
-        @Param("userId", new ParseIntPipe({
-            errorHttpStatusCode: HttpStatus.BAD_REQUEST
-        }))
-        userId: number,
-        @Body('keyword') keyword: string
-    ){
-        const user = await this.usersService.findByUserId(userId);
-        if(!user)
-            return res
-                .status(HttpStatus.NOT_FOUND)
-                .json({
-                    message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
-                })  
-        
-        const history = await this.usersService.createHistory(userId, keyword);
-
-        return res
-            .status(HttpStatus.OK)
-            .json(history);
-    }
-
+    @ApiTags('최근 검색어 API')
     @Delete('/:userId/histories/:historyId') // 검색어 개별 삭제
     @ApiOperation({ 
         summary : '검색어 기록 개별 삭제 API',
@@ -126,7 +238,7 @@ export class UsersController {
                 })
         
                 console.log(history.userId)
-        if(history.userId != user.userId) // 검색한 사람 id랑 history 남긴 id가 다른 경우
+        if(history.userId != userId) // 검색한 사람 id랑 history 남긴 id가 다른 경우
             return res
                 .status(HttpStatus.BAD_REQUEST)
                 .json({
@@ -142,6 +254,7 @@ export class UsersController {
             });
     }
 
+    @ApiTags('최근 검색어 API')
     @Delete('/:userId/histories') // 검색어 모두 삭제 
     @ApiOperation({ 
         summary : '검색어 기록 전체 삭제 API',
@@ -183,6 +296,7 @@ export class UsersController {
             });
     }
 
+    @ApiTags('마이페이지 API')
     @Get('/:userId/boards')
     @ApiOperation({ 
         summary : '특정 유저가 쓴 글 조회 API',
@@ -219,6 +333,7 @@ export class UsersController {
             .json(boards);
     }
 
+    @ApiTags('마이페이지 API')
     @Get('/:userId/comments')
     @ApiOperation({ 
         summary : '특정 유저가 댓글을 단 글 조회 API',
@@ -256,6 +371,7 @@ export class UsersController {
             .json(boards);
     }
 
+    @ApiTags('마이페이지 API')
     @Get('/:userId/bookmarks')
     @ApiOperation({ 
         summary : '특정 유저가 북마크한 글 조회 API',
