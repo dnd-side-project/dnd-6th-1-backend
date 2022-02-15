@@ -1,6 +1,7 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiResponse } from "@nestjs/swagger";
 import { IsEmail, IsNotEmpty, IsString, Length, Matches, MaxLength, MinLength } from "class-validator";
 
+// 회원가입 
 export class AuthCredentialsDto {
     
     // itzza
@@ -11,24 +12,23 @@ export class AuthCredentialsDto {
         description: 'email',
         required: true,
     })
-    @IsEmail()      // 이메일 유효성 검사
+    @IsEmail(/^(\w+)@(\w+)[.](\w+)$/, { 
+        message: '올바른 이메일 형식이 아닙니다' 
+    })      // 이메일 유효성 검사
     @IsNotEmpty()
-    @Matches(/^(\w+)@(\w+)[.](\w+)$/ig)
     email: string;
 
-
     @ApiProperty({
-        example: '12345',
+        example: 'test12345',
         description: '비밀번호',
         required: true,
     })
     @IsString()
     @IsNotEmpty()
-    @Length(8)   // 숫자+영어 8자리 이상
-    // 최소 8자 및 최대 16자, 하나 이상의 대문자, 하나의 소문자, 하나의 숫자 및 하나의 특수 문자
-    @Matches(/^[A-Za-z\d]{8,16}$/)
+    @Matches(/^[A-Za-z0-9\d]{8,20}$/, { 
+        message : '올바른 비밀번호 형식이 아닙니다'
+    })
     password: string;
-
 
     @ApiProperty({
         example: '테스트1',
