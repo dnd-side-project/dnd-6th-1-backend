@@ -3,11 +3,7 @@ import { Boards } from "src/boards/entity/boards.entity";
 import { Bookmarks } from "src/boards/entity/bookmarks.entity";
 import { Histories } from "src/boards/entity/histories.entity";
 import { Likes } from "src/boards/entity/likes.entity";
-<<<<<<< HEAD
 import { Diaries } from "src/diaries/diaries.entity";
-import { ProfileImage} from "src/profile-image/profile-image.entity";
-=======
->>>>>>> 513d30909ec5515df6f0cdaaa56e14ed96906efa
 import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity, OneToMany, OneToOne, JoinColumn } from "typeorm";
 
 
