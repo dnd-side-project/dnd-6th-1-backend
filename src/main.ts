@@ -7,7 +7,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    cors: true
+    cors: true,
+    logger: ['error', 'warn']
   });
 
   //Global Middleware 설정 -> Cors 속성 활성화
