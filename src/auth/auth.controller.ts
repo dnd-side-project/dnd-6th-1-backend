@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, Post, Res, UseGuards, ValidationPipe, UploadedFile, UseInterceptors, UploadedFiles, Patch } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, Post, Res, UseGuards, ValidationPipe, UploadedFile, UseInterceptors, UploadedFiles, Patch, Inject } from '@nestjs/common';
 import { AuthCredentialsDto } from './dto/auth-credential.dto';
 import { AuthSignInDto } from './dto/auth-signin.dto';
 import { Users } from './users.entity';
@@ -6,12 +6,15 @@ import { ApiTags, ApiOperation, ApiCreatedResponse, ApiBody, ApiBearerAuth } fro
 import { AuthService } from './auth.service';
 import { GetUser } from './get-user.decorator';
 import { JwtAuthGuard } from './jwt/jwt.guard';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 require("dotenv").config();
 
 @Controller('auth')
 @ApiTags('유저 API')
 export class AuthController {
     constructor( 
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
         private authService: AuthService
     ){}
 
@@ -26,46 +29,29 @@ export class AuthController {
         @Res() res,
         @Body(ValidationPipe) authcredentialsDto: AuthCredentialsDto
     ): Promise<any> {
-        const { nickname } = authcredentialsDto;
-        const nicknameUser = await this.authService.findByAuthNickname(nickname);
-        if(nicknameUser)
-            return res.
-                status(HttpStatus.BAD_REQUEST)
-                .json({
-                    message: '중복된 닉네임이 있습니다.',
-                })
+        try{
+            const { nickname } = authcredentialsDto;
+            const nicknameUser = await this.authService.findByAuthNickname(nickname);
+            if(nicknameUser)
+                return res.
+                    status(HttpStatus.BAD_REQUEST)
+                    .json({
+                        message: '중복된 닉네임이 있습니다.',
+                    })
 
-        const newUser = await this.authService.signUp(authcredentialsDto);
-        return res
-            .status(HttpStatus.CREATED)
-            .json({
-                data: newUser,
-                message: '회원가입을 완료했습니다.',
-            })
-            // 중복조회 통과
-        // if (check === true){
-        //         if(user) {
-        //             return res
-        //                 .status(HttpStatus.CREATED)
-        //                 .json({
-        //                     data: user,
-        //                     message: '회원가입을 완료했습니다.',
-        //                     flag: 1
-        //                 })
-        //         } else {
-        //             return res
-        //                 .json({
-        //                     message: '회원가입 실패',
-        //                     flag: 0
-        //             })
-        //         }
-        //     } else {
-        //         return res
-        //                 .json({
-        //                     message: '중복된 닉네임이 있습니다.',
-        //                     flag: 0
-        //                 })
-        //     }
+            const newUser = await this.authService.signUp(authcredentialsDto);
+            return res
+                .status(HttpStatus.CREATED)
+                .json({
+                    data: newUser,
+                    message: '회원가입을 완료했습니다.',
+                })
+        } catch(error){
+            this.logger.error('회원가입 ERROR'+error);
+            return res
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .json(error);
+        }
     }
 
     @Get('/signup/:nickname')
@@ -74,42 +60,29 @@ export class AuthController {
         @Res() res,
         @Param("nickname") nickname: string,
     ): Promise<string> {
-        const nickName = await this.authService.findByAuthNickname(nickname);
-        if(nickName) 
+        try{
+            const nickName = await this.authService.findByAuthNickname(nickname);
+            if(nickName) 
+                return res
+                    .status(HttpStatus.CONFLICT)
+                    .json({
+                        success: false,
+                        message: "같은 닉네임이 존재합니다.",
+                    })
+            
             return res
-                .status(HttpStatus.CONFLICT)
+                .status(HttpStatus.OK)
                 .json({
-                    success: false,
-                    message: "같은 닉네임이 존재합니다.",
+                    success: true,
+                    message: "사용 가능한 닉네임입니다.",
                 })
-        
-        return res
-            .status(HttpStatus.OK)
-            .json({
-                success: true,
-                message: "사용 가능한 닉네임입니다.",
-            })
+        } catch(error){
+            this.logger.error('닉네임 중복 조회 ERROR'+error);
+            return res
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .json(error);
+        }
     }
-
-    // @Get('/signup')
-    // @ApiOperation({ summary: '닉네임 중복 조회', description: '닉네임 입력' })
-    // @ApiCreatedResponse({ description: '닉네임 중복 조회', type: Users })
-    // async findByNickname(
-    //         @Res() res,
-    //         @Query() query
-    //         ): Promise<string> {
-    //             const { nickname } = query; // @Query()'에서 해당 쿼리문을 받아 query에 저장하고 변수 받아옴
-    //             //const nickname = authcredentialsDto.nickname
-    //             const user = await this.authService.findByAuthNickname(nickname);
-    //             if(user) {
-    //                 return res.json({
-    //                     message: "중복된 닉네임이 있습니다.",
-    //                     flag: 0
-    //                 })
-    //             } else {
-    //                 check = true
-    //             }        
-    // }
 
     @Post('/signin')
     @ApiOperation({ 
@@ -121,23 +94,29 @@ export class AuthController {
         @Res() res,
         @Body(ValidationPipe) authsigninDto: AuthSignInDto
     ): Promise<string> {
-            // async - await은 값을 가져올때 유용함.
-        const accessToken = await this.authService.signIn(authsigninDto);
-        if(accessToken)
+        try{
+            const accessToken = await this.authService.signIn(authsigninDto);
+            if(accessToken)
+                return res
+                    .status(HttpStatus.OK)
+                    .json({
+                        accessToken: accessToken,
+                        message: '로그인 되었습니다',
+                        flag: 1
+                    })
+                
             return res
-                .status(HttpStatus.OK)
+                .status(HttpStatus.BAD_REQUEST)
                 .json({
-                    accessToken: accessToken,
-                    message: '로그인 되었습니다',
-                    flag: 1
+                    message: '비밀번호가 일치하지 않습니다.',
+                    flag: 0
                 })
-            
-        return res
-            .status(HttpStatus.BAD_REQUEST)
-            .json({
-                message: '비밀번호가 일치하지 않습니다.',
-                flag: 0
-            })
+        } catch(error){
+            this.logger.error('로그인 ERROR'+error);
+            return res
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .json(error);
+        }
     }
 
     @ApiBearerAuth('accessToken')
@@ -150,19 +129,20 @@ export class AuthController {
         @Res() res,
         @GetUser() user
     ): Promise<any> {
-        const { userId } = user;
-
-        await this.authService.signOut(userId);
-        return res
-            .status(HttpStatus.OK)
-            .json({
-                message: '로그아웃이 완료되었습니다',
-            })
+        try{
+            const { userId } = user;
+            await this.authService.signOut(userId);
+            return res
+                .status(HttpStatus.OK)
+                .json({
+                    message: '로그아웃이 완료되었습니다',
+                })
+        } catch(error){
+            this.logger.error('로그아웃 ERROR'+error);
+            return res
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .json(error);
+        }    
     }
 
-    // @Post('/test')
-    // @UseGuards(AuthGuard())
-    // test(@GetUser() user: Users) {
-    //     console.log('user', user);
-    // } 
 }
