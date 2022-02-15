@@ -129,28 +129,20 @@ export class AuthController {
         const accessToken = await this.authService.signIn(authsigninDto);
         if(accessToken)
             return res
+                .status(HttpStatus.OK)
                 .json({
                     accessToken: accessToken,
-                    message: '로그인 성공',
+                    message: '로그인 되었습니다',
                     flag: 1
                 })
             
-        // 이메일 형식이 안맞는 경우
-        const userEmail = authsigninDto.email;
-        const email = await this.authService.findByAuthEmail(userEmail);
-        if(!email) {
-            return res
-                .json({
-                    message: '유효한 이메일이 없습니다.',
-                    flag: 0                        
-                })
-        } else {
-            return res
-                .json({
-                    message: '비밀번호가 일치하지 않습니다.',
-                    flag: 0
-                })
-        }
+        
+        return res
+            .status(HttpStatus.BAD_REQUEST)
+            .json({
+                message: '비밀번호가 일치하지 않습니다.',
+                flag: 0
+            })
     }
 
     @ApiBearerAuth('accessToken')
