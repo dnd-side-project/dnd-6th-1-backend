@@ -47,6 +47,10 @@ export class UsersService {
         return myPage;
     }
 
+    async deleteUser(userId: number){
+        return await this.usersRepository.deleteUser(userId);
+    }
+
     // 프로필 이미지 및 닉네임 변경 저장
     async updateProfile(userId: number, updateProfileDto: UpdateProfileDto) {
         return await this.usersRepository.updateProfile(userId, updateProfileDto);

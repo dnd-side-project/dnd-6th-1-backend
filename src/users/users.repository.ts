@@ -10,6 +10,12 @@ export class UsersRepository extends Repository<Users> {
             .andWhere("user.userStatus =:status", {status: true})
             .getOne();
     }
+    
+    async findByUserIdWithDeleted(userId: number){
+        return await this.createQueryBuilder("user")
+            .where("user.userId =:userId", {userId})
+            .getOne();
+    }
 
     async getAllUsers(): Promise<Users[]> {
         return await this.createQueryBuilder("user")
@@ -29,6 +35,10 @@ export class UsersRepository extends Repository<Users> {
 
     async updateProfileImage(userId: number, imageUrl: string){
         await this.update({userId}, {profileImage: imageUrl});
+    }
+
+    async deleteUser(userId: number){
+        await this.update({userId}, {userStatus: false});
     }
 
     // 작성한 글 가져오기 _ 카테고리명, 제목, 닉네임, 내용, n시간전, 이미지 개수

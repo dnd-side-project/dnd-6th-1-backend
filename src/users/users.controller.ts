@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Patch, 
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
+import { GetUser } from 'src/auth/get-user.decorator';
 import { UploadService } from 'src/boards/upload.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UsersService } from './users.service';
@@ -59,7 +60,7 @@ export class UsersController {
         required: true, 
         description: '변경할 닉네임'
     })
-    async findByNickname(
+    async checkNickname(
         @Res() res,
         @Param("nickname") nickname: string,
     ): Promise<string> {
@@ -80,7 +81,23 @@ export class UsersController {
             })
     }
 
-    // @Patch('/:userId/password') // 비밀번호 재설정
+    @Patch('/:userId/password') // 비밀번호 재설정
+    @ApiOperation({ summary: '닉네임 중복 조회 API', description: '닉네임 입력' })
+    @ApiParam({
+        name: 'userId',
+        required: true, 
+        description: '유저 ID'
+    })
+    async updatePassword(
+        @Res() res,
+        @Param("userId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        userId: number,
+        @Body("password") password: string,
+    ) {
+        
+    }
 
     @Patch('/:userId/profile') //프로필 이미지 및 닉네임 변경한 것 저장
     @ApiOperation({ summary : '마이페이지 개인정보 수정 API' })
@@ -116,6 +133,28 @@ export class UsersController {
             .status(HttpStatus.OK)
             .json({
                 message:'프로필을 수정했습니다'
+            })
+    }
+
+    @Delete('/:userId')
+    @ApiOperation({ summary : '회원 탈퇴 API' })
+    @ApiParam({
+        name: 'userId',
+        required: true,
+        description: '유저 ID',
+    })
+    async deleteUser(
+        @Res() res, 
+        @Param("userId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        userId: number,
+    ){        
+        await this.usersService.deleteUser(userId);
+        return res
+            .status(HttpStatus.OK)
+            .json({
+                message:'회원탈퇴가 완료되었습니다'
             })
     }
 

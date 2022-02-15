@@ -24,7 +24,6 @@ export class AuthService {
         return await this.authRepository.createUser(authCredentialsDto);      // User DB에 저장
     }   
 
-
     // 닉네임 중복 조회
     async findByAuthNickname(nickname: string) {
         const user = await this.authRepository.findByAuthNickname(nickname);
@@ -40,15 +39,23 @@ export class AuthService {
 
         //로그인 성공 - user가 데이터베이스에 있고, pw비교
         if(user && (await bcrypt.compare(password, user.password))) {
-            // 로그인 상태 업데이트
-            //await this.authRepository.signIn(userId, authsigninDto);
             // 유저 토큰 생성 (Secret + Payload) -> payload에 중요한 정보는 넣으면 안됨
             const payload = { userId: user.userId, email };
             const accessToken = await this.jwtService.sign(payload);
-            return accessToken;
+            // 로그인 상태 업데이트
+            await this.authRepository.signIn(user.userId);            return accessToken;
             // JWT에 들어갈 payload에 User id와 account를 넣고 JWT를 생성하여 반환
         } else {
-            throw new UnauthorizedException('login faild');
+            throw new UnauthorizedException('login failed');
         }
     }
+    
+    async signOut(userId: number){
+        return await this.authRepository.signOut(userId);
+    }
+    
+    // // 비밀번호 재설정
+    // async updatePassword(password: string): Promise<string> {
+ 
+    // }
 }

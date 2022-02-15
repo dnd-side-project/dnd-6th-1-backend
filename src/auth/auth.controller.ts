@@ -1,11 +1,12 @@
-import { Body, ConflictException, Controller, Get, Query, HttpStatus, Param, ParseIntPipe, Post, Req, Res, UseGuards, UsePipes, ValidationPipe, UploadedFile, UseInterceptors, UploadedFiles } from '@nestjs/common';
+import { Body, ConflictException, Controller, Get, Query, HttpStatus, Param, ParseIntPipe, Post, Req, Res, UseGuards, UsePipes, ValidationPipe, UploadedFile, UseInterceptors, UploadedFiles, Patch } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthCredentialsDto } from './dto/auth-credential.dto';
 import { AuthSignInDto } from './dto/auth-signin.dto';
-import { GetUser } from './get-user.decorator';
 import { Users } from './users.entity';
 import { ApiTags, ApiOperation, ApiCreatedResponse, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
+import { APIGateway } from 'aws-sdk';
+import { GetUser } from './get-user.decorator';
 require("dotenv").config();
 
 @Controller('auth')
@@ -122,16 +123,16 @@ export class AuthController {
     async signIn(
         @Res() res,
         @Body(ValidationPipe) authsigninDto: AuthSignInDto
-        ): Promise<string> {
+    ): Promise<string> {
             // async - await은 값을 가져올때 유용함.
             const accessToken = await this.authService.signIn(authsigninDto);
             if(accessToken){
                 return res
-                        .json({
-                            accessToken: accessToken,
-                            message: '로그인 성공',
-                            flag: 1
-                        })
+                    .json({
+                        accessToken: accessToken,
+                        message: '로그인 성공',
+                        flag: 1
+                    })
             } else {
                 const userEmail = authsigninDto.email;
                 console.log(userEmail);
@@ -139,23 +140,41 @@ export class AuthController {
                 console.log(email);
                 if(!email) {
                     return res
-                    .json({
-                        message: '유효한 이메일이 없습니다.',
-                        flag: 0
-                    })
+                        .json({
+                            message: '유효한 이메일이 없습니다.',
+                            flag: 0
+                        })
                 } else {
                     return res
-                    .json({
-                        message: '비밀번호가 일치하지 않습니다.',
-                        flag: 0
-                    })
+                        .json({
+                            message: '비밀번호가 일치하지 않습니다.',
+                            flag: 0
+                        })
                 }
             }   
     }
 
-    @Post('/test')
-    @UseGuards(AuthGuard())
-    test(@GetUser() user: Users) {
-        console.log('user', user);
-    } 
+    @Patch('/signout')
+    @ApiOperation({ 
+        summary: '로그아웃 API', 
+    })
+    async signout(
+        @Res() res,
+        @GetUser() user
+    ): Promise<any> {
+        const { userId } = user;
+
+        await this.authService.signOut(userId);
+        return res
+            .status(HttpStatus.OK)
+            .json({
+                message: '로그아웃이 완료되었습니다',
+            })
+    }
+
+    // @Post('/test')
+    // @UseGuards(AuthGuard())
+    // test(@GetUser() user: Users) {
+    //     console.log('user', user);
+    // } 
 }
