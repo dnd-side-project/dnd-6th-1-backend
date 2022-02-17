@@ -52,15 +52,24 @@ export class DiariesController {
         @Body() createDiaryDto: CreateDiaryDto
         ): Promise<any> {
             const { userId } = loginUser;
+            const { date } = createDiaryDto;
+            const diaryDate = await this.diariesService.findByDiaryDate(date);
+
+            // 날짜에 다이어리 글이 작성되어 있는지 확인
+            if(diaryDate) 
+                return res.
+                    status(HttpStatus.BAD_REQUEST)
+                    .json({
+                        message: '해당 날짜에 게시물이 존재합니다.',
+                    })
 
             // 다이어리글 작성
             const diary = await this.diariesService.createDiary(userId, createDiaryDto); 
             if(files.length!=0) // 파일이 있는 경우
                 await this.uploadService.uploadFiles(files, diary.diaryId); 
             
-            // 작성한 다이어리
+            // 작성한 다이어리 정보 return
             const createDiary = await this.diariesService.findByDiaryId(diary.diaryId);
-            
             return res
                 .status(HttpStatus.CREATED)
                 .json({

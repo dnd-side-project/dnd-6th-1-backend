@@ -27,7 +27,7 @@ export class CreateDiaryDto {
 
     @ApiProperty({ 
         example: '지가먼데 날 차',
-        description: '일기글 제목', 
+        description: '감정 선택 이유', 
         required: true
     })
     @IsNotEmpty()
