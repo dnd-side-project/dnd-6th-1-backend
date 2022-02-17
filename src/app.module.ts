@@ -9,10 +9,14 @@ import { typeORMConfig } from './configs/typeorm.config';
 import { AuthModule } from './auth/auth.module'
 import { CommentsModule } from './comments/comments.module';
 import { UsersModule } from './users/users.module';
+import { DiariesModule } from './diaries/diaries.module';
 import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
+import { DiaryImagesModule } from './diary-images/diary-images.module';
 import * as winston from 'winston';
 import DailyRotateFile = require('winston-daily-rotate-file');
 const { combine, timestamp, printf } = winston.format;
+
+
 
 @Module({
   imports: [
@@ -22,6 +26,8 @@ const { combine, timestamp, printf } = winston.format;
     AuthModule,
     CommentsModule,
     UsersModule,
+    DiariesModule,
+    DiaryImagesModule,
     WinstonModule.forRoot({
       transports: [
         new winston.transports.Console({
@@ -33,18 +39,6 @@ const { combine, timestamp, printf } = winston.format;
             nestWinstonModuleUtilities.format.nestLike('ITZA', { prettyPrint: true }),
           ),
         }),
-        // new winston.transports.DailyRotateFile({
-        //   level: 'error',
-        //   datePattern: 'YYYY-MM-DD',
-        //   dirname: path.join(__dirname, 'logs', '/error'),
-        //   filename: '%DATE%.error.log',
-        //   maxFiles: 30,
-        //   zippedArchive: true
-        // }),      
-        // new WinstonDailyRotate({
-        //   filename: "./logs/app",
-        //   datePattern: "YYYY-MM/DD[.log]",
-        // })
         new DailyRotateFile({
           level: 'error',
           format: combine(

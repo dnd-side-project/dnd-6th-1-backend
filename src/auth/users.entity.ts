@@ -3,6 +3,7 @@ import { Boards } from "src/boards/entity/boards.entity";
 import { Bookmarks } from "src/boards/entity/bookmarks.entity";
 import { Histories } from "src/boards/entity/histories.entity";
 import { Likes } from "src/boards/entity/likes.entity";
+import { Diaries } from "src/diaries/diaries.entity";
 import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity, OneToMany, OneToOne, JoinColumn } from "typeorm";
 
 
@@ -40,6 +41,16 @@ export class Users extends BaseEntity {
         (board) => board.userId
     )
     boards: Boards[];
+
+
+    // User(1) <> Diaries(*)
+    @OneToMany(
+        () => Diaries,
+        (diary) => diary.userId
+    )
+    diaries: Diaries[];
+
+
 
     // User(1) <> Likes(*)
     @OneToMany(
