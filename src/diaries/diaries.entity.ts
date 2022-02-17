@@ -2,7 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsIn, IsNotEmpty, IsNumber, IsString, Length } from "class-validator";
 import { Users } from "src/auth/users.entity";
 import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-
+import { DiaryImages } from "src/diary-images/diary-images.entity";
 
 
 
@@ -29,11 +29,22 @@ export class Diaries extends BaseEntity {
     @Column() //작성자 아이디 
     userId: number;
     
+
+
+    @ApiProperty({ 
+        example: '2022-02-02',
+        description: '다이어리 글 날짜 (자동등록시간X)', 
+    })
+    @Column({ type:'datetime'})         // datetime은 날짜를 직접 입력, timestamp는 자동 입력
+    date: string;       // Date도 가능
+
+
+
     @ApiProperty({ 
         example: 1,
         description: '카테고리 번호', 
     })
-    @IsIn([0,1,2,3,4])      // class-validator
+    @IsIn([1,2,3,4,5])      // class-validator
     @IsNotEmpty()
     @IsNumber()
     @Column()
@@ -70,6 +81,15 @@ export class Diaries extends BaseEntity {
     diaryContent: string;
 
 
+
+    // Diary(1) <> DiaryImage(*)
+    @OneToMany(
+        () => DiaryImages,
+        (diaryImage) => diaryImage.diaryId
+    )
+    images: DiaryImages[];
+
+
     @ApiProperty({ 
         example: '2022-02-04 16:47:24',
         description: '다이어리 글이 등록된 시간', 
@@ -103,10 +123,6 @@ export class Diaries extends BaseEntity {
     })
     @Column({ type:'datetime'})         
     week: number;
-
-
-
-
 
 
     @ApiProperty({ 

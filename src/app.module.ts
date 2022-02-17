@@ -11,6 +11,7 @@ import { CommentsModule } from './comments/comments.module';
 import { UsersModule } from './users/users.module';
 import { DiariesModule } from './diaries/diaries.module';
 import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
+import { DiaryImagesModule } from './diary-images/diary-images.module';
 import * as winston from 'winston';
 
 
@@ -36,7 +37,9 @@ import * as winston from 'winston';
         }),
         // new winston.transports.File({ filename: `${Date}`.log' })
       ]
-    })
+    }),
+    
+    DiaryImagesModule
   ],
   controllers: [AppController],
   providers: [
