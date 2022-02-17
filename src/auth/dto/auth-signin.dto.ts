@@ -7,25 +7,27 @@ export class AuthSignInDto {
     // email, password, nickname, userStatus, breakupDate
     
     @ApiProperty({
-        example: 'test1@naver.con',
+        example: 'test1@naver.com',
         description: 'email',
         required: true,
     })
-    @IsEmail()      // 이메일 유효성 검사
+    @IsEmail(/^(\w+)@(\w+)[.](\w+)$/, { 
+        message: '올바른 이메일 형식이 아닙니다' 
+    })      
     @IsNotEmpty()
     email: string;
 
-
     @ApiProperty({
-        example: '12345',
+        example: 'test12345',
         description: '비밀번호',
         required: true,
     })
     @IsString()
     @IsNotEmpty()
-    @Length(4,20)   // 비밀번호 몇자이상?
+    @Matches(/^[A-Za-z0-9\d]{8,20}$/, { 
+        message : '올바른 비밀번호 형식이 아닙니다'
+    })
     password: string;
 
-    
 
 }

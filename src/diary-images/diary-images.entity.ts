@@ -1,15 +1,18 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Boards } from "src/boards/entity/boards.entity";
+import { Diaries } from "src/diaries/diaries.entity";
 import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn} from "typeorm";
 
+
+
+
 @Entity()
-export class BoardImages extends BaseEntity{
+export class DiaryImages extends BaseEntity{
     @ApiProperty({ 
         example: 1,
-        description: '자동생성되는 게시글 이미지 ID', 
+        description: '자동생성되는 일기 이미지 ID', 
     })
     @PrimaryGeneratedColumn()
-    boardImageId: number;
+    diaryImageId: number;
 
     @ApiProperty({ 
         example: 'hi.png',
@@ -35,16 +38,15 @@ export class BoardImages extends BaseEntity{
     @Column({ default : 1 }) // 이미지 삭제 여부
     imageStatus: boolean;
 
-    // Board(1) <> BoardImage(*)
     @ApiProperty({ 
         example: 21,
-        description: '본 이미지가 첨부된 게시글 ID', 
+        description: '본 이미지가 첨부된 일기글 ID', 
     })
     @ManyToOne(
-        () => Boards,
-        (board) => board.images
+        () => Diaries,
+        (diary) => diary.images
     )
-    @JoinColumn({name:"boardId"})
+    @JoinColumn({name:"diaryId"})
     @Column()
-    boardId: number;
+    diaryId: number;
 }

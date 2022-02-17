@@ -1,7 +1,9 @@
-import { Body, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BoardsService } from 'src/boards/boards.service';
 import { HistoriesRepository } from 'src/boards/repository/histories.repository';
+import { PasswordDto } from './dto/password.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UsersRepository } from './users.repository';
 
 @Injectable()
@@ -24,6 +26,40 @@ export class UsersService {
     async findByKeyword(keyword: string){
         return await this.historiesRepository.findByKeyword(keyword);
     }
+
+    async getMyPage(userId: number){
+        const myPage = new Object();
+
+        // 프로필 이미지, 이메일, 비밀번호
+        const user = await this.usersRepository.findByUserId(userId);
+        const { email, nickname, profileImage } = user;
+        myPage['user'] = {
+            email,
+            nickname,
+            profileImage
+        }
+    
+        const boardsById = await this.usersRepository.getAllBoardsByUserId(userId); // 내가 쓴 글 갯수
+        myPage['writeCnt'] = boardsById.length;
+        const boardsByComment = await this.usersRepository.getAllBoardsByComments(userId); // 댓글 단 글의 개수
+        myPage['commentCnt'] = boardsByComment.length;
+        const boardsByBookmark = await this.usersRepository.getAllBoardsByBookmark(userId); // 북마크 한 글의 개수
+        myPage['bookmarkCnt'] = boardsByBookmark.length;
+        return myPage;
+    }
+
+    async deleteUser(userId: number){
+        return await this.usersRepository.deleteUser(userId);
+    }
+
+    // 프로필 이미지 및 닉네임 변경 저장
+    async updateProfile(userId: number, updateProfileDto: UpdateProfileDto) {
+        return await this.usersRepository.updateProfile(userId, updateProfileDto);
+    }
+
+    async updatePassword(userId: number, passwordDto: PasswordDto){
+        return await this.usersRepository.updatePassword(userId, passwordDto);
+    }   
 
     async getAllHistories(userId: number){
         return await this.historiesRepository.getAllHistories(userId);

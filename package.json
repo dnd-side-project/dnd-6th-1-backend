@@ -43,6 +43,7 @@
     "multer": "^1.4.4",
     "multer-s3": "^2.10.0",
     "mysql": "^2.18.1",
+    "nest-winston": "^1.6.2",
     "nodemailer": "^6.7.2",
     "passport": "^0.5.2",
     "passport-jwt": "^4.0.0",
@@ -52,7 +53,8 @@
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
     "swagger-ui-express": "^4.3.0",
-    "typeorm": "^0.2.41"
+    "typeorm": "^0.2.41",
+    "winston": "^3.6.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.0.0",

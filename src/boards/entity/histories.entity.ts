@@ -43,5 +43,6 @@ export class Histories extends BaseEntity{
         (user) => user.histories
     )
     @JoinColumn({ name: "userId" })
+    @Column()
     userId: number;
 }

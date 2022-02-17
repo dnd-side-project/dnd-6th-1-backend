@@ -1,5 +1,8 @@
-import { EntityRepository, getRepository, Repository } from "typeorm";
+import { EntityRepository, Repository } from "typeorm";
 import { Users } from "src/auth/users.entity";
+import { UpdateProfileDto } from "./dto/update-profile.dto";
+import { PasswordDto } from "./dto/password.dto";
+import * as bcrypt from "bcryptjs";
 
 @EntityRepository(Users)
 export class UsersRepository extends Repository<Users> {
@@ -7,6 +10,12 @@ export class UsersRepository extends Repository<Users> {
         return await this.createQueryBuilder("user")
             .where("user.userId =:userId", {userId})
             .andWhere("user.userStatus =:status", {status: true})
+            .getOne();
+    }
+    
+    async findByUserIdWithDeleted(userId: number){
+        return await this.createQueryBuilder("user")
+            .where("user.userId =:userId", {userId})
             .getOne();
     }
 
@@ -21,6 +30,26 @@ export class UsersRepository extends Repository<Users> {
             .getMany();
     }
 
+    async updateProfile(userId: number, updateProfileDto: UpdateProfileDto){
+        const { nickname } = updateProfileDto;
+        await this.update({userId}, {nickname});
+    }
+
+    async updatePassword(userId: number, passwordDto: PasswordDto){
+        const { password } = passwordDto;
+        const salt = await bcrypt.genSalt();         // salt 생성 - 비밀번호 암호화
+        const hashedPassword = await bcrypt.hash(password, salt);
+        await this.update({userId}, {password: hashedPassword});
+    }
+
+    async updateProfileImage(userId: number, imageUrl: string){
+        await this.update({userId}, {profileImage: imageUrl});
+    }
+
+    async deleteUser(userId: number){
+        await this.update({userId}, {userStatus: false});
+    }
+
     // 작성한 글 가져오기 _ 카테고리명, 제목, 닉네임, 내용, n시간전, 이미지 개수
     async getAllBoardsByUserId(userId: number){
         return await this.createQueryBuilder("user") 
@@ -28,7 +57,7 @@ export class UsersRepository extends Repository<Users> {
             .leftJoinAndSelect("boards.images","images") // board 테이블에 image 게시물 join (이미지가 없는 애도 갯수 세야 하므로)
             .select([
                 "user.nickname AS nickname", 
-                "boards.categoryName AS categoryName", 
+                "boards.categoryId AS categoryId", 
                 "boards.postTitle AS postTitle", 
                 "boards.postCreated AS createdAt", 
                 "boards.postContent AS postContent",
@@ -49,7 +78,7 @@ export class UsersRepository extends Repository<Users> {
             .leftJoinAndSelect("boards.images","images") // board 테이블에 images join
             .select([
                 "user.nickname AS nickname",
-                "boards.categoryName AS categoryName", 
+                "boards.categoryId AS categoryId", 
                 "boards.postTitle AS postTitle", 
                 "boards.postCreated AS createdAt", 
                 "boards.postContent AS postContent",
@@ -69,7 +98,7 @@ export class UsersRepository extends Repository<Users> {
             .leftJoinAndSelect("boards.images","images") // board 테이블에 images join
             .select([
                 "user.nickname AS nickname",
-                "boards.categoryName AS categoryName", 
+                "boards.categoryId AS categoryId", 
                 "boards.postTitle AS postTitle", 
                 "boards.postCreated AS createdAt", 
                 "boards.postContent AS postContent",

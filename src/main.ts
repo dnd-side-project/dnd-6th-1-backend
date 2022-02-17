@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as config from 'config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -31,9 +32,22 @@ async function bootstrap() {
   )
 
   const options = new DocumentBuilder()
-    .setTitle('ITZZA API Docs')
+    .setTitle('Itza API Docs')
     .setDescription('DND 1조 완성하조의 API 문서입니다.')
     .setVersion('1.0.0')
+    // .addBearerAuth({ 
+    //     type: 'http', scheme: 'bearer', bearerFormat: 'JWT'
+    //   },
+    //   'access-token',
+    // )
+    .addBearerAuth({
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'Token',
+        in: 'header',
+      },
+      'accessToken',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, options);
@@ -41,7 +55,9 @@ async function bootstrap() {
   
   const serverConfig = config.get('server')
   const port = serverConfig.port;
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
   await app.listen(port);
+  
   Logger.log(`Application running on port ${port}`);
 }
 bootstrap();
