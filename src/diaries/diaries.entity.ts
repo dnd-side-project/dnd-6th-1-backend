@@ -35,7 +35,7 @@ export class Diaries extends BaseEntity {
         example: '2022-02-02',
         description: '다이어리 글 날짜 (자동등록시간X)', 
     })
-    @Column({ type:'datetime'})         // datetime은 날짜를 직접 입력, timestamp는 자동 입력
+    @Column({ type:'date'})         // datetime은 날짜를 직접 입력, timestamp는 자동 입력
     date: string;       // Date도 가능
 
 

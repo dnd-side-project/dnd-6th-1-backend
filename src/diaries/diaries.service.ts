@@ -21,6 +21,13 @@ export class DiariesService {
         return await this.diariesRepository.findByDiaryId(diaryId);
     }
 
+
+    async findByDiaryDate(date: string) {
+        const diary = await this.diariesRepository.findByDiaryDate(date);
+        return diary;
+    }
+
+
     async createDiary(loginUserId: number, createDiaryDto: CreateDiaryDto): Promise<Diaries> {
         return await this.diariesRepository.createDiary(loginUserId, createDiaryDto); // board DB에 저장        
     }

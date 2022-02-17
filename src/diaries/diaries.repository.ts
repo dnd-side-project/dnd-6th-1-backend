@@ -6,8 +6,6 @@ import { CreateDiaryDto } from "./dto/create-diary.dto";
 @EntityRepository(Diaries)
 export class DiariesRepository extends Repository <Diaries> {
 
-
-
     async findByDiaryId(diaryId: number){ 
         const diary = await this.createQueryBuilder("diaries")
             .leftJoinAndSelect("diaries.images", "images")
@@ -24,8 +22,6 @@ export class DiariesRepository extends Repository <Diaries> {
         return diary;
     }
 
-
-
     async getAllDiaries(): Promise<Diaries[]> {
         return await this.find({
             where: {
@@ -34,6 +30,15 @@ export class DiariesRepository extends Repository <Diaries> {
             relations: ["diaries"] 
         });
     }
+
+
+    // 날짜에 글이 작성되어 있는지 확인
+    async findByDiaryDate(date: string) {
+        return await this.createQueryBuilder("diaries")
+            .where("diaries.date =:date", {date})
+            .getOne();
+    }
+
 
     // 일기 등록
     async createDiary(loginUserId: number, createDiaryDto: CreateDiaryDto): Promise<Diaries> {
