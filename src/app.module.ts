@@ -15,7 +15,8 @@ import { DiaryImagesModule } from './diary-images/diary-images.module';
 import * as winston from 'winston';
 import DailyRotateFile = require('winston-daily-rotate-file');
 const { combine, timestamp, printf } = winston.format;
-
+import * as path from 'path';
+import { FcmModule } from 'nestjs-fcm';
 
 
 @Module({
@@ -56,7 +57,10 @@ const { combine, timestamp, printf } = winston.format;
           maxFiles: '14d',
         }),
       ],
-    })
+    }),
+    // FcmModule.forRoot({
+    //   firebaseSpecsPath: path.join(__dirname, '../firebase.spec.json'),
+    // }),
   ],
   controllers: [AppController],
   providers: [
