@@ -1,5 +1,4 @@
-import { UsePipes, ValidationPipe, Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
-import { HttpStatus, Inject, ParseIntPipe, Res, UploadedFiles, UseGuards } from '@nestjs/common';
+import { HttpStatus, Inject, Res, UploadedFiles, UseGuards, Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FilesInterceptor} from '@nestjs/platform-express';
 import { Diaries } from './diaries.entity';
@@ -29,14 +28,40 @@ export class DiariesController {
     ){}
 
 
-
-    // 일기 홈화면 전체 조회
-    @Get()  
+    /*
+    // 홈화면 해당 월 일기글 조회
+    @Get('')  
     @ApiOperation({ 
-        summary: '일기 홈화면에서 전체 글 조회 API'
+        summary: '홈화면에서 해당 월 일기글 조회 API'
     })
     getAllTask(): Promise<Diaries[]> {
         return this.diariesService.getAllDiaries();
+    }
+    */
+
+
+
+    // 홈화면 해당 월 일기글 조회
+    @Get('')  
+    @ApiOperation({ 
+        summary: '홈화면에서 해당 월 일기글 조회 API'
+    })
+    @ApiQuery({
+        name: 'month',
+        required: false,
+        description: '해당 월',
+        example:1,
+    })
+    async getAllDiaries(@Res() res, @Query() query, @GetUser() loginUser): Promise<Diaries[]> {
+        const { month } = query; // @Query()'에서 해당 쿼리문을 받아 query에 저장하고 변수 받아옴
+        const { userId } = loginUser;
+
+        let diaries;
+
+        diaries = await this.diariesService.getMonthDiaries(userId, month);
+        return res
+            .status(HttpStatus.OK)
+            .json(diaries);
     }
 
 
