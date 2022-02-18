@@ -15,8 +15,6 @@ import { DiaryImagesModule } from './diary-images/diary-images.module';
 import * as winston from 'winston';
 import DailyRotateFile = require('winston-daily-rotate-file');
 const { combine, timestamp, printf } = winston.format;
-import * as path from 'path';
-import { FcmModule } from 'nestjs-fcm';
 
 
 @Module({
@@ -37,7 +35,7 @@ import { FcmModule } from 'nestjs-fcm';
               format: 'YYYY-MM-DD HH:mm',
             }),
             winston.format.ms(),
-            nestWinstonModuleUtilities.format.nestLike('ITZA', { prettyPrint: true }),
+            nestWinstonModuleUtilities.format.nestLike('ITZZA', { prettyPrint: true }),
           ),
         }),
         new DailyRotateFile({

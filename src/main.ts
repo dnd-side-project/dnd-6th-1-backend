@@ -4,24 +4,12 @@ import { AppModule } from './app.module';
 import * as config from 'config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import * as admin from 'firebase-admin';
-import { ServiceAccount } from "firebase-admin";
 require("dotenv").config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: true,
     logger: ['error', 'warn']
-  });
-  
-  const adminConfig: ServiceAccount = {
-    "projectId": process.env.FIREBASE_PROJECT_ID,
-    "privateKey": process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-    "clientEmail": process.env.FIREBASE_CLIENT_EMAIL,
-  };
-
-  admin.initializeApp({
-    credential: admin.credential.cert(adminConfig),
   });
 
   //Global Middleware 설정 -> Cors 속성 활성화
@@ -46,7 +34,7 @@ async function bootstrap() {
   )
 
   const options = new DocumentBuilder()
-    .setTitle('Itza API Docs')
+    .setTitle('ITZZA API Docs')
     .setDescription('DND 1조 완성하조의 API 문서입니다.')
     .setVersion('1.0.0')
     .addBearerAuth({
