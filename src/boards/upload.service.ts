@@ -62,6 +62,9 @@ export class UploadService {
         // 기존의 boardImage에 boardId 에 해당하는 이미지명을 s3에서 찾아서 삭제하고 
         const images = await this.boardImagesRepository.findByBoardId(boardId);
         const imageObject = new Array();
+        
+        if(images.length == 0) // 이미지 없는 경우 그냥 리턴
+            return ;
 
         for(var i=0;i<images.length;i++){
             imageObject[i]={

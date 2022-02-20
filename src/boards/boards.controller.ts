@@ -260,7 +260,7 @@ export class BoardsController {
 
             // 게시글 삭제 될 때 s3에 있는 이미지도 삭제 -> rds image 도 삭제
             await this.uploadService.deleteFiles(boardId); 
-            this.boardsService.deleteBoard(boardId);
+            await this.boardsService.deleteBoard(boardId);
 
             return res
                 .status(HttpStatus.OK)
