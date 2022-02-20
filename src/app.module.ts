@@ -15,7 +15,10 @@ import { DiaryImagesModule } from './diary-images/diary-images.module';
 import * as winston from 'winston';
 import DailyRotateFile = require('winston-daily-rotate-file');
 const { combine, timestamp, printf } = winston.format;
-
+import { MailerModule } from '@nestjs-modules/mailer';
+import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
+import { MailModule } from './mail/mail.module';
+import * as path from 'path';
 
 @Module({
   imports: [
@@ -56,8 +59,36 @@ const { combine, timestamp, printf } = winston.format;
         }),
       ],
     }),
-    // FcmModule.forRoot({
-    //   firebaseSpecsPath: path.join(__dirname, '../firebase.spec.json'),
+    MailerModule.forRoot({
+      transport: 'smtps://user@domain.com:pass@smtp.domain.com',
+      defaults: {
+        from: '"nest-modules" <modules@nestjs.com>',
+      },
+      template: {
+        dir: __dirname + '/templates',
+        adapter: new EjsAdapter(),
+        options: {
+          strict: true,
+        },
+      },
+    })
+    // MailerModule.forRootAsync({
+    //   imports: [ConfigModule],
+    //   inject: [ConfigService],
+    //   useFactory: (config: ConfigService) => {
+    //     console.log('===== write [.env] by config: network====');
+    //     console.log(config.get('email'));
+    //     return {
+    //       ...config.get('email'),
+    //       template: {
+    //         dir: path.join(__dirname, '/templates/'),
+    //         adapter: new EjsAdapter(),
+    //         options: {
+    //           strict: true,
+    //         },
+    //       },
+    //     };
+    //   },
     // }),
   ],
   controllers: [AppController],
