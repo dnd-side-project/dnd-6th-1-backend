@@ -207,22 +207,24 @@ export class BoardsService {
     }
 
     async deleteBoard(boardId: number) {
-        this.boardsRepository.deleteBoard(boardId);
+        await this.boardsRepository.deleteBoard(boardId);
     }
 
-    async createLike(boardId: number, loginUserId: number): Promise<Likes>{
-        return this.likesRepository.createLike(boardId, loginUserId);
+    async findLikeByBoardId(boardId: number, loginUserId: number): Promise<Likes>{
+        const like = await this.likesRepository.findByBoardId(boardId, loginUserId);
+        if(!like) // 좋아요 처음 생성한 경우
+            return await this.likesRepository.createLike(boardId, loginUserId);
+        else{ // 좋아요 눌린 경우 / 좋아요 취소한 경우 모두 존재
+            return await this.likesRepository.updateLikeStatus(boardId, loginUserId);
+        }
     }
 
-    async updateLikeStatus(boardId: number, loginUserId: number) {
-        this.likesRepository.updateLikeStatus(boardId, loginUserId);
-    }
-
-    async createBookmark(boardId: number, loginUserId: number): Promise<Bookmarks>{
-        return this.bookmarksRepository.createBookmark(boardId, loginUserId);
-    }
-
-    async updateBookmarkStatus(boardId: number, loginUserId: number) {
-        this.bookmarksRepository.updateBookmarkStatus(boardId, loginUserId);
+    async findBookmarkByBoardId(boardId: number, loginUserId: number): Promise<Bookmarks>{
+        const bookmark = await this.bookmarksRepository.findByBoardId(boardId, loginUserId);
+        if(!bookmark) // 좋아요 처음 생성한 경우
+            return await this.bookmarksRepository.createBookmark(boardId, loginUserId);
+        else{ // 좋아요 눌린 경우 / 좋아요 취소한 경우 모두 존재
+            return await this.bookmarksRepository.updateBookmarkStatus(boardId, loginUserId);
+        }
     }
 }
