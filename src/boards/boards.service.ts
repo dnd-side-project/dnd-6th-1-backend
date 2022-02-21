@@ -117,7 +117,11 @@ export class BoardsService {
         const likeStatus = await this.likesRepository.findByUserId(boardId, loginUserId); // 좋아요 여부
         const commentCnt = (await this.commentsRepository.getAllComments(boardById.boardId)).length;
         const canEdit = (userId == loginUserId)? true : false // 글 작성자 / 로그인한 사용자가 동일한 경우
-        console.log(user.userId)
+        const image = new Array();
+        
+        for(var i=0;i<images.length;i++){
+            image.push(images[i]['imageUrl'])
+        }
         const board = {
             profileImage: ((userStatus == false) ? deletedUserImageUrl : profileImage), // 바뀔 수 있음
             nickname: ((userStatus == false) ? '탈퇴한 회원입니다' : nickname),
@@ -125,7 +129,7 @@ export class BoardsService {
             createdAt,
             postTitle,
             postContent,
-            images,
+            images: image,
             likeCnt,
             commentCnt,
             comments,

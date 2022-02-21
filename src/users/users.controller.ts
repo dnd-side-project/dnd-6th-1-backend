@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Res, UploadedFile, UseGuards, UseInterceptors, ValidationPipe } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Matches } from 'class-validator';
 import { AuthService } from 'src/auth/auth.service';
 import { UploadService } from 'src/boards/upload.service';
@@ -9,7 +9,10 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UsersService } from './users.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 
+@ApiBearerAuth('accessToken')
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
     constructor(
