@@ -34,13 +34,11 @@ export class BoardsController {
         name: 'category',
         required: false,
         description: '카테고리별',
-        example:1,
     })
     @ApiQuery({
         name: 'keyword',
         required: false,
         description: '검색어별',
-        example:'졸려'
     })
     async getAllBoards(@Res() res, @Query() query, @GetUser() loginUser): Promise <Boards[]>{
         try{

@@ -28,7 +28,10 @@ export class BoardsRepository extends Repository<Boards>{
             where: {
                 postStatus: true
             },
-            relations: ["images"] 
+            relations: ["images"],
+            order: {
+                boardId: 'DESC' // 최신순 정렬
+            },
         });
     }
 
