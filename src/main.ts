@@ -33,7 +33,7 @@ async function bootstrap() {
   )
 
   const options = new DocumentBuilder()
-    .setTitle('Itza API Docs')
+    .setTitle('ITZZA API Docs')
     .setDescription('DND 1조 완성하조의 API 문서입니다.')
     .setVersion('1.0.0')
     // .addBearerAuth({ 

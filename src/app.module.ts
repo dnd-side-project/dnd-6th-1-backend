@@ -36,7 +36,7 @@ const { combine, timestamp, printf } = winston.format;
               format: 'YYYY-MM-DD HH:mm',
             }),
             winston.format.ms(),
-            nestWinstonModuleUtilities.format.nestLike('ITZA', { prettyPrint: true }),
+            nestWinstonModuleUtilities.format.nestLike('ITZZA', { prettyPrint: true }),
           ),
         }),
         new DailyRotateFile({
