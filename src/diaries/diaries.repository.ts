@@ -34,7 +34,7 @@ export class DiariesRepository extends Repository <Diaries> {
 
     // 홈화면에서 제목, 이유, 이미지, 내용이 필요할까..?
     // 내가 작성한 월별 게시글 가져오기 : 날짜, 감정, (작성자), 감정이유, 제목, 내용, 이미지
-    async getMonthDiaries(userId: number, month: number): Promise<Diaries[]> {
+    async getMonthDiaries(userId: number, year: number, month: number): Promise<Diaries[]> {
         return await this.createQueryBuilder("user")        // user를 사용해서 작성한 글찾기
             .innerJoinAndSelect("user.diares","diares") // user 테이블에 diaries 게시물 join
             .leftJoinAndSelect("diares.images","images") // board 테이블에 image 게시물 join (이미지가 없는 애도 갯수 세야 하므로)
@@ -48,6 +48,7 @@ export class DiariesRepository extends Repository <Diaries> {
                 "COUNT(images.originalName) AS imageCnt"
             ])
             .where('user.userId =:userId', {userId})        // 내가 쓴 글이여야 하고
+            .andWhere('diares.year =: year', {year})
             .andWhere("diares.month =:month", {month})      // 해당 월에 작성한 글 중에서
             .andWhere("diaries.diaryStatus =:status", {status: true}) // 글이 삭제되지 않은 경우만
             .groupBy("diaries.diaryId")    
@@ -65,7 +66,7 @@ export class DiariesRepository extends Repository <Diaries> {
 
 
     // 일기 등록
-    async createDiary(loginUserId: number, createDiaryDto: CreateDiaryDto, month: number): Promise<Diaries> {
+    async createDiary(loginUserId: number, createDiaryDto: CreateDiaryDto, year: number, month: number): Promise<Diaries> {
         const { date, categoryId, categoryReason, diaryTitle, diaryContent} = createDiaryDto;
         const categoryIdToNumber = +categoryId;
  
@@ -77,6 +78,7 @@ export class DiariesRepository extends Repository <Diaries> {
             diaryTitle,
             diaryContent,
             diaryCreated: new Date(),
+            year: year,
             month: month
         };
         
