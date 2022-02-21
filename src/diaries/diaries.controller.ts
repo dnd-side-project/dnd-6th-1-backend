@@ -66,7 +66,7 @@ export class DiariesController {
     @ApiOperation({ 
         summary: '특정 일기글 조회 API'
     })
-    @ApiQuery({
+    @ApiParam({
         name: 'diaryId',
         required: false,
         description: '일기글 번호',

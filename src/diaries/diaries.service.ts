@@ -41,7 +41,7 @@ export class DiariesService {
         const diaries = await this.getAllDiaries(loginUserId);
         const monthDiaries = diaries.filter(diary => 
             diary.month == month && diary.year ==year);
-        //const monthDiaries = await this.diariesRepository.getMonthDiaries(loginUserId, month); // 월 일기글 다가져오기
+        //const monthDiaries = await this.diariesRepository.getMonthDiaries(loginUserId, year, month); // 월 일기글 다가져오기
         
         return monthDiaries;
     }
@@ -55,29 +55,20 @@ export class DiariesService {
     
     // 일기 특정 글 조회
     async getDiaryById(loginUserId: number, diaryId: number) {
-        /*
+        // 다이어리 객체
         const diaryById = await this.findByDiaryId(diaryId);
-        // 
-        const { userId, categoryId, postTitle, postContent, postCreated, images } = boardById;
+        const { userId, categoryId, categoryReason, diaryTitle, diaryContent, images, date } = diaryById;
         const canEdit = (userId == loginUserId)? true : false // 글 작성자 / 로그인한 사용자가 동일한 경우
-        console.log(user.userId)
-        const board = {
-            profileImage: ((userStatus == false) ? deletedUserImageUrl : profileImage), // 바뀔 수 있음
-            nickname: ((userStatus == false) ? '탈퇴한 회원입니다' : nickname),
+        
+        const diary = {
+            date,
             categoryId,
-            createdAt,
-            postTitle,
-            postContent,
-            images,
-            likeCnt,
-            commentCnt,
-            comments,
-            canEdit,
-            bookmarkStatus,
-            likeStatus
+            categoryReason,
+            diaryTitle,
+            diaryContent,
+            images
         }    
-        return board;
-        */
+        return diary;
     }
 
 
