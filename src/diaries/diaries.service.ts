@@ -3,6 +3,7 @@ import { DiariesRepository} from './diaries.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Diaries } from "./diaries.entity";
 import { CreateDiaryDto } from "./dto/create-diary.dto";
+import { UpdateDiaryDto } from "./dto/update-diary.dto";
 import moment, {Moment} from 'moment';
 
 
@@ -82,6 +83,18 @@ export class DiariesService {
         const {year, month} = await DiariesService.calculateDate(createDiaryDto);
         console.log('createDiary', year, month);
         return await this.diariesRepository.createDiary(loginUserId, createDiaryDto, year, month); // board DB에 저장        
+    }
+
+/*
+    async updateBoard(diaryId: number, updateDiaryDto: UpdateDiaryDto) {
+        await this.diariesRepository.updateDiary(diaryId, updateDiaryDto);
+        const diary = await this.findByDiaryId(diaryId);
+        return diary;
+    }
+*/
+
+    async deleteDiary(diaryId: number) {
+        await this.diariesRepository.deleteDiary(diaryId);
     }
 
 }

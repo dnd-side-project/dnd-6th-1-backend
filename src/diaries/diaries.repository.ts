@@ -1,6 +1,9 @@
 import { Entity, EntityRepository, Repository } from "typeorm";
 import { Diaries } from "./diaries.entity";
 import { CreateDiaryDto } from "./dto/create-diary.dto"; 
+import { UpdateDiaryDto } from "./dto/update-diary.dto";
+
+
 
 @EntityRepository(Diaries)
 export class DiariesRepository extends Repository <Diaries> {
@@ -10,6 +13,7 @@ export class DiariesRepository extends Repository <Diaries> {
         const diary = await this.createQueryBuilder("diaries")
             .leftJoinAndSelect("diaries.images", "images")
             .where("diaries.diaryId=:diaryId", {diaryId})
+            .andWhere("diaries.diaryStatus =:status", {status: true}) // 글이 삭제되지 않은 경우만
             .getOne();
 
         if(!diary) {// 이미지가 없는 경우 
@@ -85,7 +89,24 @@ export class DiariesRepository extends Repository <Diaries> {
         // 게시글 저장
         console.log(month);
         return await this.save(diary);
-        
+    }
+
+    /*
+    async updateDiary(diaryId: number, updateDiaryDto: UpdateDiaryDto) {
+        const diary = await this.findOne(diaryId);
+        const { categoryId, categoryReason, diaryTitle, diaryContent } = updateBoardDto;
+        // userId를 string->number로 바꿔야 해서 ...updateBoardDto 로 못쓰기 때문에 일일히 null 값이면 db에 이미 저장된 값으로 초기화해줌
+        // const userIdToNumber = +userId;       
+        const category = (categoryId==null) ? board.categoryId : categoryId
+        const categoryIdToNumber = +category; // category (string)
+        const title = (postTitle==null) ? board.postTitle : postTitle
+        const content = (postContent==null) ? board.postContent : postContent
+        await this.update({boardId}, {categoryId: categoryIdToNumber, postTitle: title, postContent: content});
+    }
+    */
+
+    async deleteDiary(diaryId: number) {
+        await this.update({diaryId}, {diaryStatus: false});
     }
     
 }

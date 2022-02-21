@@ -5,6 +5,7 @@ import { Diaries } from './diaries.entity';
 import { UploadService } from './upload.service';
 import { DiariesService } from './diaries.service';
 import { CreateDiaryDto } from './dto/create-diary.dto';
+import { UpdateDiaryDto } from './dto/update-diary.dto';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
@@ -26,8 +27,6 @@ export class DiariesController {
         private readonly diariesService: DiariesService,
         private readonly uploadService: UploadService
     ){}
-
-
 
 
     // 홈화면 해당 연-월 일기글 조회
@@ -132,6 +131,116 @@ export class DiariesController {
                     data: createDiary,
                     message:'게시글을 업로드했습니다'
                 })
+    }
+
+
+/*
+    @Patch('/:diaryId') // 일기 글 수정
+    @ApiOperation({ summary : '일기 특정 글 수정 API' })
+    @ApiParam({
+        name: 'diaryId',
+        required: true,
+        description: '일기글 번호',
+    })
+    @UseInterceptors(FilesInterceptor('files'))
+    @ApiConsumes('multipart/form-data') // swagger에 input file 추가
+    @ApiBody({ type : CreateDiaryDto })
+    async updateBoard(
+        @Res() res, 
+        @Param("diaryId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        diaryId: number, 
+        @UploadedFiles() files: Express.Multer.File[],
+        @Body() updateDiaryDto: UpdateDiaryDto,
+        @GetUser() loginUser
+    ): Promise<any>{ 
+        try{
+            const { userId } = loginUser;
+            const diary = await this.diariesService.findByDiaryId(diaryId);
+            if(!diary)
+                return res
+                    .status(HttpStatus.NOT_FOUND)
+                    .json({
+                        message:`게시글 번호 ${diaryId}번에 해당하는 게시글이 없습니다.`
+                    })
+
+            if(diary.userId != userId) // 글 작성자와 현재 로그인한 사람이 다른 경우 
+                return res
+                    .status(HttpStatus.FORBIDDEN)
+                    .json({
+                        message:`게시글을 수정할 권한이 없습니다.`
+                    })  
+            
+            if(files.length!=0) // 파일이 있는 경우만 파일 수정 업로드 진행
+                await this.uploadService.updateFiles(files, diary.diaryId); // s3에 이미지 업로드 후 boardImage 에 업로드
+            //const updateDiary = await this.diariesService.updateDiary(diaryId, updateDiaryDto);
+
+            return res
+                .status(HttpStatus.OK)
+                .json({
+                    data: updateDiary,
+                    message:'일기글을 수정했습니다'
+                })
+        } catch(error){
+            this.logger.error('일기 글 수정 ERROR'+error);
+            return res
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .json(error);            
+        }    
+    }
+*/
+
+
+    @Delete('/:diaryId')
+    @ApiOperation({ summary : '다이어리 글 삭제 API' })
+    @ApiParam({
+        name: 'diaryId',
+        required: true,
+        description: '일기글 번호',
+    })
+    async deleteDiary(
+        @Res() res, 
+        @Param("diaryId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        diaryId: number,
+        @GetUser() loginUser
+    ){
+        try{
+            const { userId } = loginUser;
+            const diary = await this.diariesService.findByDiaryId(diaryId);
+            if(!diary)
+                return res
+                    .status(HttpStatus.NOT_FOUND)
+                    .json({
+                        message:`게시글 번호 ${diaryId}번에 해당하는 게시글이 없습니다.`
+                    })
+
+            if(diary.userId != userId) // 글 작성자와 현재 로그인한 사람이 다른 경우 
+            return res
+                .status(HttpStatus.FORBIDDEN)
+                .json({
+                    message:`게시글을 삭제할 권한이 없습니다.`
+                })
+
+            // 일기글 삭제 될 때 s3에 있는 이미지도 삭제 -> rds image 도 삭제
+            // const diaryImages = await this.uploadService.findByDiaryImageId(diaryId);
+
+            await this.uploadService.deleteFiles(diaryId);
+            await this.diariesService.deleteDiary(diaryId);
+
+            return res
+                .status(HttpStatus.OK)
+                .json({
+                    message:'일기글이 삭제되었습니다'
+                })
+        } catch(error){
+            this.logger.error('일기 글 삭제 ERROR'+error);
+            return res
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .json(error);            
+        }   
     }
 
 
