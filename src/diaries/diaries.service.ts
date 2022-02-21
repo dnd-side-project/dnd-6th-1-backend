@@ -18,12 +18,14 @@ export class DiariesService {
     static async calculateDate(createDiaryDto: CreateDiaryDto): Promise<any>{
         var date = createDiaryDto.date;
         var calDate = new Date(date)    // string->Date
+        var year = calDate.getFullYear();
         var month = (calDate.getMonth())+1;     // getMonth 반환이 0~11이라 +1해야함, type: number
         
         // const weekOfMonth = (m: Moment) => m.week() - moment(m).startOf('month').week() + 1;
         // const nowDate = moment().utc(true);
         // var week = weekOfMonth(nowDate);
-        return month;
+        console.log(year, month);
+        return {year, month};
     }
 
 
@@ -35,10 +37,10 @@ export class DiariesService {
 
     
     // 해당 월 일기글 조회
-    async getMonthDiaries(loginUserId: number, month: number) {
+    async getMonthDiaries(loginUserId: number, year: number, month: number) {
         const diaries = await this.getAllDiaries(loginUserId);
         const monthDiaries = diaries.filter(diary => 
-            diary.month == month);
+            diary.month == month && diary.year ==year);
         //const monthDiaries = await this.diariesRepository.getMonthDiaries(loginUserId, month); // 월 일기글 다가져오기
         
         return monthDiaries;
@@ -50,6 +52,34 @@ export class DiariesService {
         return await this.diariesRepository.findByDiaryId(diaryId);
     }
 
+    
+    // 일기 특정 글 조회
+    async getDiaryById(loginUserId: number, diaryId: number) {
+        /*
+        const diaryById = await this.findByDiaryId(diaryId);
+        // 
+        const { userId, categoryId, postTitle, postContent, postCreated, images } = boardById;
+        const canEdit = (userId == loginUserId)? true : false // 글 작성자 / 로그인한 사용자가 동일한 경우
+        console.log(user.userId)
+        const board = {
+            profileImage: ((userStatus == false) ? deletedUserImageUrl : profileImage), // 바뀔 수 있음
+            nickname: ((userStatus == false) ? '탈퇴한 회원입니다' : nickname),
+            categoryId,
+            createdAt,
+            postTitle,
+            postContent,
+            images,
+            likeCnt,
+            commentCnt,
+            comments,
+            canEdit,
+            bookmarkStatus,
+            likeStatus
+        }    
+        return board;
+        */
+    }
+
 
     async findByDiaryDate(date: string) {
         const diary = await this.diariesRepository.findByDiaryDate(date);
@@ -58,8 +88,9 @@ export class DiariesService {
 
 
     async createDiary(loginUserId: number, createDiaryDto: CreateDiaryDto): Promise<Diaries> {
-        const month = await DiariesService.calculateDate(createDiaryDto);
-        return await this.diariesRepository.createDiary(loginUserId, createDiaryDto, month); // board DB에 저장        
+        const {year, month} = await DiariesService.calculateDate(createDiaryDto);
+        console.log('createDiary', year, month);
+        return await this.diariesRepository.createDiary(loginUserId, createDiaryDto, year, month); // board DB에 저장        
     }
 
 }

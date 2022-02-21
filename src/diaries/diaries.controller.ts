@@ -1,4 +1,4 @@
-import { HttpStatus, Inject, Res, UploadedFiles, UseGuards, Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
+import { HttpStatus, ParseIntPipe, Inject, Res, UploadedFiles, UseGuards, Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FilesInterceptor} from '@nestjs/platform-express';
 import { Diaries } from './diaries.entity';
@@ -28,40 +28,71 @@ export class DiariesController {
     ){}
 
 
-    /*
-    // 홈화면 해당 월 일기글 조회
+
+
+    // 홈화면 해당 연-월 일기글 조회
     @Get('')  
     @ApiOperation({ 
-        summary: '홈화면에서 해당 월 일기글 조회 API'
+        summary: '홈화면에서 해당 연-월 일기글 조회 API'
     })
-    getAllTask(): Promise<Diaries[]> {
-        return this.diariesService.getAllDiaries();
-    }
-    */
-
-
-
-    // 홈화면 해당 월 일기글 조회
-    @Get('')  
-    @ApiOperation({ 
-        summary: '홈화면에서 해당 월 일기글 조회 API'
+    @ApiQuery({
+        name: 'year',
+        required: false,
+        description: '연도 입력',
+        example:1,
     })
     @ApiQuery({
         name: 'month',
         required: false,
-        description: '해당 월',
+        description: '월 입력',
         example:1,
     })
     async getAllDiaries(@Res() res, @Query() query, @GetUser() loginUser): Promise<Diaries[]> {
-        const { month } = query; // @Query()'에서 해당 쿼리문을 받아 query에 저장하고 변수 받아옴
+        const { year, month } = query; // @Query()'에서 해당 쿼리문을 받아 query에 저장하고 변수 받아옴
         const { userId } = loginUser;
 
         let diaries;
 
-        diaries = await this.diariesService.getMonthDiaries(userId, month);
+        diaries = await this.diariesService.getMonthDiaries(userId, year, month);
         return res
             .status(HttpStatus.OK)
             .json(diaries);
+    }
+
+
+
+    // 특정 일기글 조회
+    @Get('/:diaryId')  
+    @ApiOperation({ 
+        summary: '특정 일기글 조회 API'
+    })
+    @ApiQuery({
+        name: 'diaryId',
+        required: false,
+        description: '일기글 번호',
+        example:1,
+    })
+    async getDiary(
+        @Res() res, 
+        @Param("diaryId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        diaryId: number,
+        @GetUser() loginUser) {
+        const { userId } = loginUser;
+        const diary = await this.diariesService.findByDiaryId(diaryId);
+
+        if(!diary)
+            return res
+                .status(HttpStatus.NOT_FOUND)
+                .json({
+                    message:'일기글 번호 ${diaryId}번에 해당하는 일기글이 없습니다.'
+                })
+
+        const diaryById = await this.diariesService.getDiaryById(userId, diaryId);
+        return res
+            .status(HttpStatus.OK)
+            .json(diaryById);
     }
 
 
