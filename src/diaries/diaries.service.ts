@@ -94,7 +94,10 @@ export class DiariesService {
 
     async findByDiaryDate(date: string) {
         const diary = await this.diariesRepository.findByDiaryDate(date);
-        return diary;
+        // 해당 날짜에 게시물이 존재하면
+        if(diary.diaryStatus == true) {
+            return diary;
+        }
     }
 
 
