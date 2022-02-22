@@ -225,7 +225,7 @@ export class DiariesController {
                 })
 
             // 일기글 삭제 될 때 s3에 있는 이미지도 삭제 -> rds image 도 삭제
-            // const diaryImages = await this.uploadService.findByDiaryImageId(diaryId);
+            const diaryImages = await this.uploadService.findByDiaryImageId(diaryId);
 
             await this.uploadService.deleteFiles(diaryId);
             await this.diariesService.deleteDiary(diaryId);

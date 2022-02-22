@@ -70,7 +70,7 @@ export class DiariesRepository extends Repository <Diaries> {
 
 
     // 일기 등록
-    async createDiary(loginUserId: number, createDiaryDto: CreateDiaryDto, year: number, month: number): Promise<Diaries> {
+    async createDiary(loginUserId: number, createDiaryDto: CreateDiaryDto, year: number, month: number, week: number): Promise<Diaries> {
         const { date, categoryId, categoryReason, diaryTitle, diaryContent} = createDiaryDto;
         const categoryIdToNumber = +categoryId;
  
@@ -83,7 +83,8 @@ export class DiariesRepository extends Repository <Diaries> {
             diaryContent,
             diaryCreated: new Date(),
             year: year,
-            month: month
+            month: month,
+            week: week
         };
         
         // 게시글 저장

@@ -17,16 +17,35 @@ export class DiariesService {
 
     // 입력 날짜의 month, week 계산
     static async calculateDate(createDiaryDto: CreateDiaryDto): Promise<any>{
-        var date = createDiaryDto.date;
-        var calDate = new Date(date)    // string->Date
-        var year = calDate.getFullYear();
-        var month = (calDate.getMonth())+1;     // getMonth 반환이 0~11이라 +1해야함, type: number
+        var writtenDate = createDiaryDto.date;
+        var calDate = new Date(writtenDate)    // string->Date
         
-        // const weekOfMonth = (m: Moment) => m.week() - moment(m).startOf('month').week() + 1;
-        // const nowDate = moment().utc(true);
-        // var week = weekOfMonth(nowDate);
-        console.log(year, month);
-        return {year, month};
+        // 인풋의 년, 월
+        let year = calDate.getFullYear();
+        let month = calDate.getMonth() + 1;
+        const date = calDate.getDate();
+    
+        // 인풋한 달의 첫 날과 마지막 날의 요일
+        const firstDate = new Date(year, month, 1);
+        const lastDate = new Date(year, month+1, 0);
+        const firstDayOfWeek = firstDate.getDay() === 0 ? 7 : firstDate.getDay();
+        const lastDayOfweek = lastDate.getDay();
+    
+        // 인풋한 달의 마지막 일
+        const lastDay = lastDate.getDate();
+    
+        // 첫 날의 요일이 금, 토, 일요일 이라면 true
+        const firstWeekCheck = firstDayOfWeek === 5 || firstDayOfWeek === 6 || firstDayOfWeek === 7;
+        // 마지막 날의 요일이 월, 화, 수라면 true
+        const lastWeekCheck = lastDayOfweek === 1 || lastDayOfweek === 2 || lastDayOfweek === 3;
+    
+        // 해당 달이 총 몇주까지 있는지 ->2022.02 : 5
+        const lastWeekNo = Math.ceil((firstDayOfWeek - 1 + lastDay) / 7);
+
+        // 날짜 기준으로 몇주차 인지
+        let week = Math.ceil((firstDayOfWeek - 1 + date) / 7);
+        
+        return {year, month, week};
     }
 
 
@@ -80,9 +99,9 @@ export class DiariesService {
 
 
     async createDiary(loginUserId: number, createDiaryDto: CreateDiaryDto): Promise<Diaries> {
-        const {year, month} = await DiariesService.calculateDate(createDiaryDto);
+        const {year, month, week} = await DiariesService.calculateDate(createDiaryDto);
         console.log('createDiary', year, month);
-        return await this.diariesRepository.createDiary(loginUserId, createDiaryDto, year, month); // board DB에 저장        
+        return await this.diariesRepository.createDiary(loginUserId, createDiaryDto, year, month, week); // board DB에 저장        
     }
 
 /*
