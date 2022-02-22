@@ -64,6 +64,7 @@ export class DiariesRepository extends Repository <Diaries> {
     async findByDiaryDate(date: string) {
         return await this.createQueryBuilder("diaries")
             .where("diaries.date =:date", {date})
+            .andWhere("diaries.diaryStatus =:status", {status: true})
             .getOne();
     }
 
@@ -92,19 +93,19 @@ export class DiariesRepository extends Repository <Diaries> {
         return await this.save(diary);
     }
 
-    /*
+    
     async updateDiary(diaryId: number, updateDiaryDto: UpdateDiaryDto) {
         const diary = await this.findOne(diaryId);
-        const { categoryId, categoryReason, diaryTitle, diaryContent } = updateBoardDto;
-        // userId를 string->number로 바꿔야 해서 ...updateBoardDto 로 못쓰기 때문에 일일히 null 값이면 db에 이미 저장된 값으로 초기화해줌
-        // const userIdToNumber = +userId;       
-        const category = (categoryId==null) ? board.categoryId : categoryId
+        const { categoryId, categoryReason, diaryTitle, diaryContent } = updateDiaryDto;
+      
+        const category = (categoryId==null) ? diary.categoryId : categoryId
         const categoryIdToNumber = +category; // category (string)
-        const title = (postTitle==null) ? board.postTitle : postTitle
-        const content = (postContent==null) ? board.postContent : postContent
-        await this.update({boardId}, {categoryId: categoryIdToNumber, postTitle: title, postContent: content});
+        const reason = (categoryReason==null) ? diary.categoryReason : categoryReason
+        const title = (diaryTitle==null) ? diary.diaryTitle : diaryTitle
+        const content = (diaryContent==null) ? diary.diaryContent : diaryContent
+        await this.update({diaryId}, {categoryId: categoryIdToNumber, categoryReason: reason, diaryTitle: title, diaryContent: content});
     }
-    */
+    
 
     async deleteDiary(diaryId: number) {
         await this.update({diaryId}, {diaryStatus: false});

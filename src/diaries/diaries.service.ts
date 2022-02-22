@@ -94,10 +94,7 @@ export class DiariesService {
 
     async findByDiaryDate(date: string) {
         const diary = await this.diariesRepository.findByDiaryDate(date);
-        // 해당 날짜에 게시물이 존재하면
-        if(diary.diaryStatus == true) {
-            return diary;
-        }
+        return diary;
     }
 
 
@@ -107,13 +104,13 @@ export class DiariesService {
         return await this.diariesRepository.createDiary(loginUserId, createDiaryDto, year, month, week); // board DB에 저장        
     }
 
-/*
-    async updateBoard(diaryId: number, updateDiaryDto: UpdateDiaryDto) {
+
+    async updateDiary(diaryId: number, updateDiaryDto: UpdateDiaryDto) {
         await this.diariesRepository.updateDiary(diaryId, updateDiaryDto);
         const diary = await this.findByDiaryId(diaryId);
         return diary;
     }
-*/
+
 
     async deleteDiary(diaryId: number) {
         await this.diariesRepository.deleteDiary(diaryId);

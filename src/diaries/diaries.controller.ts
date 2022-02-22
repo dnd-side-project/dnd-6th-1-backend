@@ -134,7 +134,7 @@ export class DiariesController {
     }
 
 
-/*
+
     @Patch('/:diaryId') // 일기 글 수정
     @ApiOperation({ summary : '일기 특정 글 수정 API' })
     @ApiParam({
@@ -174,7 +174,7 @@ export class DiariesController {
             
             if(files.length!=0) // 파일이 있는 경우만 파일 수정 업로드 진행
                 await this.uploadService.updateFiles(files, diary.diaryId); // s3에 이미지 업로드 후 boardImage 에 업로드
-            //const updateDiary = await this.diariesService.updateDiary(diaryId, updateDiaryDto);
+            const updateDiary = await this.diariesService.updateDiary(diaryId, updateDiaryDto);
 
             return res
                 .status(HttpStatus.OK)
@@ -189,7 +189,7 @@ export class DiariesController {
                 .json(error);            
         }    
     }
-*/
+
 
 
     @Delete('/:diaryId')
