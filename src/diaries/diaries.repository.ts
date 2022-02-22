@@ -1,6 +1,9 @@
 import { Entity, EntityRepository, Repository } from "typeorm";
 import { Diaries } from "./diaries.entity";
 import { CreateDiaryDto } from "./dto/create-diary.dto"; 
+import { UpdateDiaryDto } from "./dto/update-diary.dto";
+
+
 
 @EntityRepository(Diaries)
 export class DiariesRepository extends Repository <Diaries> {
@@ -10,6 +13,7 @@ export class DiariesRepository extends Repository <Diaries> {
         const diary = await this.createQueryBuilder("diaries")
             .leftJoinAndSelect("diaries.images", "images")
             .where("diaries.diaryId=:diaryId", {diaryId})
+            .andWhere("diaries.diaryStatus =:status", {status: true}) // 글이 삭제되지 않은 경우만
             .getOne();
 
         if(!diary) {// 이미지가 없는 경우 
@@ -60,13 +64,14 @@ export class DiariesRepository extends Repository <Diaries> {
     async findByDiaryDate(date: string) {
         return await this.createQueryBuilder("diaries")
             .where("diaries.date =:date", {date})
+            .andWhere("diaries.diaryStatus =:status", {status: true})
             .getOne();
     }
 
 
 
     // 일기 등록
-    async createDiary(loginUserId: number, createDiaryDto: CreateDiaryDto, year: number, month: number): Promise<Diaries> {
+    async createDiary(loginUserId: number, createDiaryDto: CreateDiaryDto, year: number, month: number, week: number): Promise<Diaries> {
         const { date, categoryId, categoryReason, diaryTitle, diaryContent} = createDiaryDto;
         const categoryIdToNumber = +categoryId;
  
@@ -79,13 +84,31 @@ export class DiariesRepository extends Repository <Diaries> {
             diaryContent,
             diaryCreated: new Date(),
             year: year,
-            month: month
+            month: month,
+            week: week
         };
         
         // 게시글 저장
         console.log(month);
         return await this.save(diary);
-        
+    }
+
+    
+    async updateDiary(diaryId: number, updateDiaryDto: UpdateDiaryDto) {
+        const diary = await this.findOne(diaryId);
+        const { categoryId, categoryReason, diaryTitle, diaryContent } = updateDiaryDto;
+      
+        const category = (categoryId==null) ? diary.categoryId : categoryId
+        const categoryIdToNumber = +category; // category (string)
+        const reason = (categoryReason==null) ? diary.categoryReason : categoryReason
+        const title = (diaryTitle==null) ? diary.diaryTitle : diaryTitle
+        const content = (diaryContent==null) ? diary.diaryContent : diaryContent
+        await this.update({diaryId}, {categoryId: categoryIdToNumber, categoryReason: reason, diaryTitle: title, diaryContent: content});
+    }
+    
+
+    async deleteDiary(diaryId: number) {
+        await this.update({diaryId}, {diaryStatus: false});
     }
     
 }
