@@ -59,7 +59,7 @@ export class BoardsService {
         const board = await this.boardsRepository.findByBoardId(boardId);
         const parentComments = await this.commentsRepository.getParentComments(boardId); // 부모 댓글 가져오기
         for(var i=0;i<parentComments.length;i++){ // 부모 댓글 for문 돌고 
-            const { commentCreated, commentContent, userId, commentStatus } = parentComments[i]; // 부모 댓글 정보
+            const { commentId, commentCreated, commentContent, userId, commentStatus } = parentComments[i]; // 부모 댓글 정보
             const commentUser = await this.usersRepository.findByUserIdWithDeleted(userId); // 댓글 작성자
             const { nickname, profileImage, userStatus } = commentUser;      
 
@@ -67,6 +67,7 @@ export class BoardsService {
             var canEdit = (loginUserId == commentUser.userId)? true : false // 댓글 작성자 / 로그인한 사용자가 동일한 경우
             var writerOrNot = (userId == board.userId) ? true : false // 댓글 작성자 / 글 작성자가 동일한 경우
             const comment = { // 부모댓글
+                commentId,
                 nickname : ((userStatus == false) ? '탈퇴한 회원입니다' : nickname) ,
                 profileImage: ((userStatus == false) ? deletedUserImageUrl : profileImage), // 바뀔 수 있음
                 commentContent,
@@ -78,7 +79,7 @@ export class BoardsService {
             const allReplies = new Array();
             const replies = await this.commentsRepository.getChildComments(boardId, parentComments[i].groupId); // 각 부모댓글에 해당하는 대댓글 가져오기
             for(var j=0;j<replies.length;j++){
-                const { commentCreated, commentContent, userId } = replies[j];
+                const { commentId, commentCreated, commentContent, userId } = replies[j];
                 const replyUser = await this.usersRepository.findByUserIdWithDeleted(userId);
                 const { nickname, profileImage, userStatus } = replyUser;
 
@@ -86,6 +87,7 @@ export class BoardsService {
                 var canEdit = (loginUserId == replyUser.userId) ? true : false // 대댓글 작성자 / 로그인한 사용자가 동일한 경우
                 var writerOrNot = (userId == board.userId) ? true : false // 대댓글 작성자와 글 작성자가 동일한 경우
                  const reply = {
+                    commentId,
                     nickname : ((userStatus == false) ? '탈퇴한 회원입니다' : nickname),
                     profileImage: ((userStatus == false) ? deletedUserImageUrl : profileImage), // 바뀔 수 있음
                     commentContent,
@@ -113,11 +115,16 @@ export class BoardsService {
         const createdAt = await BoardsService.calculateTime(new Date(), postCreated); // 게시글 쓴 시간        
         const likeCnt = (await this.likesRepository.getAllLikes(boardId)).length; // 좋아요 수
         const comments = await this.getAllComments(loginUserId, boardId); // 댓글 목록
+        console.log(comments);
         const bookmarkStatus = await this.bookmarksRepository.findByUserId(boardId, loginUserId); // 북마크 여부 
         const likeStatus = await this.likesRepository.findByUserId(boardId, loginUserId); // 좋아요 여부
         const commentCnt = (await this.commentsRepository.getAllComments(boardById.boardId)).length;
         const canEdit = (userId == loginUserId)? true : false // 글 작성자 / 로그인한 사용자가 동일한 경우
-        console.log(user.userId)
+        const image = new Array();
+        
+        for(var i=0;i<images.length;i++){
+            image.push(images[i]['imageUrl'])
+        }
         const board = {
             profileImage: ((userStatus == false) ? deletedUserImageUrl : profileImage), // 바뀔 수 있음
             nickname: ((userStatus == false) ? '탈퇴한 회원입니다' : nickname),
@@ -125,7 +132,7 @@ export class BoardsService {
             createdAt,
             postTitle,
             postContent,
-            images,
+            images: image,
             likeCnt,
             commentCnt,
             comments,

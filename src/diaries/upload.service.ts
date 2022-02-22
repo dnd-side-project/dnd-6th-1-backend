@@ -10,8 +10,16 @@ const s3 = new AWS.S3();
 export class UploadService {
     constructor(
         @InjectRepository(DiaryImagesRepository) 
-            private diaryImagesRepository: DiaryImagesRepository, 
+            private diaryImagesRepository: DiaryImagesRepository,
     ){}
+
+    async findByDiaryImageId(diaryId: number) {
+        const images = await this.diaryImagesRepository.findByDiaryId(diaryId);
+        if(!images) {
+            const message = "empty images";
+            return message;
+        }
+    }
 
     async uploadFiles(files: Express.Multer.File[], diaryId: number) { // 파일 업로드
         let s3ImageUrl = "";
@@ -39,10 +47,15 @@ export class UploadService {
         await this.uploadFiles(files, diaryId); // 이미지 재업로드
     }
 
+
     async deleteFiles(diaryId: number){ // 수정할 때 어차피 삭제도 해야 함. 
         // 기존의 boardImage에 boardId 에 해당하는 이미지명을 s3에서 찾아서 삭제하고 
         const images = await this.diaryImagesRepository.findByDiaryId(diaryId);
+
         const imageObject = new Array();
+
+        if(images.length == 0) // 이미지 없는 경우 그냥 리턴
+            return ;
 
         for(var i=0;i<images.length;i++){
             imageObject[i]={
