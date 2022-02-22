@@ -96,12 +96,14 @@ export class AuthController {
     ): Promise<string> {
         try{
             const accessToken = await this.authService.signIn(authsigninDto);
+            const user = await this.authService.findByAuthEmail(authsigninDto.email);
             if(accessToken)
                 return res
                     .status(HttpStatus.OK)
                     .json({
                         accessToken: accessToken,
                         message: '로그인 되었습니다',
+                        userId: user.userId,
                         flag: 1
                     })
                 
