@@ -124,9 +124,8 @@ export class UsersService {
             const diary = diaries[i];
             emotionCnt[diary.categoryId-1].cnt++;
         }
-        reports['emotion']=emotionCnt.sort((a,b) => b.cnt-a.cnt); // 내림차순 정렬
-        // 가장 많은 감정
-        // 5,5,4,3,3
+        reports['emotion']=emotionCnt.sort((a,b) => b.cnt - a.cnt); // 내림차순 정렬
+
         console.log(reports['emotion'])
         const maxCategory = new Array();         // 가장 많은 감정들을 배열에 담기
         for(var i=0;i<diaries.length;i++){
@@ -135,17 +134,18 @@ export class UsersService {
         }
         // const diaryList = new Array();
         const WEEKDAY = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-        const maxDiaries = diaries.filter(diary => maxCategory.includes(diary.categoryId)); 
-        // 많은 감정이 담긴 배열만 필터링
-        for(var i=0;i<maxCategory.length;i++){ // maxCnt 인 카테고리 번호가 담긴 배열
-            const diary = new Object();
-            diary['category'] = maxCategory[i]; // 카테고리 번호
+        const maxDiaries = diaries.filter(diary => maxCategory.includes(diary.categoryId)); // 많은 감정이 담긴 배열만 필터링
+        const diaryList = new Array(); // diaries : [] 에 해당하는 배열
+
+        for(var i=0;i<maxCategory.length;i++){ // maxCnt 인 카테고리 번호가 담긴 배열            
+            const diary = new Object(); // 각 카테고리별로 담을 딕셔너리 생성
+            diary['category'] = maxCategory[i]; // 딕셔너리 첫 요소 -  카테고리 번호
+            const diaryObj = new Array();  // 각 카테고리에 해당하는 일기 담을 배열 생성
             for(var j=0;j<maxDiaries.length;j++){ // maxCnt인 카테고리로 필터링된 다이어리 배열 
                 if(maxCategory[i] == maxDiaries[j].categoryId){
-                    const { diaryId, date, categoryReason, diaryTitle } = diaries[i];
+                    const { diaryId, date, categoryReason, diaryTitle } = maxDiaries[j];
                     const day = date.getDate();
                     const dayOfWeek = WEEKDAY[date.getDay()]; // 요일계산
-                    
                     const diaryPost = {
                         diaryId,
                         day,
@@ -153,11 +153,13 @@ export class UsersService {
                         diaryTitle,
                         categoryReason,
                     }
-                    diary['diary'].push(diaryPost);
+                    diaryObj.push(diaryPost); // 일기 담는 배열에 diary 딕셔너리 푸시
                 }
             }
-            reports['diaries']=diary;
+            diary['diary'] = diaryObj.sort((a,b) => a.day - b.day); // 일기담은 배열 날짜 순
+            diaryList[i] = diary;
         }
+        reports['diaries'] = diaryList;
         // reports['diaries'] = diaryList.reverse(); // 오름차순 정렬
         return reports;
     }
