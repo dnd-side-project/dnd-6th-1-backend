@@ -127,7 +127,7 @@ export class DiariesController {
                 .status(HttpStatus.CREATED)
                 .json({
                     data: createDiary,
-                    message:'게시글을 업로드했습니다'
+                    message:'일기를 업로드했습니다'
                 })
     }
 

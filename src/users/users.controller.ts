@@ -9,7 +9,6 @@ import { UsersService } from './users.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
-import { query } from 'express';
 
 @ApiBearerAuth('accessToken')
 @UseGuards(JwtAuthGuard)
@@ -475,6 +474,11 @@ export class UsersController {
         required: true, 
         description: '연도'
     })
+    @ApiParam({
+        name: 'userId',
+        required: true,
+        description: '유저 ID'
+    })
     async getWeeklyReport(
         @Res() res,
         @Query() query,
@@ -485,14 +489,11 @@ export class UsersController {
     ) {
         try{
             const { year, month, week } = query;
-            const nickName = await this.usersService.getWeeklyReport(year, month, week);
-            
+            const report = await this.usersService.getWeeklyReport(year, month, week, userId);
             return res
                 .status(HttpStatus.OK)
-                .json({
-                    success: true,
-                    message: "asdfasdf니다.",
-                })
+                .json(report);
+
         } catch(error){
             this.logger.error('주간리포트 조회 ERROR'+error);
             return res

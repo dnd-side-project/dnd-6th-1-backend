@@ -104,11 +104,46 @@ export class UsersService {
         return boardsByBookmark;
     }
 
-    async getWeeklyReport(year: number, month: number, week: number){
-        const diaries = await this.diariesRepository.getWeeklyReport(year, month, week);
-        for(var i=0;i<diaries.length;i++){
-            const { diaryId, date, categoryId, diaryTitle, categoryReason } = diaries[i];
-            
+    // async calculateDay(date: string){
+    //     console.log(date);
+    // }
+
+
+    async getWeeklyReport(year: number, month: number, week: number, userId: number){
+        const diaries = await this.diariesRepository.getWeeklyReport(year, month, week, userId);
+        const reports = new Object();
+        const categoryName = [1,2,3,4,5];
+        const emotionCnt = new Array();
+        for(var i=0;i<5;i++){ // 감정 array 초기화
+            emotionCnt[i]={
+                category:categoryName[i],
+                cnt:0
+            }
         }
+        for(var i=0;i<diaries.length;i++){
+            const diary = diaries[i];
+            emotionCnt[diary.categoryId-1].cnt++;
+        }
+        reports['emotion']=emotionCnt.sort(); // 내림차순 정렬
+
+        const diaryList = new Array();
+        const WEEKDAY = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+        for(var i=0;i<diaries.length;i++){
+            const { diaryId, date, categoryReason, diaryTitle } = diaries[i];
+            const day = date.getDate()-1;
+            const dayOfWeek = WEEKDAY[date.getDay()]; // 요일계산
+
+            if(diaries[i].categoryId == reports['emotion'][0].category){ // 가장 많은 감정에 대한 일기글 조회 
+                diaryList[i]={
+                    diaryId,
+                    day,
+                    dayOfWeek,
+                    diaryTitle,
+                    categoryReason,
+                }
+            }
+        }
+        reports['diaries'] = diaryList.reverse(); // 오름차순 정렬
+        return reports;
     }
 }
