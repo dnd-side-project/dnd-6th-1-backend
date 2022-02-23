@@ -133,37 +133,32 @@ export class UsersService {
             if(emotionCnt[i].cnt == reports['emotion'][0].cnt)
                 maxCategory.push(reports['emotion'][i].category);
         }
-        console.log(maxCategory);
-        const diaryList = new Array();
+        // const diaryList = new Array();
         const WEEKDAY = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-
         const maxDiaries = diaries.filter(diary => maxCategory.includes(diary.categoryId)); 
         // 많은 감정이 담긴 배열만 필터링
-
-        for(var i=0;i<maxCategory.length;i++){
-
-
-
-
-            const { diaryId, date, categoryReason, diaryTitle } = diaries[i];
-            const day = date.getDate();
-            const dayOfWeek = WEEKDAY[date.getDay()]; // 요일계산
-
-            if(maxCategory.includes(diaries[i].categoryId)){ 
-                const diarypost = {
-                    diaryId,
-                    day,
-                    dayOfWeek,
-                    diaryTitle,
-                    categoryReason,
-                }
-                diaryList['cnt']={
-                    category: emotionCnt[i].categoryId,
-                    diary: diarypost
+        for(var i=0;i<maxCategory.length;i++){ // maxCnt 인 카테고리 번호가 담긴 배열
+            const diary = new Object();
+            diary['category'] = maxCategory[i]; // 카테고리 번호
+            for(var j=0;j<maxDiaries.length;j++){ // maxCnt인 카테고리로 필터링된 다이어리 배열 
+                if(maxCategory[i] == maxDiaries[j].categoryId){
+                    const { diaryId, date, categoryReason, diaryTitle } = diaries[i];
+                    const day = date.getDate();
+                    const dayOfWeek = WEEKDAY[date.getDay()]; // 요일계산
+                    
+                    const diaryPost = {
+                        diaryId,
+                        day,
+                        dayOfWeek,
+                        diaryTitle,
+                        categoryReason,
+                    }
+                    diary['diary'].push(diaryPost);
                 }
             }
+            reports['diaries']=diary;
         }
-        reports['diaries'] = diaryList.reverse(); // 오름차순 정렬
+        // reports['diaries'] = diaryList.reverse(); // 오름차순 정렬
         return reports;
     }
 }
