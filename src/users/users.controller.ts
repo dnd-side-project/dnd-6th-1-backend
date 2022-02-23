@@ -495,7 +495,7 @@ export class UsersController {
                 .json(report);
 
         } catch(error){
-            this.logger.error('주간리포트 조회 ERROR'+error);
+            this.logger.error('주간레포트 조회 ERROR'+error);
             return res
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .json(error);
@@ -543,54 +543,4 @@ export class UsersController {
                 .json(error);
         }
     }
-    // 결국 저장버튼을 눌렀을 때 닉네임,프로필 이미지가 저장되어야 함
-    // 개인정보 설정
-    // 1. 닉네임 중복확인
-    // @ApiTags('주간레포트 API')
-    // @Get('/:userId/reports')
-    // @ApiOperation({ summary: '주간 레포트 조회 API' })
-    // @ApiQuery({
-    //     name: 'week',
-    //     required: true, 
-    //     description: '주'
-    // })
-    // @ApiQuery({
-    //     name: 'month',
-    //     required: true, 
-    //     description: '월'
-    // })
-    // @ApiQuery({
-    //     name: 'year',
-    //     required: true, 
-    //     description: '연도'
-    // })
-    // async getWeeklyReport(
-    //     @Res() res,
-    //     @Query() query,
-    //     @Param("userId", new ParseIntPipe({
-    //         errorHttpStatusCode: HttpStatus.BAD_REQUEST
-    //     }))
-    //     userId: number
-    // ) {
-    //     try{
-    //         const { year, month, week } = query;
-    //         const nickName = await this.usersService.getWeeklyReport(year, month, week);
-            
-    //         return res
-    //             .status(HttpStatus.OK)
-    //             .json({
-    //                 success: true,
-    //                 message: "asdfasdf니다.",
-    //             })
-    //     } catch(error){
-    //         this.logger.error('주간리포트 조회 ERROR'+error);
-    //         return res
-    //             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-    //             .json(error);
-    //     }
-    // }
-
-
-//     /users/{userId}/reports		레포트 전체 조회
-
 }

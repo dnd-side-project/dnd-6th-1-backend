@@ -1,4 +1,4 @@
-import { HttpStatus, Inject, ParseIntPipe, Res, UploadedFiles, UseGuards } from '@nestjs/common';
+import { ConsoleLogger, HttpStatus, Inject, ParseIntPipe, Res, UploadedFiles, UseGuards } from '@nestjs/common';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor} from '@nestjs/platform-express';
 import { Boards } from './entity/boards.entity';
@@ -12,6 +12,8 @@ import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { parseFile } from 'aws-sdk/lib/shared-ini/ini-loader';
+import { create } from 'domain';
 require("dotenv").config();
 
 @ApiBearerAuth('accessToken')
@@ -149,10 +151,7 @@ export class BoardsController {
 
             return res
                 .status(HttpStatus.CREATED)
-                .json({
-                    data: createdboard,
-                    message:'게시글을 업로드했습니다'
-                })
+                .json(createdboard)
         } catch(error){
             this.logger.error('커뮤니티 글 작성 ERROR'+error);
             return res
@@ -168,7 +167,7 @@ export class BoardsController {
         required: true,
         description: '게시글 번호',
     })
-    @UseInterceptors(FilesInterceptor('files'))
+    @UseInterceptors(FilesInterceptor('files', null))
     @ApiConsumes('multipart/form-data') // swagger에 input file 추가
     @ApiBody({ type : CreateBoardDto })
     async updateBoard(
@@ -182,6 +181,7 @@ export class BoardsController {
         @GetUser() loginUser
     ): Promise<any>{ 
         try{
+            console.log(files);
             const { userId } = loginUser;
             const board = await this.boardsService.findByBoardId(boardId);
             if(!board)
@@ -209,6 +209,7 @@ export class BoardsController {
                     message:'게시글을 수정했습니다'
                 })
         } catch(error){
+            console.log(error);
             this.logger.error('커뮤니티 글 수정 ERROR'+error);
             return res
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
