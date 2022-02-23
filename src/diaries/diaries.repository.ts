@@ -40,8 +40,8 @@ export class DiariesRepository extends Repository <Diaries> {
     // 내가 작성한 월별 게시글 가져오기 : 날짜, 감정, (작성자), 감정이유, 제목, 내용, 이미지
     async getMonthDiaries(userId: number, year: number, month: number): Promise<Diaries[]> {
         return await this.createQueryBuilder("user")        // user를 사용해서 작성한 글찾기
-            .innerJoinAndSelect("user.diares","diares") // user 테이블에 diaries 게시물 join
-            .leftJoinAndSelect("diares.images","images") // board 테이블에 image 게시물 join (이미지가 없는 애도 갯수 세야 하므로)
+            .innerJoinAndSelect("user.diaries","diaries") // user 테이블에 diaries 게시물 join
+            .leftJoinAndSelect("diaries.images","images") // board 테이블에 image 게시물 join (이미지가 없는 애도 갯수 세야 하므로)
             .select([
                 // 'user.nickname AS nickname',
                 "diaries.date AS date",
@@ -52,8 +52,8 @@ export class DiariesRepository extends Repository <Diaries> {
                 "COUNT(images.originalName) AS imageCnt"
             ])
             .where('user.userId =:userId', {userId})        // 내가 쓴 글이여야 하고
-            .andWhere('diares.year =: year', {year})
-            .andWhere("diares.month =:month", {month})      // 해당 월에 작성한 글 중에서
+            .andWhere('diaries.year =: year', {year})
+            .andWhere("diaries.month =:month", {month})      // 해당 월에 작성한 글 중에서
             .andWhere("diaries.diaryStatus =:status", {status: true}) // 글이 삭제되지 않은 경우만
             .groupBy("diaries.diaryId")    
             .getRawMany(); 
@@ -111,4 +111,21 @@ export class DiariesRepository extends Repository <Diaries> {
         await this.update({diaryId}, {diaryStatus: false});
     }
     
+    async getWeeklyReport(year: number, month: number, week: number, userId: number){
+        return await this.createQueryBuilder("diaries")        // user를 사용해서 작성한 글찾기
+            .select([
+                // "diaries.userId AS userId",
+                "diaries.diaryId AS diaryId",
+                "diaries.date AS date",
+                "diaries.categoryId AS categoryId", 
+                "diaries.categoryReason AS categoryReason",
+                "diaries.diaryTitle AS diaryTitle", 
+            ])
+            .where('diaries.userId =:userId', {userId})       
+            .andWhere('diaries.year =:year', {year}) // =: 다음에 공백 xx
+            .andWhere("diaries.month =:month", {month})      
+            .andWhere("diaries.week =:week", {week})    
+            .groupBy("diaries.diaryId")    
+            .getRawMany();  
+    }
 }

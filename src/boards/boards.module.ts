@@ -13,6 +13,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { UploadService } from './upload.service';
 import { HistoriesRepository } from './repository/histories.repository';
+import { DiariesRepository } from 'src/diaries/diaries.repository';
 require("dotenv").config();
 
 @Module({
@@ -33,7 +34,8 @@ require("dotenv").config();
       UsersRepository,
       LikesRepository,
       BookmarksRepository,
-      HistoriesRepository
+      HistoriesRepository,
+      DiariesRepository
     ])
   ], // 데이터베이스 커넥션 맺으며 사용할 엔티티를 리스트로 받기
   controllers: [BoardsController],

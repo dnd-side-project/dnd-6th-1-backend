@@ -33,16 +33,16 @@ export class DiariesController {
         summary: '홈화면에서 해당 연-월 일기글 조회 API'
     })
     @ApiQuery({
-        name: 'year',
-        required: false,
-        description: '연도 입력',
-        example:1,
-    })
-    @ApiQuery({
         name: 'month',
         required: false,
         description: '월 입력',
-        example:1,
+        example:2,
+    })
+    @ApiQuery({
+        name: 'year',
+        required: false,
+        description: '연도 입력',
+        example:2022,
     })
     async getAllDiaries(@Res() res, @Query() query, @GetUser() loginUser): Promise<Diaries[]> {
         const { year, month } = query; // @Query()'에서 해당 쿼리문을 받아 query에 저장하고 변수 받아옴
@@ -127,7 +127,7 @@ export class DiariesController {
                 .status(HttpStatus.CREATED)
                 .json({
                     data: createDiary,
-                    message:'게시글을 업로드했습니다'
+                    message:'일기를 업로드했습니다'
                 })
     }
 
