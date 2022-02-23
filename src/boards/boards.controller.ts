@@ -167,7 +167,7 @@ export class BoardsController {
         required: true,
         description: '게시글 번호',
     })
-    @UseInterceptors(FilesInterceptor('files', null))
+    @UseInterceptors(FilesInterceptor('files'))
     @ApiConsumes('multipart/form-data') // swagger에 input file 추가
     @ApiBody({ type : CreateBoardDto })
     async updateBoard(
@@ -181,7 +181,6 @@ export class BoardsController {
         @GetUser() loginUser
     ): Promise<any>{ 
         try{
-            console.log(files);
             const { userId } = loginUser;
             const board = await this.boardsService.findByBoardId(boardId);
             if(!board)
