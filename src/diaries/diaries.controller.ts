@@ -7,7 +7,6 @@ import { DiariesService } from './diaries.service';
 import { CreateDiaryDto } from './dto/create-diary.dto';
 import { UpdateDiaryDto } from './dto/update-diary.dto';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { AuthService } from 'src/auth/auth.service';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -16,11 +15,10 @@ import { GetUser } from 'src/auth/get-user.decorator';
 require("dotenv").config();
 
 
-
 @ApiBearerAuth('accessToken')
 @UseGuards(JwtAuthGuard)
 @Controller('diaries')
-@ApiTags('일기 글 API')
+@ApiTags('다이어리 API')
 export class DiariesController {
     constructor(
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -35,16 +33,16 @@ export class DiariesController {
         summary: '홈화면에서 해당 연-월 일기글 조회 API'
     })
     @ApiQuery({
-        name: 'year',
-        required: false,
-        description: '연도 입력',
-        example:1,
-    })
-    @ApiQuery({
         name: 'month',
         required: false,
         description: '월 입력',
-        example:1,
+        example:2,
+    })
+    @ApiQuery({
+        name: 'year',
+        required: false,
+        description: '연도 입력',
+        example:2022,
     })
     async getAllDiaries(@Res() res, @Query() query, @GetUser() loginUser): Promise<Diaries[]> {
         const { year, month } = query; // @Query()'에서 해당 쿼리문을 받아 query에 저장하고 변수 받아옴
@@ -96,7 +94,7 @@ export class DiariesController {
 
 
     @Post()
-    @ApiOperation({ summary : '다이어리 글 작성 API' })
+    @ApiOperation({ summary : '일기 작성 API' })
     @UseInterceptors(FilesInterceptor('files'))
     @ApiConsumes('multipart/form-data')
     @ApiBody({ type : CreateDiaryDto })
@@ -129,14 +127,14 @@ export class DiariesController {
                 .status(HttpStatus.CREATED)
                 .json({
                     data: createDiary,
-                    message:'게시글을 업로드했습니다'
+                    message:'일기를 업로드했습니다'
                 })
     }
 
 
 
     @Patch('/:diaryId') // 일기 글 수정
-    @ApiOperation({ summary : '일기 특정 글 수정 API' })
+    @ApiOperation({ summary : '특정 일기 수정 API' })
     @ApiParam({
         name: 'diaryId',
         required: true,
@@ -162,14 +160,14 @@ export class DiariesController {
                 return res
                     .status(HttpStatus.NOT_FOUND)
                     .json({
-                        message:`게시글 번호 ${diaryId}번에 해당하는 게시글이 없습니다.`
+                        message:`일기 번호 ${diaryId}번에 해당하는 일기가 없습니다.`
                     })
 
             if(diary.userId != userId) // 글 작성자와 현재 로그인한 사람이 다른 경우 
                 return res
                     .status(HttpStatus.FORBIDDEN)
                     .json({
-                        message:`게시글을 수정할 권한이 없습니다.`
+                        message:`일기를 수정할 권한이 없습니다.`
                     })  
             
             if(files.length!=0) // 파일이 있는 경우만 파일 수정 업로드 진행
@@ -180,10 +178,10 @@ export class DiariesController {
                 .status(HttpStatus.OK)
                 .json({
                     data: updateDiary,
-                    message:'일기글을 수정했습니다'
+                    message:'일기를 수정했습니다'
                 })
         } catch(error){
-            this.logger.error('일기 글 수정 ERROR'+error);
+            this.logger.error('일기 수정 ERROR'+error);
             return res
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .json(error);            
@@ -193,7 +191,7 @@ export class DiariesController {
 
 
     @Delete('/:diaryId')
-    @ApiOperation({ summary : '다이어리 글 삭제 API' })
+    @ApiOperation({ summary : '일기 삭제 API' })
     @ApiParam({
         name: 'diaryId',
         required: true,
@@ -214,14 +212,14 @@ export class DiariesController {
                 return res
                     .status(HttpStatus.NOT_FOUND)
                     .json({
-                        message:`게시글 번호 ${diaryId}번에 해당하는 게시글이 없습니다.`
+                        message:`일기 번호 ${diaryId}번에 해당하는 일기가 없습니다.`
                     })
 
             if(diary.userId != userId) // 글 작성자와 현재 로그인한 사람이 다른 경우 
             return res
                 .status(HttpStatus.FORBIDDEN)
                 .json({
-                    message:`게시글을 삭제할 권한이 없습니다.`
+                    message:`일기를 삭제할 권한이 없습니다.`
                 })
 
             // 일기글 삭제 될 때 s3에 있는 이미지도 삭제 -> rds image 도 삭제
