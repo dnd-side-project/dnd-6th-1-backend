@@ -111,4 +111,25 @@ export class DiariesRepository extends Repository <Diaries> {
         await this.update({diaryId}, {diaryStatus: false});
     }
     
+    async getWeeklyReport(year: number, month: number, week: number){
+        return await this.createQueryBuilder("user")        // user를 사용해서 작성한 글찾기
+        .innerJoinAndSelect("user.diares","diares") // user 테이블에 diaries 게시물 join
+        .leftJoinAndSelect("diares.images","images") // board 테이블에 image 게시물 join (이미지가 없는 애도 갯수 세야 하므로)
+        .select([
+            // 'user.nickname AS nickname',
+            "diaries.date AS date",
+            "diaries.categoryId AS categoryId", 
+            "diaries.categoryReason AS categoryReason",
+            "diaries.diaryTitle AS diaryTitle", 
+            "diaries.diaryContent AS diaryContent", 
+            "COUNT(images.originalName) AS imageCnt"
+        ])
+        .where('user.userId =:userId', {userId})        // 내가 쓴 글이여야 하고
+        .andWhere('diares.year =: year', {year})
+        .andWhere("diares.month =:month", {month})      // 해당 월에 작성한 글 중에서
+        .andWhere("diaries.diaryStatus =:status", {status: true}) // 글이 삭제되지 않은 경우만
+        .groupBy("diaries.diaryId")    
+        .getRawMany();  
+        return await this.find({year, month, week}) // 해당 주차의 데이터 모두 가져오기 
+    }
 }

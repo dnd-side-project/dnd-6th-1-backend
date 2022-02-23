@@ -1,7 +1,6 @@
-import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Res, UploadedFile, UseGuards, UseInterceptors, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query, Res, UploadedFile, UseGuards, UseInterceptors, ValidationPipe } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
-import { Matches } from 'class-validator';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthService } from 'src/auth/auth.service';
 import { UploadService } from 'src/boards/upload.service';
 import { PasswordDto } from './dto/password.dto';
@@ -10,6 +9,7 @@ import { UsersService } from './users.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
+import { query } from 'express';
 
 @ApiBearerAuth('accessToken')
 @UseGuards(JwtAuthGuard)
@@ -92,50 +92,6 @@ export class UsersController {
                 .json(histories);
         } catch(error){
             this.logger.error('특정 유저의 최근 검색어 조회 ERROR'+error);
-            return res
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .json(error);
-        }
-    }
-
-    // 결국 저장버튼을 눌렀을 때 닉네임,프로필 이미지가 저장되어야 함
-    // 개인정보 설정
-    // 1. 닉네임 중복확인
-    @ApiTags('마이페이지 API')
-    @Get('/:userId/:nickname')
-    @ApiOperation({ summary: '닉네임 중복 조회 API', description: '닉네임 입력' })
-    @ApiParam({
-        name: 'userId',
-        required: true, 
-        description: '유저 ID'
-    })
-    @ApiParam({
-        name: 'nickname',
-        required: true, 
-        description: '변경할 닉네임'
-    })
-    async checkNickname(
-        @Res() res,
-        @Param("nickname") nickname: string,
-    ): Promise<string> {
-        try{
-            const nickName = await this.authService.findByAuthNickname(nickname);
-            if(nickName) 
-                return res
-                    .status(HttpStatus.CONFLICT)
-                    .json({
-                        success: false,
-                        message: "같은 닉네임이 존재합니다.",
-                    })
-            
-            return res
-                .status(HttpStatus.OK)
-                .json({
-                    success: true,
-                    message: "사용 가능한 닉네임입니다.",
-                })
-        } catch(error){
-            this.logger.error('닉네임 중복 조회 ERROR'+error);
             return res
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .json(error);
@@ -500,4 +456,140 @@ export class UsersController {
                 .json(error);
         }
     }
+
+    @ApiTags('주간레포트 API')
+    @Get('/:userId/reports')
+    @ApiOperation({ summary: '주간 레포트 조회 API' })
+    @ApiQuery({
+        name: 'week',
+        required: true, 
+        description: '주'
+    })
+    @ApiQuery({
+        name: 'month',
+        required: true, 
+        description: '월'
+    })
+    @ApiQuery({
+        name: 'year',
+        required: true, 
+        description: '연도'
+    })
+    async getWeeklyReport(
+        @Res() res,
+        @Query() query,
+        @Param("userId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        userId: number
+    ) {
+        try{
+            const { year, month, week } = query;
+            const nickName = await this.usersService.getWeeklyReport(year, month, week);
+            
+            return res
+                .status(HttpStatus.OK)
+                .json({
+                    success: true,
+                    message: "asdfasdf니다.",
+                })
+        } catch(error){
+            this.logger.error('주간리포트 조회 ERROR'+error);
+            return res
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .json(error);
+        }
+    }
+
+    // 1. 닉네임 중복확인
+    @ApiTags('마이페이지 API')
+    @Get('/:userId/:nickname')
+    @ApiOperation({ summary: '닉네임 중복 조회 API', description: '닉네임 입력' })
+    @ApiParam({
+        name: 'userId',
+        required: true, 
+        description: '유저 ID'
+    })
+    @ApiParam({
+        name: 'nickname',
+        required: true, 
+        description: '변경할 닉네임'
+    })
+    async checkNickname(
+        @Res() res,
+        @Param("nickname") nickname: string,
+    ): Promise<string> {
+        try{
+            const nickName = await this.authService.findByAuthNickname(nickname);
+            if(nickName) 
+                return res
+                    .status(HttpStatus.CONFLICT)
+                    .json({
+                        success: false,
+                        message: "같은 닉네임이 존재합니다.",
+                    })
+            
+            return res
+                .status(HttpStatus.OK)
+                .json({
+                    success: true,
+                    message: "사용 가능한 닉네임입니다.",
+                })
+        } catch(error){
+            this.logger.error('닉네임 중복 조회 ERROR'+error);
+            return res
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .json(error);
+        }
+    }
+    // 결국 저장버튼을 눌렀을 때 닉네임,프로필 이미지가 저장되어야 함
+    // 개인정보 설정
+    // 1. 닉네임 중복확인
+    // @ApiTags('주간레포트 API')
+    // @Get('/:userId/reports')
+    // @ApiOperation({ summary: '주간 레포트 조회 API' })
+    // @ApiQuery({
+    //     name: 'week',
+    //     required: true, 
+    //     description: '주'
+    // })
+    // @ApiQuery({
+    //     name: 'month',
+    //     required: true, 
+    //     description: '월'
+    // })
+    // @ApiQuery({
+    //     name: 'year',
+    //     required: true, 
+    //     description: '연도'
+    // })
+    // async getWeeklyReport(
+    //     @Res() res,
+    //     @Query() query,
+    //     @Param("userId", new ParseIntPipe({
+    //         errorHttpStatusCode: HttpStatus.BAD_REQUEST
+    //     }))
+    //     userId: number
+    // ) {
+    //     try{
+    //         const { year, month, week } = query;
+    //         const nickName = await this.usersService.getWeeklyReport(year, month, week);
+            
+    //         return res
+    //             .status(HttpStatus.OK)
+    //             .json({
+    //                 success: true,
+    //                 message: "asdfasdf니다.",
+    //             })
+    //     } catch(error){
+    //         this.logger.error('주간리포트 조회 ERROR'+error);
+    //         return res
+    //             .status(HttpStatus.INTERNAL_SERVER_ERROR)
+    //             .json(error);
+    //     }
+    // }
+
+
+//     /users/{userId}/reports		레포트 전체 조회
+
 }

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BoardsService } from 'src/boards/boards.service';
 import { HistoriesRepository } from 'src/boards/repository/histories.repository';
+import { DiariesRepository } from 'src/diaries/diaries.repository';
 import { PasswordDto } from './dto/password.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UsersRepository } from './users.repository';
@@ -13,6 +14,8 @@ export class UsersService {
             private usersRepository: UsersRepository,
         @InjectRepository(HistoriesRepository)
             private historiesRepository: HistoriesRepository,
+        @InjectRepository(DiariesRepository)
+            private diariesRepository: DiariesRepository,
     ) { }
     
     async findByUserId(userId: number) {
@@ -99,5 +102,13 @@ export class UsersService {
             boardsByBookmark[i]['createdAt'] = await BoardsService.calculateTime(new Date(), boardsByBookmark[i]['createdAt']);
         }
         return boardsByBookmark;
+    }
+
+    async getWeeklyReport(year: number, month: number, week: number){
+        const diaries = await this.diariesRepository.getWeeklyReport(year, month, week);
+        for(var i=0;i<diaries.length;i++){
+            const { diaryId, date, categoryId, diaryTitle, categoryReason } = diaries[i];
+            
+        }
     }
 }
