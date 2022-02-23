@@ -124,22 +124,42 @@ export class UsersService {
             const diary = diaries[i];
             emotionCnt[diary.categoryId-1].cnt++;
         }
-        reports['emotion']=emotionCnt.sort(); // 내림차순 정렬
-
+        reports['emotion']=emotionCnt.sort((a,b) => b.cnt-a.cnt); // 내림차순 정렬
+        // 가장 많은 감정
+        // 5,5,4,3,3
+        console.log(reports['emotion'])
+        const maxCategory = new Array();         // 가장 많은 감정들을 배열에 담기
+        for(var i=0;i<diaries.length;i++){
+            if(emotionCnt[i].cnt == reports['emotion'][0].cnt)
+                maxCategory.push(reports['emotion'][i].category);
+        }
+        console.log(maxCategory);
         const diaryList = new Array();
         const WEEKDAY = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-        for(var i=0;i<diaries.length;i++){
+
+        const maxDiaries = diaries.filter(diary => maxCategory.includes(diary.categoryId)); 
+        // 많은 감정이 담긴 배열만 필터링
+
+        for(var i=0;i<maxCategory.length;i++){
+
+
+
+
             const { diaryId, date, categoryReason, diaryTitle } = diaries[i];
-            const day = date.getDate()-1;
+            const day = date.getDate();
             const dayOfWeek = WEEKDAY[date.getDay()]; // 요일계산
 
-            if(diaries[i].categoryId == reports['emotion'][0].category){ // 가장 많은 감정에 대한 일기글 조회 
-                diaryList[i]={
+            if(maxCategory.includes(diaries[i].categoryId)){ 
+                const diarypost = {
                     diaryId,
                     day,
                     dayOfWeek,
                     diaryTitle,
                     categoryReason,
+                }
+                diaryList['cnt']={
+                    category: emotionCnt[i].categoryId,
+                    diary: diarypost
                 }
             }
         }
