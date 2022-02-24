@@ -121,12 +121,14 @@ export class BoardsService {
         const commentCnt = (await this.commentsRepository.getAllComments(boardById.boardId)).length;
         const canEdit = (userId == loginUserId)? true : false // 글 작성자 / 로그인한 사용자가 동일한 경우
         const image = new Array();
-        
+
         for(var i=0;i<images.length;i++){
-            const imageUrls = {
-                imageUrl: images[i]['imageUrl']
-            }
+            if(images[i].imageStatus == true){
+                const imageUrls = {
+                    imageUrl: images[i]['imageUrl']
+                }
             image[i]=imageUrls;
+            }
         }
         const board = {
             profileImage: ((userStatus == false) ? deletedUserImageUrl : profileImage), // 바뀔 수 있음
