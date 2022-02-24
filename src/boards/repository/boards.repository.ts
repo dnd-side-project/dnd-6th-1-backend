@@ -33,7 +33,7 @@ export class BoardsRepository extends Repository<Boards>{
             relations: ["images"],
             order: {
                 boardId: 'DESC' // 최신순 정렬
-            },
+            }
         });
     }
 

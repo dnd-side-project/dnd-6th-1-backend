@@ -199,6 +199,8 @@ export class BoardsController {
             
             if(files.length!=0) // 파일이 있는 경우만 파일 수정 업로드 진행
                 await this.uploadService.updateFiles(files, board.boardId); // s3에 이미지 업로드 후 boardImage 에 업로드
+            else // 파일을 모두 삭제한 경우 -> 파일 삭제
+                await this.uploadService.deleteFiles(board.boardId);
             const updatedBoard = await this.boardsService.updateBoard(boardId, updateBoardDto);
 
             return res

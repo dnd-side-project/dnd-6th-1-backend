@@ -152,12 +152,16 @@ export class BoardsService {
         const totalBoards = new Array();
         const boards = await this.boardsRepository.getAllBoards(); // 전체 게시글 다가져오기
         for(var i=0;i<boards.length;i++){
-            const { userId, boardId, categoryId, postTitle, postContent, postCreated } = boards[i];
+            const { userId, boardId, categoryId, postTitle, postContent, postCreated, images } = boards[i];
             var createdAt = await BoardsService.calculateTime(new Date(), postCreated);        
             const user = await this.usersRepository.findByUserIdWithDeleted(userId);
             const { nickname, profileImage, userStatus } = user;
             var commentCnt = (await this.commentsRepository.getAllComments(boardId)).length;
-            const imageCnt = boards[i].images.length // 게시글 사진 개수
+            let imageCnt=0;
+            for(var j=0;j<images.length;j++){
+                if(images[j].imageStatus == true)
+                    imageCnt++;
+            }
             const likeCnt = (await this.likesRepository.getAllLikes(boardId)).length; // 좋아요 수
             const bookmarkStatus = await this.bookmarksRepository.findByUserId(boardId, loginUserId); // 북마크 여부 
             const likeStatus = await this.likesRepository.findByUserId(boardId, loginUserId); // 좋아요 여부
