@@ -123,7 +123,10 @@ export class BoardsService {
         const image = new Array();
         
         for(var i=0;i<images.length;i++){
-            image.push(images[i]['imageUrl'])
+            const imageUrls = {
+                imageUrl: images[i]['imageUrl']
+            }
+            image[i]=imageUrls;
         }
         const board = {
             profileImage: ((userStatus == false) ? deletedUserImageUrl : profileImage), // 바뀔 수 있음
