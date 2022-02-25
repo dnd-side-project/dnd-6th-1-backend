@@ -22,6 +22,7 @@ export class UsersRepository extends Repository<Users> {
     async getAllUsers(): Promise<Users[]> {
         return await this.createQueryBuilder("user")
             .select([
+                "user.userId",
                 "user.nickname",
                 "user.breakUpdate",
                 "user.profileImage"
