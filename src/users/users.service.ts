@@ -82,7 +82,6 @@ export class UsersService {
 
     async getAllBoardsByUserId(userId: number) {
         const boardsById = await this.usersRepository.getAllBoardsByUserId(userId);
-        console.log(boardsById);
         for(var i=0;i<boardsById.length;i++){
             boardsById[i]['imageCnt'] = +boardsById[i]['imageCnt'] // 이미지 개수 정수형으로
             boardsById[i]['createdAt'] = await BoardsService.calculateTime(new Date(), boardsById[i]['createdAt']);
@@ -107,6 +106,34 @@ export class UsersService {
         }
         return boardsByBookmark;
     }
+
+    async getAllBoardsByAll(userId: number){
+        const boardsByAll = new Object();
+        const boardsById = await this.usersRepository.getAllBoardsByUserId(userId);
+        for(var i=0;i<boardsById.length;i++){
+            boardsById[i]['imageCnt'] = +boardsById[i]['imageCnt'] // 이미지 개수 정수형으로
+            boardsById[i]['createdAt'] = await BoardsService.calculateTime(new Date(), boardsById[i]['createdAt']);
+        }
+        boardsByAll['boards']= boardsById;
+
+        const boardsByComment = await this.usersRepository.getAllBoardsByComments(userId);
+        for(var i=0;i<boardsByComment.length;i++){
+            boardsByComment[i]['imageCnt'] = +boardsByComment[i]['imageCnt'] // 이미지 개수 정수형으로
+            boardsByComment[i]['createdAt'] = await BoardsService.calculateTime(new Date(), boardsByComment[i]['createdAt']);
+        }
+        boardsByAll['comments'] = boardsByComment;
+
+        const boardsByBookmark = await this.usersRepository.getAllBoardsByBookmark(userId);
+        for(var i=0;i<boardsByBookmark.length;i++){
+            boardsByBookmark[i]['imageCnt'] = +boardsByBookmark[i]['imageCnt'] // 이미지 개수 정수형으로
+            boardsByBookmark[i]['createdAt'] = await BoardsService.calculateTime(new Date(), boardsByBookmark[i]['createdAt']);
+        }
+        boardsByAll['bookmarks']= boardsByBookmark;
+
+        return boardsByAll;
+    }
+
+
 
     async getWeeklyReport(year: number, month: number, week: number, userId: number){
         const diaries = await this.diariesRepository.getWeeklyReport(year, month, week, userId);
