@@ -78,7 +78,7 @@ export class DiariesController {
         @GetUser() loginUser) {
         const { userId } = loginUser;
         const diary = await this.diariesService.findByDiaryId(diaryId);
-
+            
         if(!diary)
             return res
                 .status(HttpStatus.NOT_FOUND)
@@ -90,6 +90,7 @@ export class DiariesController {
         return res
             .status(HttpStatus.OK)
             .json(diaryById);
+
     }
 
 

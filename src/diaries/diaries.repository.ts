@@ -16,6 +16,7 @@ export class DiariesRepository extends Repository <Diaries> {
             .andWhere("diaries.diaryStatus =:status", {status: true}) // 글이 삭제되지 않은 경우만
             .getOne();
 
+
         if(!diary) {// 이미지가 없는 경우 
             return await this.createQueryBuilder("diaries")
                 .leftJoinAndSelect("diaries.images", "images")
@@ -41,7 +42,7 @@ export class DiariesRepository extends Repository <Diaries> {
     async getMonthDiaries(userId: number, year: number, month: number): Promise<Diaries[]> {
         return await this.createQueryBuilder("user")        // user를 사용해서 작성한 글찾기
             .innerJoinAndSelect("user.diaries","diaries") // user 테이블에 diaries 게시물 join
-            .leftJoinAndSelect("diaries.images","images") // board 테이블에 image 게시물 join (이미지가 없는 애도 갯수 세야 하므로)
+            .leftJoinAndSelect("diaries.images","images") // diary 테이블에 image 게시물 join (이미지가 없는 애도 갯수 세야 하므로)
             .select([
                 // 'user.nickname AS nickname',
                 "diaries.date AS date",
