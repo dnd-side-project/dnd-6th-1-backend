@@ -55,7 +55,7 @@ export class UsersRepository extends Repository<Users> {
     async getAllBoardsByUserId(userId: number){
         return await this.createQueryBuilder("user") 
             .innerJoinAndSelect("user.boards","boards") // user 테이블에 boards 게시물 join
-            .leftJoinAndSelect("boards.images","images") // board 테이블에 image 게시물 join (이미지가 없는 애도 갯수 세야 하므로)
+            .leftJoinAndSelect("boards.images","images", "images.imageStatus=:status", {status:true}) // board 테이블에 images join
             .select([
                 "user.nickname AS nickname", 
                 "boards.categoryId AS categoryId", 
@@ -76,7 +76,7 @@ export class UsersRepository extends Repository<Users> {
         return await this.createQueryBuilder("user") 
             .innerJoinAndSelect("user.boards","boards") // (게시물이 있는 user만) user 테이블에 boards join
             .innerJoinAndSelect("boards.comments","comments") // board 테이블에 comments join (댓글이 없는 게시글이면 안세도 되니까 inner)
-            .leftJoinAndSelect("boards.images","images") // board 테이블에 images join
+            .leftJoinAndSelect("boards.images","images", "images.imageStatus=:status", {status:true}) // board 테이블에 images join
             .select([
                 "user.nickname AS nickname",
                 "boards.categoryId AS categoryId", 
@@ -96,7 +96,7 @@ export class UsersRepository extends Repository<Users> {
         return await this.createQueryBuilder("user")
             .innerJoinAndSelect("user.boards", "boards") // user테이블에 bookmarks join (북마크가 있는 애들만 - inner)
             .innerJoinAndSelect("boards.bookmarks","bookmarks") // (게시물이 있는 경우에만 bookmarks)
-            .leftJoinAndSelect("boards.images","images") // board 테이블에 images join
+            .leftJoinAndSelect("boards.images","images", "images.imageStatus=:status", {status:true}) // board 테이블에 images join
             .select([
                 "user.nickname AS nickname",
                 "boards.categoryId AS categoryId", 
