@@ -131,6 +131,7 @@ export class BoardsService {
             }
         }
         const board = {
+            boardId: boardById.boardId,
             profileImage: ((userStatus == false) ? deletedUserImageUrl : profileImage), // 바뀔 수 있음
             nickname: ((userStatus == false) ? '탈퇴한 회원입니다' : nickname),
             categoryId,
