@@ -27,7 +27,7 @@ export class DiariesRepository extends Repository <Diaries> {
         return diary;
     }
 
-    async getAllDiaries(loginUserId): Promise<Diaries[]> {
+    async getAllDiaries(loginUserId) {
         return await this.find({
             where: {
                 diaryStatus: true
@@ -37,9 +37,8 @@ export class DiariesRepository extends Repository <Diaries> {
     }
 
 
-    // 홈화면에서 제목, 이유, 이미지, 내용이 필요할까..?
     // 내가 작성한 월별 게시글 가져오기 : 날짜, 감정, (작성자), 감정이유, 제목, 내용, 이미지
-    async getMonthDiaries(userId: number, year: number, month: number): Promise<Diaries[]> {
+    async getMonthDiaries(userId: number, year: number, month: number) {
         return await this.createQueryBuilder("user")        // user를 사용해서 작성한 글찾기
             .innerJoinAndSelect("user.diaries","diaries") // user 테이블에 diaries 게시물 join
             .leftJoinAndSelect("diaries.images","images") // diary 테이블에 image 게시물 join (이미지가 없는 애도 갯수 세야 하므로)
