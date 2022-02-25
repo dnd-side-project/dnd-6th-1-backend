@@ -73,21 +73,38 @@ export class DiariesService {
     }
 
     
+
     // 일기 특정 글 조회
     async getDiaryById(loginUserId: number, diaryId: number) {
         // 다이어리 객체
         const diaryById = await this.findByDiaryId(diaryId);
         const { userId, categoryId, categoryReason, diaryTitle, diaryContent, images, date } = diaryById;
         const canEdit = (userId == loginUserId)? true : false // 글 작성자 / 로그인한 사용자가 동일한 경우
-        
+        /*
+        images: [
+            {
+                다이어리 id,
+                이미지명,
+                이미지 url
+            }  
+        ]
+        */
+        const image = new Array(); // image 배열을 만든다
+        for(var i=0;i<images.length;i++){
+            if(images[i].imageStatus == true){ // 이미지가 삭제되지 않은 경우에만
+                image.push(images[i]['imageUrl']); // image 배열에 url을 하나씩 푸시
+            }
+        }
+        console.log(image); // image배열에 url만 담김
         const diary = {
             date,
             categoryId,
             categoryReason,
             diaryTitle,
             diaryContent,
-            images
-        }    
+            images:image // images에 위에서 만든 배열을 대입
+        }
+        console.log(diary);    
         return diary;
     }
 
