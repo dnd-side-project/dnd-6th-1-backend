@@ -65,5 +65,5 @@ export class CreateDiaryDto {
         maxItems:3,             // 업로드할 이미지 수
         required: false
     })
-    readonly files: Express.Multer.File[];
+    files: Express.Multer.File[];
 }

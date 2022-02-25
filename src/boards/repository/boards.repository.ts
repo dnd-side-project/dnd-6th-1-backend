@@ -11,6 +11,7 @@ export class BoardsRepository extends Repository<Boards>{
         const board = await this.createQueryBuilder("boards")
             .leftJoinAndSelect("boards.images", "images")
             .where("boards.boardId=:boardId", {boardId})
+            .andWhere("boards.postStatus=:status", {status: true})
             .andWhere("images.imageStatus=:status", {status: true})
             .getOne();
 
@@ -18,6 +19,7 @@ export class BoardsRepository extends Repository<Boards>{
             return await this.createQueryBuilder("boards")
                 .leftJoinAndSelect("boards.images", "images")
                 .where("boards.boardId=:boardId", {boardId})
+                .andWhere("boards.postStatus=:status", {status: true})
                 .getOne();
         }
         return board;
@@ -31,7 +33,7 @@ export class BoardsRepository extends Repository<Boards>{
             relations: ["images"],
             order: {
                 boardId: 'DESC' // 최신순 정렬
-            },
+            }
         });
     }
 

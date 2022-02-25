@@ -1,4 +1,4 @@
-import { HttpStatus, Inject, ParseIntPipe, Res, UploadedFiles, UseGuards } from '@nestjs/common';
+import { ConsoleLogger, HttpStatus, Inject, ParseIntPipe, Res, UploadedFiles, UseGuards } from '@nestjs/common';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor} from '@nestjs/platform-express';
 import { Boards } from './entity/boards.entity';
@@ -12,6 +12,8 @@ import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { parseFile } from 'aws-sdk/lib/shared-ini/ini-loader';
+import { create } from 'domain';
 require("dotenv").config();
 
 @ApiBearerAuth('accessToken')
@@ -149,10 +151,7 @@ export class BoardsController {
 
             return res
                 .status(HttpStatus.CREATED)
-                .json({
-                    data: createdboard,
-                    message:'게시글을 업로드했습니다'
-                })
+                .json(createdboard)
         } catch(error){
             this.logger.error('커뮤니티 글 작성 ERROR'+error);
             return res
@@ -200,6 +199,8 @@ export class BoardsController {
             
             if(files.length!=0) // 파일이 있는 경우만 파일 수정 업로드 진행
                 await this.uploadService.updateFiles(files, board.boardId); // s3에 이미지 업로드 후 boardImage 에 업로드
+            else // 파일을 모두 삭제한 경우 -> 파일 삭제
+                await this.uploadService.deleteFiles(board.boardId);
             const updatedBoard = await this.boardsService.updateBoard(boardId, updateBoardDto);
 
             return res
@@ -209,6 +210,7 @@ export class BoardsController {
                     message:'게시글을 수정했습니다'
                 })
         } catch(error){
+            console.log(error);
             this.logger.error('커뮤니티 글 수정 ERROR'+error);
             return res
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
