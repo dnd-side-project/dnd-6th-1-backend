@@ -61,8 +61,17 @@ export class DiariesService {
         const diaries = await this.getAllDiaries(loginUserId);
         const monthDiaries = diaries.filter(diary => 
             diary.month == month && diary.year ==year);
-        //const monthDiaries = await this.diariesRepository.getMonthDiaries(loginUserId, year, month); // 월 일기글 다가져오기
         
+        const diary = Object.values(monthDiaries);
+        
+        for (var i=0; i<diary.length; i++) {
+            const image = new Array(); // image 배열을 만든다
+            for(var j=0; j<diary[i].images.length; j++) {
+                image.push(diary[i].images[j]['imageUrl']);
+            }
+            monthDiaries[i]['images'] = image;
+        }
+
         return monthDiaries;
     }
 
@@ -118,13 +127,33 @@ export class DiariesService {
     async createDiary(loginUserId: number, createDiaryDto: CreateDiaryDto): Promise<Diaries> {
         const {year, month, week} = await DiariesService.calculateDate(createDiaryDto);
         console.log('createDiary', year, month);
-        return await this.diariesRepository.createDiary(loginUserId, createDiaryDto, year, month, week); // board DB에 저장        
+        const diary = this.diariesRepository.createDiary(loginUserId, createDiaryDto, year, month, week); // board DB에 저장        
+        return diary;
     }
 
 
     async updateDiary(diaryId: number, updateDiaryDto: UpdateDiaryDto) {
         await this.diariesRepository.updateDiary(diaryId, updateDiaryDto);
-        const diary = await this.findByDiaryId(diaryId);
+        const diaryById = await this.findByDiaryId(diaryId);
+        const { userId, categoryId, categoryReason, diaryTitle, diaryContent, images, date } = diaryById;
+        const image = new Array(); // image 배열을 만든다
+
+        for(var i=0;i<images.length;i++){
+            if(images[i].imageStatus == true){ // 이미지가 삭제되지 않은 경우에만
+                image.push(images[i]['imageUrl']); // image 배열에 url을 하나씩 푸시
+            }
+        }
+        console.log(image); // image배열에 url만 담김
+        const diary = {
+            date,
+            categoryId,
+            categoryReason,
+            diaryTitle,
+            diaryContent,
+            images:image // images에 위에서 만든 배열을 대입
+        }
+        console.log(diary);    
+
         return diary;
     }
 
