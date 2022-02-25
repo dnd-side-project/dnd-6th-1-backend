@@ -78,7 +78,14 @@ export class DiariesService {
 
 
     async findByDiaryId(diaryId: number): Promise<Diaries> {
-        return await this.diariesRepository.findByDiaryId(diaryId);
+        const diary = await this.diariesRepository.findByDiaryId(diaryId);
+        const image = new Array(); // image 배열을 만든다
+        for(var i=0; i< diary.images.length; i++) {
+                image.push(diary.images[i]['imageUrl']);
+            }
+        diary['images'] = image;
+        
+        return diary;
     }
 
     
@@ -127,9 +134,13 @@ export class DiariesService {
     async createDiary(loginUserId: number, createDiaryDto: CreateDiaryDto): Promise<Diaries> {
         const {year, month, week} = await DiariesService.calculateDate(createDiaryDto);
         console.log('createDiary', year, month);
+        
         const diary = this.diariesRepository.createDiary(loginUserId, createDiaryDto, year, month, week); // board DB에 저장        
+        
         return diary;
     }
+
+
 
 
     async updateDiary(diaryId: number, updateDiaryDto: UpdateDiaryDto) {
