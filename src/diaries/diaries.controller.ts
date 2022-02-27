@@ -128,11 +128,8 @@ export class DiariesController {
             return res
                 .status(HttpStatus.CREATED)
                 // 확인필요
-                .json({
-                    createDiary,
-                    message:'일기를 업로드했습니다'
-                })
-    }
+                .json( createDiary )
+        }
 
 
 
@@ -179,10 +176,7 @@ export class DiariesController {
 
             return res
                 .status(HttpStatus.OK)
-                .json({
-                    data: updateDiary,
-                    message:'일기를 수정했습니다'
-                })
+                .json(updateDiary)
         } catch(error){
             this.logger.error('일기 수정 ERROR'+error);
             return res
