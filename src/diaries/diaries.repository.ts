@@ -30,6 +30,7 @@ export class DiariesRepository extends Repository <Diaries> {
     async getAllDiaries(loginUserId) {
         return await this.find({
             where: {
+                userId: loginUserId,
                 diaryStatus: true
             },
             relations: ["images"] 
