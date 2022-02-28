@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Iot } from 'aws-sdk';
+import { type } from 'os';
 import { BoardsService } from 'src/boards/boards.service';
+import { BoardsRepository } from 'src/boards/repository/boards.repository';
 import { HistoriesRepository } from 'src/boards/repository/histories.repository';
+import { CommentsRepository } from 'src/comments/comments.repository';
 import { DiariesRepository } from 'src/diaries/diaries.repository';
 import { PasswordDto } from './dto/password.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -12,10 +16,15 @@ export class UsersService {
     constructor(
         @InjectRepository(UsersRepository)
             private usersRepository: UsersRepository,
+        @InjectRepository(BoardsRepository)
+            private boardsRepository: BoardsRepository,
+        @InjectRepository(CommentsRepository)
+            private commentsRepository: CommentsRepository,
         @InjectRepository(HistoriesRepository)
             private historiesRepository: HistoriesRepository,
         @InjectRepository(DiariesRepository)
             private diariesRepository: DiariesRepository,
+
     ) { }
     
     async findByUserId(userId: number) {
@@ -36,10 +45,29 @@ export class UsersService {
         // 프로필 이미지, 이메일, 비밀번호
         const user = await this.usersRepository.findByUserId(userId);
         const { email, nickname, profileImage } = user;
+        const recentBoard = await this.boardsRepository.getRecentBoard(userId);
+        const recentComment = await this.commentsRepository.getRecentComment(userId);
+        let recentPost;
+        if(!recentBoard && !recentComment) // 작성글과 댓글이 모두 없는 경우
+            recentPost = ""
+        else if(!recentBoard)
+            recentPost = recentComment.commentCreated;
+        else if(!recentComment)
+            recentPost = recentBoard.postCreated;
+        else{ // 둘다 있다면 최신꺼
+            if(recentBoard.postCreated.getTime()-recentComment.commentCreated.getTime())
+                recentPost = recentBoard.postCreated;
+            else
+                recentPost = recentComment.commentCreated;
+        }
+
+        recentPost = JSON.stringify(recentPost).substring(1,11).replace(/-/gi,'.');
+
         myPage['user'] = {
             email,
             nickname,
-            profileImage
+            profileImage,
+            recentPost
         }
     
         const boardsById = await this.usersRepository.getAllBoardsByUserId(userId); // 내가 쓴 글 갯수
