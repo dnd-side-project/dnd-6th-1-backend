@@ -42,10 +42,10 @@ export class AuthController {
             const newUser = await this.authService.signUp(authcredentialsDto);
             return res
                 .status(HttpStatus.CREATED)
-                .json({
-                    data: newUser,
-                    message: '회원가입을 완료했습니다.',
-                })
+                .json(
+                    newUser
+                
+                )
         } catch(error){
             this.logger.error('회원가입 ERROR'+error);
             return res
