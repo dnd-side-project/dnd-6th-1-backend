@@ -21,6 +21,7 @@ export class CommentsRepository extends Repository<Comments>{
     // 최근 댓글 작성일자가 10일 이내인지 확인하기
     async getRecentComment(userId: number){
         return await this.findOne({
+            select: ['commentCreated'],
             where: {
                 userId,
             },

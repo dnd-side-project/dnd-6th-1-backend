@@ -40,6 +40,7 @@ export class BoardsRepository extends Repository<Boards>{
     // 최근 작성일자가 10일 이내인지 확인하기
     async getRecentBoard(userId: number){
         return await this.findOne({
+            select: ['postCreated'],
             where: {
                 userId,
                 // postStatus: true // 삭제한 글은 취급하지 않음

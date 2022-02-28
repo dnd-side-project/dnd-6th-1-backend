@@ -31,9 +31,9 @@ require("dotenv").config();
     }),
     TypeOrmModule.forFeature([
       UsersRepository,
-      // BoardsRepository,
+      BoardsRepository,
       BoardImagesRepository,
-      // CommentsRepository,
+      CommentsRepository,
       // LikesRepository,
       // BookmarksRepository,
       HistoriesRepository,
