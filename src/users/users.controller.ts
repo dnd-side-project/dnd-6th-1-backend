@@ -481,8 +481,7 @@ export class UsersController {
                     .json({
                         message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
                     })  
-            const boards = await this.usersService.getAllBoardsByAll(userId);
-            console.log(boards);
+            const boards = await this.usersService.getAllBoardsByAll(user.userId);
             return res
                 .status(HttpStatus.OK)
                 .json(boards);
