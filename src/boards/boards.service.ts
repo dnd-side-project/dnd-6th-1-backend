@@ -196,7 +196,14 @@ export class BoardsService {
         const totalUsers = await this.usersRepository.getAllUsers(); // 탈퇴한 회원은 검색x
         const usersByKeyword = totalUsers.filter(user => 
             user.nickname.includes(keyword) 
-        );
+        ); 
+
+        // 해당 사용자가 쓴 글 개수 
+        for(var i=0;i<usersByKeyword.length;i++){
+            const { userId } =usersByKeyword[i];
+            const boardsById = await this.usersRepository.getAllBoardsByUserId(userId);
+            usersByKeyword[i]['writeCnt'] = boardsById.length;
+        }
 
         const keywordResults = {
             contentResult: boardsByKeyword,

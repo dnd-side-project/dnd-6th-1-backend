@@ -64,7 +64,7 @@ export class AuthController {
             const nickName = await this.authService.findByAuthNickname(nickname);
             if(nickName) 
                 return res
-                    .status(HttpStatus.CONFLICT)
+                    .status(HttpStatus.OK)
                     .json({
                         success: false,
                         message: "같은 닉네임이 존재합니다.",
