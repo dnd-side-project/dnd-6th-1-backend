@@ -34,7 +34,7 @@ export class UsersController {
     async getMyPage(
         @Res() res,
         @Param("userId", new ParseIntPipe({
-            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST // 파라미터 변수값이 맞지 않은 상태
         }))
         userId: number,
     ){
@@ -253,7 +253,7 @@ export class UsersController {
                     console.log(history.userId)
             if(history.userId != userId) // 검색한 사람 id랑 history 남긴 id가 다른 경우
                 return res
-                    .status(HttpStatus.BAD_REQUEST)
+                    .status(HttpStatus.FORBIDDEN) // 서버 자체 또는 서버에 있는 파일에 접근할 권한이 없을 경우
                     .json({
                         message:`검색기록 번호 ${historyId}번을 삭제할 권한이 없습니다.`
                     })   
@@ -302,7 +302,7 @@ export class UsersController {
             const histories = await this.usersService.getAllHistories(userId);
             if(histories.length==0)
                 return res
-                    .status(HttpStatus.NOT_FOUND)
+                    .status(HttpStatus.OK)
                     .json({
                         message:`삭제할 검색기록이 없습니다.`
                     })  
