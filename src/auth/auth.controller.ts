@@ -82,6 +82,35 @@ export class AuthController {
         }
     }
 
+    // @Get('/signin/:email')
+    // @ApiOperation({ summary: '비밀번호 찾을 시 이메일 전송' })
+    // async sendEmail(
+    //     @Res() res,
+    //     @Param("email") email: string,
+    // ): Promise<string> {
+    //     try{
+    //         if(nickName) 
+    //             return res
+    //                 .status(HttpStatus.CONFLICT)
+    //                 .json({
+    //                     success: false,
+    //                     message: "같은 닉네임이 존재합니다.",
+    //                 })
+            
+    //         return res
+    //             .status(HttpStatus.OK)
+    //             .json({
+    //                 success: true,
+    //                 message: "사용 가능한 닉네임입니다.",
+    //             })
+    //     } catch(error){
+    //         this.logger.error('닉네임 중복 조회 ERROR'+error);
+    //         return res
+    //             .status(HttpStatus.INTERNAL_SERVER_ERROR)
+    //             .json(error);
+    //     }
+    // }
+
     @Post('/signin')
     @ApiOperation({ 
         summary: '로그인 API', 

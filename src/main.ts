@@ -4,6 +4,7 @@ import { AppModule } from './app.module';
 import * as config from 'config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+require("dotenv").config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -36,11 +37,6 @@ async function bootstrap() {
     .setTitle('ITZZA API Docs')
     .setDescription('DND 1조 완성하조의 API 문서입니다.')
     .setVersion('1.0.0')
-    // .addBearerAuth({ 
-    //     type: 'http', scheme: 'bearer', bearerFormat: 'JWT'
-    //   },
-    //   'access-token',
-    // )
     .addBearerAuth({
         type: 'http',
         scheme: 'bearer',

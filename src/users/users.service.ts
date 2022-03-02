@@ -7,6 +7,7 @@ import { BoardsRepository } from 'src/boards/repository/boards.repository';
 import { HistoriesRepository } from 'src/boards/repository/histories.repository';
 import { CommentsRepository } from 'src/comments/comments.repository';
 import { DiariesRepository } from 'src/diaries/diaries.repository';
+import { ReportsRepository } from 'src/reports/reports.repository';
 import { PasswordDto } from './dto/password.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UsersRepository } from './users.repository';
@@ -24,7 +25,8 @@ export class UsersService {
             private historiesRepository: HistoriesRepository,
         @InjectRepository(DiariesRepository)
             private diariesRepository: DiariesRepository,
-
+        @InjectRepository(ReportsRepository)
+            private reportsRepository: ReportsRepository,
     ) { }
     
     async findByUserId(userId: number) {
@@ -157,13 +159,11 @@ export class UsersService {
             boardsByBookmark[i]['createdAt'] = await BoardsService.calculateTime(new Date(), boardsByBookmark[i]['createdAt']);
         }
         boardsByAll['bookmarks']= boardsByBookmark;
-
         return boardsByAll;
     }
 
-
-
     async getWeeklyReport(year: number, month: number, week: number, userId: number){
+        // this.reportsRepository.createReport(year, month, )
         const diaries = await this.diariesRepository.getWeeklyReport(year, month, week, userId);
         const reports = new Object();
         const categoryName = [1,2,3,4,5];
@@ -180,7 +180,6 @@ export class UsersService {
         }
         reports['emotion']=emotionCnt.sort((a,b) => b.cnt - a.cnt); // 내림차순 정렬
 
-        console.log(reports['emotion'])
         const maxCategory = new Array();         // 가장 많은 감정들을 배열에 담기
         for(var i=0;i<diaries.length;i++){
             if(emotionCnt[i].cnt == reports['emotion'][0].cnt)
@@ -190,6 +189,7 @@ export class UsersService {
         const WEEKDAY = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
         const maxDiaries = diaries.filter(diary => maxCategory.includes(diary.categoryId)); // 많은 감정이 담긴 배열만 필터링
         const diaryList = new Array(); // diaries : [] 에 해당하는 배열
+
 
         for(var i=0;i<maxCategory.length;i++){ // maxCnt 인 카테고리 번호가 담긴 배열            
             const diary = new Object(); // 각 카테고리별로 담을 딕셔너리 생성
@@ -214,7 +214,8 @@ export class UsersService {
             diaryList[i] = diary;
         }
         reports['diaries'] = diaryList;
-        // reports['diaries'] = diaryList.reverse(); // 오름차순 정렬
         return reports;
     }
+
+    
 }

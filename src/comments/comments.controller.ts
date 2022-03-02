@@ -159,14 +159,7 @@ export class CommentsController {
                     .status(HttpStatus.NOT_FOUND)
                     .json({
                         message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
-                    })
-
-            if(board.userId != userId) // 댓글 작성자와 현재 로그인한 사람이 다른 경우 
-                return res
-                    .status(HttpStatus.BAD_REQUEST)
-                    .json({
-                        message:`댓글을 수정할 권한이 없습니다.`
-                    })                  
+                    })             
 
             const comment = await this.commentsService.getCommentById(commentId);
             if(!comment)
@@ -175,6 +168,14 @@ export class CommentsController {
                     .json({
                         message:`댓글 번호 ${commentId}번에 해당하는 댓글이 없습니다.`
                     })
+
+            if(loginUser.userId != comment.userId) // 현재 로그인한 사람과 댓글 작성자가 다른 경우
+                return res
+                    .status(HttpStatus.BAD_REQUEST)
+                    .json({
+                        message:`댓글을 수정할 권한이 없습니다.`
+                    })     
+                    
             const updatedComment = await this.commentsService.updateComment(commentId, updateCommentDto);
             return res
                 .status(HttpStatus.OK)
@@ -232,13 +233,6 @@ export class CommentsController {
                         message:`게시물 번호 ${boardId}번에 해당하는 게시물이 없습니다.`
                     })
 
-            if(board.userId != userId) // 댓글 작성자와 현재 로그인한 사람이 다른 경우 
-                return res
-                    .status(HttpStatus.BAD_REQUEST)
-                    .json({
-                        message:`댓글을 삭제할 권한이 없습니다.`
-                    })      
-
             const comment = await this.commentsService.getCommentById(commentId);
             if(!comment)
                 return res
@@ -246,6 +240,13 @@ export class CommentsController {
                     .json({
                         message:`댓글 번호 ${commentId}번에 해당하는 댓글이 없습니다.`
                     })
+
+            if(loginUser.userId != comment.userId) // 현재 로그인한 사람과 댓글 작성자가 다른 경우
+                return res
+                    .status(HttpStatus.BAD_REQUEST)
+                    .json({
+                        message:`댓글을 삭제할 권한이 없습니다.`
+                    })      
                     
             this.commentsService.deleteComment(commentId);
             return res
