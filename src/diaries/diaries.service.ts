@@ -14,6 +14,9 @@ export class DiariesService {
             private diariesRepository: DiariesRepository,
     ) {}
 
+    async calculateMonthWeek(date: Date){
+        
+    }
 
     // 입력 날짜의 month, week 계산
     static async calculateDate(createDiaryDto: CreateDiaryDto): Promise<any>{

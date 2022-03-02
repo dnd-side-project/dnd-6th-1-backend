@@ -17,7 +17,9 @@ import DailyRotateFile = require('winston-daily-rotate-file');
 const { combine, timestamp, printf } = winston.format;
 import { MailerModule } from '@nestjs-modules/mailer';
 import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
-import configEmail from './mail/email';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ReportsService } from './reports/reports.service';
+import { ReportsRepository } from './reports/reports.repository';
 
 @Module({
   imports: [
@@ -29,6 +31,7 @@ import configEmail from './mail/email';
     UsersModule,
     DiariesModule,
     DiaryImagesModule,
+    ScheduleModule.forRoot(),
     WinstonModule.forRoot({
       transports: [
         new winston.transports.Console({
