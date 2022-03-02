@@ -9,6 +9,7 @@ import { UsersService } from './users.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
+import { ReportsService } from 'src/reports/reports.service';
 
 @ApiBearerAuth('accessToken')
 @UseGuards(JwtAuthGuard)
@@ -18,7 +19,8 @@ export class UsersController {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
         private readonly usersService: UsersService,
         private readonly authService: AuthService,
-        private readonly uploadService: UploadService
+        private readonly uploadService: UploadService,
+        private readonly reportsService: ReportsService
     ){}
 
     @ApiTags('마이페이지 API')
@@ -537,6 +539,11 @@ export class UsersController {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .json(error);
         }
+    }
+
+    
+    startSchedule() { // 리포트 생성 함수
+        this.reportsService.createReport(new Date());
     }
 
     // 1. 닉네임 중복확인
