@@ -18,6 +18,19 @@ export class CommentsRepository extends Repository<Comments>{
         return await this.find({boardId, commentStatus: true});
     }
 
+    // 최근 댓글 작성일자가 10일 이내인지 확인하기
+    async getRecentComment(userId: number){
+        return await this.findOne({
+            select: ['commentCreated'],
+            where: {
+                userId,
+            },
+            order: {
+                commentId: 'DESC'
+            }
+        });
+    }
+
     // 댓글 등록시 comment DB
     async createComment(userId: number, boardId: number, createCommentDto: CreateCommentDto): Promise<Comments> {
         const { commentContent } = createCommentDto;
