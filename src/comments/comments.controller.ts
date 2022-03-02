@@ -23,7 +23,7 @@ export class CommentsController {
         private readonly commentsService: CommentsService,
         private readonly boardsService: BoardsService,
         private readonly usersService : UsersService    
-    ){}
+    ){}    
 
     @Post() // 특정 글의 댓글 작성
     @ApiOperation({ summary : '커뮤니티 특정 글에 댓글 작성 API' })

@@ -7,7 +7,7 @@ export class AuthSignInDto {
     // email, password, nickname, userStatus, breakupDate
     
     @ApiProperty({
-        example: 'test1@naver.com',
+        example: 'zagoshipda@naver.com',
         description: 'email',
         required: true,
     })
@@ -18,7 +18,7 @@ export class AuthSignInDto {
     email: string;
 
     @ApiProperty({
-        example: 'test12345',
+        example: 'zagoshipda',
         description: '비밀번호',
         required: true,
     })

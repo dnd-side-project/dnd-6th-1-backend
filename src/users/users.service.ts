@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Iot } from 'aws-sdk';
+import { type } from 'os';
 import { BoardsService } from 'src/boards/boards.service';
+import { BoardsRepository } from 'src/boards/repository/boards.repository';
 import { HistoriesRepository } from 'src/boards/repository/histories.repository';
+import { CommentsRepository } from 'src/comments/comments.repository';
+import { DiariesRepository } from 'src/diaries/diaries.repository';
 import { PasswordDto } from './dto/password.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UsersRepository } from './users.repository';
@@ -11,8 +16,15 @@ export class UsersService {
     constructor(
         @InjectRepository(UsersRepository)
             private usersRepository: UsersRepository,
+        @InjectRepository(BoardsRepository)
+            private boardsRepository: BoardsRepository,
+        @InjectRepository(CommentsRepository)
+            private commentsRepository: CommentsRepository,
         @InjectRepository(HistoriesRepository)
             private historiesRepository: HistoriesRepository,
+        @InjectRepository(DiariesRepository)
+            private diariesRepository: DiariesRepository,
+
     ) { }
     
     async findByUserId(userId: number) {
@@ -33,10 +45,29 @@ export class UsersService {
         // 프로필 이미지, 이메일, 비밀번호
         const user = await this.usersRepository.findByUserId(userId);
         const { email, nickname, profileImage } = user;
+        const recentBoard = await this.boardsRepository.getRecentBoard(userId);
+        const recentComment = await this.commentsRepository.getRecentComment(userId);
+        let recentPost;
+        if(!recentBoard && !recentComment) // 작성글과 댓글이 모두 없는 경우
+            recentPost = ""
+        else if(!recentBoard)
+            recentPost = recentComment.commentCreated;
+        else if(!recentComment)
+            recentPost = recentBoard.postCreated;
+        else{ // 둘다 있다면 최신꺼
+            if(recentBoard.postCreated.getTime()-recentComment.commentCreated.getTime())
+                recentPost = recentBoard.postCreated;
+            else
+                recentPost = recentComment.commentCreated;
+        }
+
+        recentPost = JSON.stringify(recentPost).substring(1,11).replace(/-/gi,'.');
+
         myPage['user'] = {
             email,
             nickname,
-            profileImage
+            profileImage,
+            recentPost
         }
     
         const boardsById = await this.usersRepository.getAllBoardsByUserId(userId); // 내가 쓴 글 갯수
@@ -80,6 +111,7 @@ export class UsersService {
     async getAllBoardsByUserId(userId: number) {
         const boardsById = await this.usersRepository.getAllBoardsByUserId(userId);
         for(var i=0;i<boardsById.length;i++){
+            boardsById[i]['imageCnt'] = +boardsById[i]['imageCnt'] // 이미지 개수 정수형으로
             boardsById[i]['createdAt'] = await BoardsService.calculateTime(new Date(), boardsById[i]['createdAt']);
         }
         return boardsById;
@@ -88,6 +120,7 @@ export class UsersService {
     async getAllBoardsByComments(userId: number){
         const boardsByComment = await this.usersRepository.getAllBoardsByComments(userId);
         for(var i=0;i<boardsByComment.length;i++){
+            boardsByComment[i]['imageCnt'] = +boardsByComment[i]['imageCnt'] // 이미지 개수 정수형으로
             boardsByComment[i]['createdAt'] = await BoardsService.calculateTime(new Date(), boardsByComment[i]['createdAt']);
         }
         return boardsByComment;
@@ -96,8 +129,92 @@ export class UsersService {
     async getAllBoardsByBookmark(userId: number){
         const boardsByBookmark = await this.usersRepository.getAllBoardsByBookmark(userId);
         for(var i=0;i<boardsByBookmark.length;i++){
+            boardsByBookmark[i]['imageCnt'] = +boardsByBookmark[i]['imageCnt'] // 이미지 개수 정수형으로
             boardsByBookmark[i]['createdAt'] = await BoardsService.calculateTime(new Date(), boardsByBookmark[i]['createdAt']);
         }
         return boardsByBookmark;
+    }
+
+    async getAllBoardsByAll(userId: number){
+        const boardsByAll = new Object();
+        const boardsById = await this.usersRepository.getAllBoardsByUserId(userId);
+        for(var i=0;i<boardsById.length;i++){
+            boardsById[i]['imageCnt'] = +boardsById[i]['imageCnt'] // 이미지 개수 정수형으로
+            boardsById[i]['createdAt'] = await BoardsService.calculateTime(new Date(), boardsById[i]['createdAt']);
+        }
+        boardsByAll['boards']= boardsById;
+
+        const boardsByComment = await this.usersRepository.getAllBoardsByComments(userId);
+        for(var i=0;i<boardsByComment.length;i++){
+            boardsByComment[i]['imageCnt'] = +boardsByComment[i]['imageCnt'] // 이미지 개수 정수형으로
+            boardsByComment[i]['createdAt'] = await BoardsService.calculateTime(new Date(), boardsByComment[i]['createdAt']);
+        }
+        boardsByAll['comments'] = boardsByComment;
+
+        const boardsByBookmark = await this.usersRepository.getAllBoardsByBookmark(userId);
+        for(var i=0;i<boardsByBookmark.length;i++){
+            boardsByBookmark[i]['imageCnt'] = +boardsByBookmark[i]['imageCnt'] // 이미지 개수 정수형으로
+            boardsByBookmark[i]['createdAt'] = await BoardsService.calculateTime(new Date(), boardsByBookmark[i]['createdAt']);
+        }
+        boardsByAll['bookmarks']= boardsByBookmark;
+
+        return boardsByAll;
+    }
+
+
+
+    async getWeeklyReport(year: number, month: number, week: number, userId: number){
+        const diaries = await this.diariesRepository.getWeeklyReport(year, month, week, userId);
+        const reports = new Object();
+        const categoryName = [1,2,3,4,5];
+        const emotionCnt = new Array();
+        for(var i=0;i<5;i++){ // 감정 array 초기화
+            emotionCnt[i]={
+                category:categoryName[i],
+                cnt:0
+            }
+        }
+        for(var i=0;i<diaries.length;i++){
+            const diary = diaries[i];
+            emotionCnt[diary.categoryId-1].cnt++;
+        }
+        reports['emotion']=emotionCnt.sort((a,b) => b.cnt - a.cnt); // 내림차순 정렬
+
+        console.log(reports['emotion'])
+        const maxCategory = new Array();         // 가장 많은 감정들을 배열에 담기
+        for(var i=0;i<diaries.length;i++){
+            if(emotionCnt[i].cnt == reports['emotion'][0].cnt)
+                maxCategory.push(reports['emotion'][i].category);
+        }
+        // const diaryList = new Array();
+        const WEEKDAY = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+        const maxDiaries = diaries.filter(diary => maxCategory.includes(diary.categoryId)); // 많은 감정이 담긴 배열만 필터링
+        const diaryList = new Array(); // diaries : [] 에 해당하는 배열
+
+        for(var i=0;i<maxCategory.length;i++){ // maxCnt 인 카테고리 번호가 담긴 배열            
+            const diary = new Object(); // 각 카테고리별로 담을 딕셔너리 생성
+            diary['category'] = maxCategory[i]; // 딕셔너리 첫 요소 -  카테고리 번호
+            const diaryObj = new Array();  // 각 카테고리에 해당하는 일기 담을 배열 생성
+            for(var j=0;j<maxDiaries.length;j++){ // maxCnt인 카테고리로 필터링된 다이어리 배열 
+                if(maxCategory[i] == maxDiaries[j].categoryId){
+                    const { diaryId, date, categoryReason, diaryTitle } = maxDiaries[j];
+                    const day = date.getDate();
+                    const dayOfWeek = WEEKDAY[date.getDay()]; // 요일계산
+                    const diaryPost = {
+                        diaryId,
+                        day,
+                        dayOfWeek,
+                        diaryTitle,
+                        categoryReason,
+                    }
+                    diaryObj.push(diaryPost); // 일기 담는 배열에 diary 딕셔너리 푸시
+                }
+            }
+            diary['diary'] = diaryObj.sort((a,b) => a.day - b.day); // 일기담은 배열 날짜 순
+            diaryList[i] = diary;
+        }
+        reports['diaries'] = diaryList;
+        // reports['diaries'] = diaryList.reverse(); // 오름차순 정렬
+        return reports;
     }
 }

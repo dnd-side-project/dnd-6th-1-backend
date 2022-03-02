@@ -11,6 +11,7 @@ export class BoardsRepository extends Repository<Boards>{
         const board = await this.createQueryBuilder("boards")
             .leftJoinAndSelect("boards.images", "images")
             .where("boards.boardId=:boardId", {boardId})
+            .andWhere("boards.postStatus=:status", {status: true})
             .andWhere("images.imageStatus=:status", {status: true})
             .getOne();
 
@@ -18,6 +19,7 @@ export class BoardsRepository extends Repository<Boards>{
             return await this.createQueryBuilder("boards")
                 .leftJoinAndSelect("boards.images", "images")
                 .where("boards.boardId=:boardId", {boardId})
+                .andWhere("boards.postStatus=:status", {status: true})
                 .getOne();
         }
         return board;
@@ -28,7 +30,24 @@ export class BoardsRepository extends Repository<Boards>{
             where: {
                 postStatus: true
             },
-            relations: ["images"] 
+            relations: ["images"],
+            order: {
+                boardId: 'DESC' // 최신순 정렬
+            }
+        });
+    }
+
+    // 최근 작성일자가 10일 이내인지 확인하기
+    async getRecentBoard(userId: number){
+        return await this.findOne({
+            select: ['postCreated'],
+            where: {
+                userId,
+                // postStatus: true // 삭제한 글은 취급하지 않음
+            },
+            order: {
+                boardId: 'DESC'
+            }
         });
     }
 

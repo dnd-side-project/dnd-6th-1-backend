@@ -37,3 +37,4 @@ lerna-debug.log*
 /config
 .env
 private-key.json
+.gitmessage.txt

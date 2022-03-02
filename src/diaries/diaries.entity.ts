@@ -98,22 +98,19 @@ export class Diaries extends BaseEntity {
     diaryCreated: Date;
 
 
-
     @ApiProperty({ 
         example: '2022',
         description: '다이어리 글 연도', 
     })
-    @Column({ type:'datetime'})         // datetime은 날짜를 직접 입력, timestamp는 자동 입력
+    @Column({ type:'int'})         // datetime은 날짜를 직접 입력, timestamp는 자동 입력
     year: number;
-
-
 
 
     @ApiProperty({ 
         example: '02',
         description: '다이어리 글 월', 
     })
-    @Column({ type:'datetime'})         
+    @Column({ type:'int'})         
     month: number;
 
 
@@ -121,7 +118,7 @@ export class Diaries extends BaseEntity {
         example: '1',
         description: '다이어리 글 주', 
     })
-    @Column({ type:'datetime'})         
+    @Column({ type:'int'})         
     week: number;
 
 

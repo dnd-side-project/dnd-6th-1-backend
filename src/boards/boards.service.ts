@@ -33,12 +33,12 @@ export class BoardsService {
 
     // 날짜계산 -> 1초전 / 1분전 / 1시간전 / 1일전 / 
     static async calculateTime(date: Date, created: Date): Promise<string>{
-        var distance = date.getTime() - created.getTime();
-        var day = Math.floor(distance / (1000 * 60 * 60 * 24));
-        var hour = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        var minute = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        var second = Math.floor((distance % (1000 * 60)) / 1000);
-        var time = "";
+        let distance = date.getTime() - created.getTime();
+        let day = Math.floor(distance / (1000 * 60 * 60 * 24));
+        let hour = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        let minute = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        let second = Math.floor((distance % (1000 * 60)) / 1000);
+        let time = "";
 
         if(day!=0)
             time = day+'일 전';
@@ -58,15 +58,16 @@ export class BoardsService {
         const totalComments = new Array();
         const board = await this.boardsRepository.findByBoardId(boardId);
         const parentComments = await this.commentsRepository.getParentComments(boardId); // 부모 댓글 가져오기
-        for(var i=0;i<parentComments.length;i++){ // 부모 댓글 for문 돌고 
-            const { commentCreated, commentContent, userId, commentStatus } = parentComments[i]; // 부모 댓글 정보
+        for(let i=0;i<parentComments.length;i++){ // 부모 댓글 for문 돌고 
+            const { commentId, commentCreated, commentContent, userId, commentStatus } = parentComments[i]; // 부모 댓글 정보
             const commentUser = await this.usersRepository.findByUserIdWithDeleted(userId); // 댓글 작성자
             const { nickname, profileImage, userStatus } = commentUser;      
 
             const createdAt = await BoardsService.calculateTime(new Date(), commentCreated); // 부모 댓글 시간 계산
-            var canEdit = (loginUserId == commentUser.userId)? true : false // 댓글 작성자 / 로그인한 사용자가 동일한 경우
-            var writerOrNot = (userId == board.userId) ? true : false // 댓글 작성자 / 글 작성자가 동일한 경우
+            let canEdit = (loginUserId == commentUser.userId)? true : false // 댓글 작성자 / 로그인한 사용자가 동일한 경우
+            let writerOrNot = (userId == board.userId) ? true : false // 댓글 작성자 / 글 작성자가 동일한 경우
             const comment = { // 부모댓글
+                commentId,
                 nickname : ((userStatus == false) ? '탈퇴한 회원입니다' : nickname) ,
                 profileImage: ((userStatus == false) ? deletedUserImageUrl : profileImage), // 바뀔 수 있음
                 commentContent,
@@ -77,15 +78,16 @@ export class BoardsService {
 
             const allReplies = new Array();
             const replies = await this.commentsRepository.getChildComments(boardId, parentComments[i].groupId); // 각 부모댓글에 해당하는 대댓글 가져오기
-            for(var j=0;j<replies.length;j++){
-                const { commentCreated, commentContent, userId } = replies[j];
+            for(let j=0;j<replies.length;j++){
+                const { commentId, commentCreated, commentContent, userId } = replies[j];
                 const replyUser = await this.usersRepository.findByUserIdWithDeleted(userId);
                 const { nickname, profileImage, userStatus } = replyUser;
 
                 const createdAt = await BoardsService.calculateTime(new Date(), commentCreated); // 자식 댓글 시간 계산
-                var canEdit = (loginUserId == replyUser.userId) ? true : false // 대댓글 작성자 / 로그인한 사용자가 동일한 경우
-                var writerOrNot = (userId == board.userId) ? true : false // 대댓글 작성자와 글 작성자가 동일한 경우
+                let canEdit = (loginUserId == replyUser.userId) ? true : false // 대댓글 작성자 / 로그인한 사용자가 동일한 경우
+                let writerOrNot = (userId == board.userId) ? true : false // 대댓글 작성자와 글 작성자가 동일한 경우
                  const reply = {
+                    commentId,
                     nickname : ((userStatus == false) ? '탈퇴한 회원입니다' : nickname),
                     profileImage: ((userStatus == false) ? deletedUserImageUrl : profileImage), // 바뀔 수 있음
                     commentContent,
@@ -113,19 +115,30 @@ export class BoardsService {
         const createdAt = await BoardsService.calculateTime(new Date(), postCreated); // 게시글 쓴 시간        
         const likeCnt = (await this.likesRepository.getAllLikes(boardId)).length; // 좋아요 수
         const comments = await this.getAllComments(loginUserId, boardId); // 댓글 목록
+        console.log(comments);
         const bookmarkStatus = await this.bookmarksRepository.findByUserId(boardId, loginUserId); // 북마크 여부 
         const likeStatus = await this.likesRepository.findByUserId(boardId, loginUserId); // 좋아요 여부
         const commentCnt = (await this.commentsRepository.getAllComments(boardById.boardId)).length;
         const canEdit = (userId == loginUserId)? true : false // 글 작성자 / 로그인한 사용자가 동일한 경우
-        console.log(user.userId)
+        const image = new Array();
+
+        for(let i=0;i<images.length;i++){
+            if(images[i].imageStatus == true){
+                const imageUrls = {
+                    imageUrl: images[i]['imageUrl']
+                }
+            image[i]=imageUrls;
+            }
+        }
         const board = {
+            boardId: boardById.boardId,
             profileImage: ((userStatus == false) ? deletedUserImageUrl : profileImage), // 바뀔 수 있음
             nickname: ((userStatus == false) ? '탈퇴한 회원입니다' : nickname),
             categoryId,
             createdAt,
             postTitle,
             postContent,
-            images,
+            images: image,
             likeCnt,
             commentCnt,
             comments,
@@ -141,13 +154,17 @@ export class BoardsService {
         const deletedUserImageUrl = `${process.env.AWS_S3_URL}/profileImages/6.png`;
         const totalBoards = new Array();
         const boards = await this.boardsRepository.getAllBoards(); // 전체 게시글 다가져오기
-        for(var i=0;i<boards.length;i++){
-            const { userId, boardId, categoryId, postTitle, postContent, postCreated } = boards[i];
-            var createdAt = await BoardsService.calculateTime(new Date(), postCreated);        
+        for(let i=0;i<boards.length;i++){
+            const { userId, boardId, categoryId, postTitle, postContent, postCreated, images } = boards[i];
+            let createdAt = await BoardsService.calculateTime(new Date(), postCreated);        
             const user = await this.usersRepository.findByUserIdWithDeleted(userId);
             const { nickname, profileImage, userStatus } = user;
-            var commentCnt = (await this.commentsRepository.getAllComments(boardId)).length;
-            const imageCnt = boards[i].images.length // 게시글 사진 개수
+            let commentCnt = (await this.commentsRepository.getAllComments(boardId)).length;
+            let imageCnt=0;
+            for(let j=0;j<images.length;j++){
+                if(images[j].imageStatus == true)
+                    imageCnt++;
+            }
             const likeCnt = (await this.likesRepository.getAllLikes(boardId)).length; // 좋아요 수
             const bookmarkStatus = await this.bookmarksRepository.findByUserId(boardId, loginUserId); // 북마크 여부 
             const likeStatus = await this.likesRepository.findByUserId(boardId, loginUserId); // 좋아요 여부
@@ -179,13 +196,48 @@ export class BoardsService {
         const totalUsers = await this.usersRepository.getAllUsers(); // 탈퇴한 회원은 검색x
         const usersByKeyword = totalUsers.filter(user => 
             user.nickname.includes(keyword) 
-        );
+        ); 
+
+        // 해당 사용자가 쓴 글 개수 
+        for(let i=0;i<usersByKeyword.length;i++){
+            const { userId } =usersByKeyword[i];
+            const boardsById = await this.usersRepository.getAllBoardsByUserId(userId);
+            usersByKeyword[i]['writeCnt'] = boardsById.length;
+            usersByKeyword[i]['activated'] = await this.checkActivateUser(userId);
+        }
 
         const keywordResults = {
             contentResult: boardsByKeyword,
             userResult: usersByKeyword   
         }
         return keywordResults;
+    }
+
+
+    async checkActivateUser(userId: number){
+        const recentBoard = await this.boardsRepository.getRecentBoard(userId);
+        const recentComment = await this.commentsRepository.getRecentComment(userId);
+        if(!recentBoard && !recentComment) // 작성글과 댓글이 모두 없는 경우
+            return false;
+
+        let postDist;
+        let postDay;
+        let commentDist;
+        let commentDay;
+
+        if(recentBoard){
+            postDist = new Date().getTime() - recentBoard.postCreated.getTime();
+            postDay = Math.floor(postDist / (1000 * 60 * 60 * 24));
+        }
+
+        if(recentComment){
+            commentDist = new Date().getTime() - recentComment.commentCreated.getTime();
+            commentDay = Math.floor(commentDist / (1000 * 60 * 60 * 24));
+        }
+
+        if(postDay>10 && commentDay>10)
+            return false;
+        return true; 
     }
 
     async getAllBoardsByCategory(loginUserId: number, category: number) { // 카테고리별 조회
@@ -207,22 +259,24 @@ export class BoardsService {
     }
 
     async deleteBoard(boardId: number) {
-        this.boardsRepository.deleteBoard(boardId);
+        await this.boardsRepository.deleteBoard(boardId);
     }
 
-    async createLike(boardId: number, loginUserId: number): Promise<Likes>{
-        return this.likesRepository.createLike(boardId, loginUserId);
+    async findLikeByBoardId(boardId: number, loginUserId: number): Promise<Likes>{
+        const like = await this.likesRepository.findByBoardId(boardId, loginUserId);
+        if(!like) // 좋아요 처음 생성한 경우
+            return await this.likesRepository.createLike(boardId, loginUserId);
+        else{ // 좋아요 눌린 경우 / 좋아요 취소한 경우 모두 존재
+            return await this.likesRepository.updateLikeStatus(boardId, loginUserId);
+        }
     }
 
-    async updateLikeStatus(boardId: number, loginUserId: number) {
-        this.likesRepository.updateLikeStatus(boardId, loginUserId);
-    }
-
-    async createBookmark(boardId: number, loginUserId: number): Promise<Bookmarks>{
-        return this.bookmarksRepository.createBookmark(boardId, loginUserId);
-    }
-
-    async updateBookmarkStatus(boardId: number, loginUserId: number) {
-        this.bookmarksRepository.updateBookmarkStatus(boardId, loginUserId);
+    async findBookmarkByBoardId(boardId: number, loginUserId: number): Promise<Bookmarks>{
+        const bookmark = await this.bookmarksRepository.findByBoardId(boardId, loginUserId);
+        if(!bookmark) // 좋아요 처음 생성한 경우
+            return await this.bookmarksRepository.createBookmark(boardId, loginUserId);
+        else{ // 좋아요 눌린 경우 / 좋아요 취소한 경우 모두 존재
+            return await this.bookmarksRepository.updateBookmarkStatus(boardId, loginUserId);
+        }
     }
 }

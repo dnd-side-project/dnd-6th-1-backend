@@ -34,18 +34,16 @@ export class AuthController {
             const nicknameUser = await this.authService.findByAuthNickname(nickname);
             if(nicknameUser)
                 return res.
-                    status(HttpStatus.BAD_REQUEST)
+                    status(HttpStatus.CONFLICT)
                     .json({
+                        success: false,
                         message: '중복된 닉네임이 있습니다.',
                     })
 
             const newUser = await this.authService.signUp(authcredentialsDto);
             return res
                 .status(HttpStatus.CREATED)
-                .json({
-                    data: newUser,
-                    message: '회원가입을 완료했습니다.',
-                })
+                .json(newUser)
         } catch(error){
             this.logger.error('회원가입 ERROR'+error);
             return res
@@ -67,7 +65,7 @@ export class AuthController {
                     .status(HttpStatus.CONFLICT)
                     .json({
                         success: false,
-                        message: "같은 닉네임이 존재합니다.",
+                        message: "중복된 닉네임이 존재합니다.",
                     })
             
             return res
@@ -125,20 +123,22 @@ export class AuthController {
     ): Promise<string> {
         try{
             const accessToken = await this.authService.signIn(authsigninDto);
+            const user = await this.authService.findByAuthEmail(authsigninDto.email);
             if(accessToken)
                 return res
                     .status(HttpStatus.OK)
                     .json({
                         accessToken: accessToken,
                         message: '로그인 되었습니다',
-                        flag: 1
+                        userId: user.userId,
+                        success: true,
                     })
                 
             return res
                 .status(HttpStatus.BAD_REQUEST)
                 .json({
                     message: '비밀번호가 일치하지 않습니다.',
-                    flag: 0
+                    success: false
                 })
         } catch(error){
             this.logger.error('로그인 ERROR'+error);

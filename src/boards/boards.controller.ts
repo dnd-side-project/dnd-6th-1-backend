@@ -1,4 +1,4 @@
-import { HttpStatus, Inject, ParseIntPipe, Res, UploadedFiles, UseGuards } from '@nestjs/common';
+import { ConsoleLogger, HttpStatus, Inject, ParseIntPipe, Res, UploadedFiles, UseGuards } from '@nestjs/common';
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor} from '@nestjs/platform-express';
 import { Boards } from './entity/boards.entity';
@@ -12,6 +12,8 @@ import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { parseFile } from 'aws-sdk/lib/shared-ini/ini-loader';
+import { create } from 'domain';
 require("dotenv").config();
 
 @ApiBearerAuth('accessToken')
@@ -34,13 +36,11 @@ export class BoardsController {
         name: 'category',
         required: false,
         description: '카테고리별',
-        example:1,
     })
     @ApiQuery({
         name: 'keyword',
         required: false,
         description: '검색어별',
-        example:'졸려'
     })
     async getAllBoards(@Res() res, @Query() query, @GetUser() loginUser): Promise <Boards[]>{
         try{
@@ -151,10 +151,7 @@ export class BoardsController {
 
             return res
                 .status(HttpStatus.CREATED)
-                .json({
-                    data: createdboard,
-                    message:'게시글을 업로드했습니다'
-                })
+                .json(createdboard)
         } catch(error){
             this.logger.error('커뮤니티 글 작성 ERROR'+error);
             return res
@@ -202,6 +199,8 @@ export class BoardsController {
             
             if(files.length!=0) // 파일이 있는 경우만 파일 수정 업로드 진행
                 await this.uploadService.updateFiles(files, board.boardId); // s3에 이미지 업로드 후 boardImage 에 업로드
+            else // 파일을 모두 삭제한 경우 -> 파일 삭제
+                await this.uploadService.deleteFiles(board.boardId);
             const updatedBoard = await this.boardsService.updateBoard(boardId, updateBoardDto);
 
             return res
@@ -211,6 +210,7 @@ export class BoardsController {
                     message:'게시글을 수정했습니다'
                 })
         } catch(error){
+            console.log(error);
             this.logger.error('커뮤니티 글 수정 ERROR'+error);
             return res
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -260,7 +260,7 @@ export class BoardsController {
 
             // 게시글 삭제 될 때 s3에 있는 이미지도 삭제 -> rds image 도 삭제
             await this.uploadService.deleteFiles(boardId); 
-            this.boardsService.deleteBoard(boardId);
+            await this.boardsService.deleteBoard(boardId);
 
             return res
                 .status(HttpStatus.OK)
@@ -302,14 +302,21 @@ export class BoardsController {
                     .json({
                         message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
                     })
-            
-            const like = await this.boardsService.createLike(boardId, userId);
-            return res
-                .status(HttpStatus.CREATED)
-                .json({
-                    data: like,
-                    message:'좋아요를 눌렀습니다.'
-                });
+            const like = await this.boardsService.findLikeByBoardId(boardId, userId);
+            if(like.likeStatus == true)
+                return res
+                    .status(HttpStatus.OK)
+                    .json({
+                        data: like,
+                        message:'좋아요를 눌렀습니다.'
+                    });
+            else 
+                return res
+                    .status(HttpStatus.OK)
+                    .json({
+                        data: like,
+                        message:'좋아요를 취소했습니다.'
+                    }); 
         } catch(error){
             this.logger.error('커뮤니티 글 좋아요 등록 ERROR'+error);
             return res
@@ -318,48 +325,48 @@ export class BoardsController {
         }   
     }
 
-    @Patch('/:boardId/likes')
-    @ApiOperation({ 
-        summary : '커뮤니티 특정 글 좋아요 상태 변경 API',
-        description: '좋아요 누른 후 취소하거나 / 취소했다가 다시 누른 경우'
-    })
-    @ApiParam({
-        name: 'boardId',
-        required: true,
-        description: '게시글 번호'
-    })
-    async updateLikeStatus(
-        @Res() res,
-        @Param("boardId", new ParseIntPipe({
-            errorHttpStatusCode: HttpStatus.BAD_REQUEST
-        }))
-        boardId: number,
-        @GetUser() loginUser
-    ){
-        try{
-            const { userId } = loginUser;
+    // @Patch('/:boardId/likes')
+    // @ApiOperation({ 
+    //     summary : '커뮤니티 특정 글 좋아요 상태 변경 API',
+    //     description: '좋아요 누른 후 취소하거나 / 취소했다가 다시 누른 경우'
+    // })
+    // @ApiParam({
+    //     name: 'boardId',
+    //     required: true,
+    //     description: '게시글 번호'
+    // })
+    // async updateLikeStatus(
+    //     @Res() res,
+    //     @Param("boardId", new ParseIntPipe({
+    //         errorHttpStatusCode: HttpStatus.BAD_REQUEST
+    //     }))
+    //     boardId: number,
+    //     @GetUser() loginUser
+    // ){
+    //     try{
+    //         const { userId } = loginUser;
 
-            const board = await this.boardsService.findByBoardId(boardId);
-            if(!board)
-                return res
-                    .status(HttpStatus.NOT_FOUND)
-                    .json({
-                        message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
-                    })
+    //         const board = await this.boardsService.findByBoardId(boardId);
+    //         if(!board)
+    //             return res
+    //                 .status(HttpStatus.NOT_FOUND)
+    //                 .json({
+    //                     message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
+    //                 })
 
-            await this.boardsService.updateLikeStatus(boardId, userId);
-            return res
-                .status(HttpStatus.OK)
-                .json({
-                    message:'좋아요 상태 변경'
-                });
-        } catch(error){
-            this.logger.error('커뮤니티 글 좋아요 상태 변경 ERROR'+error);
-            return res
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .json(error);            
-        }   
-    }
+    //         await this.boardsService.updateLikeStatus(boardId, userId);
+    //         return res
+    //             .status(HttpStatus.OK)
+    //             .json({
+    //                 message:'좋아요 상태 변경'
+    //             });
+    //     } catch(error){
+    //         this.logger.error('커뮤니티 글 좋아요 상태 변경 ERROR'+error);
+    //         return res
+    //             .status(HttpStatus.INTERNAL_SERVER_ERROR)
+    //             .json(error);            
+    //     }   
+    // }
 
     @Post('/:boardId/bookmarks')
     @ApiOperation({ 
@@ -389,13 +396,23 @@ export class BoardsController {
                         message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
                     })
             
-            const bookmark = await this.boardsService.createBookmark(boardId, userId);
-            return res
-                .status(HttpStatus.CREATED)
-                .json({
-                    data: bookmark,
-                    message:'북마크 완료'
-                });
+            const bookmark = await this.boardsService.findBookmarkByBoardId(boardId, userId);
+            if(bookmark.bookmarkStatus == true)
+                return res
+                    .status(HttpStatus.OK)
+                    .json({
+                        data: bookmark,
+                        message:'북마크를 눌렀습니다.'
+                    });
+            else 
+                return res
+                    .status(HttpStatus.OK)
+                    .json({
+                        data: bookmark,
+                        message:'북마크를 취소했습니다.'
+                    }); 
+
+
         } catch(error){
             this.logger.error('커뮤니티 글 북마크 등록 ERROR'+error);
             return res
@@ -404,45 +421,45 @@ export class BoardsController {
         }   
     }
 
-    @Patch('/:boardId/bookmarks')
-    @ApiOperation({ 
-        summary : '커뮤니티 특정 글 북마크 상태 변경 API',
-        description: '북마크 누른 후 취소하거나 / 취소했다가 다시 누른 경우'
-    })
-    @ApiParam({
-        name: 'boardId',
-        required: true,
-        description: '게시글 번호'
-    })
-    async updateBookmarkStatus(
-        @Res() res,
-        @Param("boardId", new ParseIntPipe({
-            errorHttpStatusCode: HttpStatus.BAD_REQUEST
-        }))
-        boardId: number,
-        @GetUser() loginUser
-    ){
-        try{
-            const { userId } = loginUser;
-            const board = await this.boardsService.findByBoardId(boardId);
-            if(!board)
-                return res
-                    .status(HttpStatus.NOT_FOUND)
-                    .json({
-                        message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
-                    })
+    // @Patch('/:boardId/bookmarks')
+    // @ApiOperation({ 
+    //     summary : '커뮤니티 특정 글 북마크 상태 변경 API',
+    //     description: '북마크 누른 후 취소하거나 / 취소했다가 다시 누른 경우'
+    // })
+    // @ApiParam({
+    //     name: 'boardId',
+    //     required: true,
+    //     description: '게시글 번호'
+    // })
+    // async updateBookmarkStatus(
+    //     @Res() res,
+    //     @Param("boardId", new ParseIntPipe({
+    //         errorHttpStatusCode: HttpStatus.BAD_REQUEST
+    //     }))
+    //     boardId: number,
+    //     @GetUser() loginUser
+    // ){
+    //     try{
+    //         const { userId } = loginUser;
+    //         const board = await this.boardsService.findByBoardId(boardId);
+    //         if(!board)
+    //             return res
+    //                 .status(HttpStatus.NOT_FOUND)
+    //                 .json({
+    //                     message:`게시글 번호 ${boardId}번에 해당하는 게시글이 없습니다.`
+    //                 })
             
-            await this.boardsService.updateBookmarkStatus(boardId, userId);
-            return res
-                .status(HttpStatus.OK)
-                .json({
-                    message:'북마크 상태 변경'
-                });
-        } catch(error){
-            this.logger.error('커뮤니티 글 북마크 상태 변경 ERROR'+error);
-            return res
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .json(error);            
-        }   
-    }
+    //         await this.boardsService.updateBookmarkStatus(boardId, userId);
+    //         return res
+    //             .status(HttpStatus.OK)
+    //             .json({
+    //                 message:'북마크 상태 변경'
+    //             });
+    //     } catch(error){
+    //         this.logger.error('커뮤니티 글 북마크 상태 변경 ERROR'+error);
+    //         return res
+    //             .status(HttpStatus.INTERNAL_SERVER_ERROR)
+    //             .json(error);            
+    //     }   
+    // }
 }

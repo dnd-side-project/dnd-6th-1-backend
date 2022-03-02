@@ -22,9 +22,6 @@ let iosPayload = {
 export class AlarmService {
     constructor(){}
 
-    
-
-
     async createPayload(number: number){
         const targetToken = process.env.FIREBASE_TOKEN;
         const data = {

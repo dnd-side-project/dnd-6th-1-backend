@@ -17,8 +17,7 @@ import DailyRotateFile = require('winston-daily-rotate-file');
 const { combine, timestamp, printf } = winston.format;
 import { MailerModule } from '@nestjs-modules/mailer';
 import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
-import { MailModule } from './mail/mail.module';
-import * as path from 'path';
+import configEmail from './mail/email';
 
 @Module({
   imports: [
@@ -60,10 +59,20 @@ import * as path from 'path';
       ],
     }),
     MailerModule.forRoot({
-      transport: 'smtps://user@domain.com:pass@smtp.domain.com',
-      defaults: {
-        from: '"nest-modules" <modules@nestjs.com>',
+      transport: {
+        host: 'localhost',
+        port: 1025,
+        ignoreTLS: true,
+        secure: false,
+        auth: {
+          user: process.env.MAILDEV_INCOMING_USER,
+          pass: process.env.MAILDEV_INCOMING_PASS,
+        }
       },
+      defaults: {
+        from: '"No Reply" <no-reply@localhost>',
+      },
+      preview: true,
       template: {
         dir: __dirname + '/templates',
         adapter: new EjsAdapter(),
@@ -72,24 +81,6 @@ import * as path from 'path';
         },
       },
     })
-    // MailerModule.forRootAsync({
-    //   imports: [ConfigModule],
-    //   inject: [ConfigService],
-    //   useFactory: (config: ConfigService) => {
-    //     console.log('===== write [.env] by config: network====');
-    //     console.log(config.get('email'));
-    //     return {
-    //       ...config.get('email'),
-    //       template: {
-    //         dir: path.join(__dirname, '/templates/'),
-    //         adapter: new EjsAdapter(),
-    //         options: {
-    //           strict: true,
-    //         },
-    //       },
-    //     };
-    //   },
-    // }),
   ],
   controllers: [AppController],
   providers: [

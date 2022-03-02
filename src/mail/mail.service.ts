@@ -5,8 +5,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 export class MailService {
     constructor(private readonly mailerService: MailerService) {}
     public example(): void {
-        this.mailerService
-          .sendMail({
+        this.mailerService.sendMail({
             to: 'test@nestjs.com',
             from: 'noreply@nestjs.com',
             subject: 'Testing Nest Mailermodule with template ✔',
