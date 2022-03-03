@@ -9,7 +9,7 @@ import { BoardsService } from 'src/boards/boards.service';
 import { BookmarksRepository } from 'src/boards/repository/bookmarks.repository';
 import { LikesRepository } from 'src/boards/repository/likes.repository';
 import { CommentsRepository } from 'src/comments/comments.repository';
-import { HistoriesRepository } from 'src/boards/repository/histories.repository';
+import { HistoriesRepository } from 'src/histories/histories.repository';
 import { AuthService } from 'src/auth/auth.service';
 import { AuthRepository } from 'src/auth/auth.repository';
 import { JwtModule, JwtService } from '@nestjs/jwt';
@@ -19,6 +19,7 @@ import { UploadService } from 'src/boards/upload.service';
 import { DiariesRepository } from 'src/diaries/diaries.repository';
 import { ReportsRepository } from 'src/reports/reports.repository';
 import { ReportsService } from 'src/reports/reports.service';
+import { HistoriesService } from 'src/histories/histories.service';
 require("dotenv").config();
 
 @Module({
@@ -45,7 +46,7 @@ require("dotenv").config();
     ])
   ], // 데이터베이스 커넥션 맺으며 사용할 엔티티를 리스트로 받기
   controllers: [UsersController],
-  providers: [UsersService, UploadService, AuthService, JwtStrategy, ReportsService],
+  providers: [UsersService, UploadService, AuthService, JwtStrategy, ReportsService, HistoriesService, HistoriesRepository],
   exports: [JwtStrategy, PassportModule]
 })
 export class UsersModule {}

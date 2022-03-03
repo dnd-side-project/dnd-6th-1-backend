@@ -14,10 +14,6 @@ export class DiariesService {
             private diariesRepository: DiariesRepository,
     ) {}
 
-    async calculateMonthWeek(date: Date){
-        
-    }
-
     // 입력 날짜의 month, week 계산
     static async calculateDate(createDiaryDto: CreateDiaryDto): Promise<any>{
         var writtenDate = createDiaryDto.date;
@@ -32,18 +28,18 @@ export class DiariesService {
         const firstDate = new Date(year, month, 1);
         const lastDate = new Date(year, month+1, 0);
         const firstDayOfWeek = firstDate.getDay() === 0 ? 7 : firstDate.getDay();
-        const lastDayOfweek = lastDate.getDay();
+        // const lastDayOfweek = lastDate.getDay();
     
-        // 인풋한 달의 마지막 일
-        const lastDay = lastDate.getDate();
+        // // 인풋한 달의 마지막 일
+        // const lastDay = lastDate.getDate();
     
-        // 첫 날의 요일이 금, 토, 일요일 이라면 true
-        const firstWeekCheck = firstDayOfWeek === 5 || firstDayOfWeek === 6 || firstDayOfWeek === 7;
-        // 마지막 날의 요일이 월, 화, 수라면 true
-        const lastWeekCheck = lastDayOfweek === 1 || lastDayOfweek === 2 || lastDayOfweek === 3;
+        // // 첫 날의 요일이 금, 토, 일요일 이라면 true
+        // const firstWeekCheck = firstDayOfWeek === 5 || firstDayOfWeek === 6 || firstDayOfWeek === 7;
+        // // 마지막 날의 요일이 월, 화, 수라면 true
+        // const lastWeekCheck = lastDayOfweek === 1 || lastDayOfweek === 2 || lastDayOfweek === 3;
     
-        // 해당 달이 총 몇주까지 있는지 ->2022.02 : 5
-        const lastWeekNo = Math.ceil((firstDayOfWeek - 1 + lastDay) / 7);
+        // // 해당 달이 총 몇주까지 있는지 ->2022.02 : 5
+        // const lastWeekNo = Math.ceil((firstDayOfWeek - 1 + lastDay) / 7);
 
         // 날짜 기준으로 몇주차 인지
         let week = Math.ceil((firstDayOfWeek - 1 + date) / 7);

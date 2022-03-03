@@ -20,6 +20,8 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ReportsService } from './reports/reports.service';
 import { ReportsRepository } from './reports/reports.repository';
+import { HistoriesService } from './histories/histories.service';
+import { HistoriesRepository } from './histories/histories.repository';
 
 @Module({
   imports: [
@@ -91,7 +93,9 @@ import { ReportsRepository } from './reports/reports.repository';
     {
       provide: APP_PIPE,
       useClass: ValidationPipe
-    }
+    },
+    HistoriesService,
+    HistoriesRepository
   ],
 })
 export class AppModule {}

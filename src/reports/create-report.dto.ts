@@ -18,33 +18,33 @@ export class CreateReportDto {
       description: '감정 횟수',
     })
     @Column({ type: 'int' })
-    cnt: number;
+    readonly cnt: number;
 
     @ApiProperty({
       example: 1,
       description: '감정 등수',
     })
     @Column({ type: 'int' })
-    rank: number;
+    readonly rank: number;
 
     @ApiProperty({
       example: '2022',
       description: '레포트 글 연도',
     })
     @Column({ type: 'int' })
-    year: number;
+    readonly year: number;
 
     @ApiProperty({
       example: '02',
       description: '레포트 글 월',
     })
     @Column({ type: 'int' })
-    month: number;
+    readonly month: number;
 
     @ApiProperty({
       example: '1',
       description: '레포트 글 주',
     })
     @Column({ type: 'int' })
-    week: number;
+    readonly week: number;
 }
