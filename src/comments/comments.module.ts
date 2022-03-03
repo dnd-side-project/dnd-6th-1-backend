@@ -10,10 +10,10 @@ import { CommentsRepository } from './comments.repository';
 import { CommentsService } from './comments.service';
 import { UsersService } from 'src/users/users.service';
 import { UsersRepository } from 'src/users/users.repository';
-import { HistoriesRepository } from 'src/boards/repository/histories.repository';
-import { Diaries } from 'src/diaries/diaries.entity';
+import { HistoriesRepository } from 'src/histories/histories.repository';
 import { DiariesRepository } from 'src/diaries/diaries.repository';
 import { ReportsRepository } from 'src/reports/reports.repository';
+import { HistoriesService } from 'src/histories/histories.service';
 
 @Module({
   imports:[
@@ -26,9 +26,10 @@ import { ReportsRepository } from 'src/reports/reports.repository';
       BookmarksRepository,
       HistoriesRepository,
       DiariesRepository,
-      ReportsRepository
+      ReportsRepository,
+      HistoriesRepository
   ])],
   controllers: [CommentsController],
-  providers: [CommentsService, BoardsService, UsersService]
+  providers: [CommentsService, BoardsService, UsersService, HistoriesService]
 })
 export class CommentsModule {}
