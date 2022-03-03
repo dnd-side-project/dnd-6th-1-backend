@@ -5,7 +5,6 @@ import { create } from 'domain';
 import { report } from 'process';
 import { DiariesRepository } from 'src/diaries/diaries.repository';
 import { UsersRepository } from 'src/users/users.repository';
-import { CreateReportDto } from './create-report.dto';
 import { ReportsRepository } from './reports.repository';
 
 @Injectable()

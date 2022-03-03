@@ -25,7 +25,7 @@ export class UploadService {
         let s3ImageUrl = "";
         for(var i=0;i<files.length;i++){
             let s3ImageName = `${Date.now()}-${files[i].originalname}`;
-            s3ImageUrl = `${process.env.AWS_S3_URL}diaryImages/${s3ImageName}`;
+            s3ImageUrl = `${process.env.AWS_S3_URL}/diaryImages/${s3ImageName}`;
             const params = {
                 Bucket: process.env.AWS_S3_BUCKET_NAME+'/diaryImages',
                 Key: s3ImageName,
