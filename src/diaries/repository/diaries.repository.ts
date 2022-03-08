@@ -1,7 +1,7 @@
 import { Entity, EntityRepository, Repository } from "typeorm";
-import { Diaries } from "./diaries.entity";
-import { CreateDiaryDto } from "./dto/create-diary.dto"; 
-import { UpdateDiaryDto } from "./dto/update-diary.dto";
+import { Diaries } from "../entity/diaries.entity";
+import { CreateDiaryDto } from "../dto/create-diary.dto"; 
+import { UpdateDiaryDto } from "../dto/update-diary.dto";
 
 
 

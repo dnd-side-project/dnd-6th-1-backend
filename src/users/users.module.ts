@@ -16,7 +16,7 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { JwtStrategy } from 'src/auth/jwt/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { UploadService } from 'src/boards/upload.service';
-import { DiariesRepository } from 'src/diaries/diaries.repository';
+import { DiariesRepository } from 'src/diaries/repository/diaries.repository';
 import { ReportsRepository } from 'src/reports/reports.repository';
 import { ReportsService } from 'src/reports/reports.service';
 require("dotenv").config();

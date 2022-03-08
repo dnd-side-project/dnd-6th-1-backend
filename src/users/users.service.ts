@@ -6,7 +6,7 @@ import { BoardsService } from 'src/boards/boards.service';
 import { BoardsRepository } from 'src/boards/repository/boards.repository';
 import { HistoriesRepository } from 'src/boards/repository/histories.repository';
 import { CommentsRepository } from 'src/comments/comments.repository';
-import { DiariesRepository } from 'src/diaries/diaries.repository';
+import { DiariesRepository } from 'src/diaries/repository/diaries.repository';
 import { ReportsRepository } from 'src/reports/reports.repository';
 import { PasswordDto } from './dto/password.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';

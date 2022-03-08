@@ -13,7 +13,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { UploadService } from './upload.service';
 import { HistoriesRepository } from './repository/histories.repository';
-import { DiariesRepository } from 'src/diaries/diaries.repository';
+import { DiariesRepository } from 'src/diaries/repository/diaries.repository';
 import { ReportsRepository } from 'src/reports/reports.repository';
 require("dotenv").config();
 

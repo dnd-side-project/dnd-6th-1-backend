@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { DiariesRepository} from './diaries.repository';
+import { DiariesRepository} from './repository/diaries.repository';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Diaries } from "./diaries.entity";
+import { Diaries } from "./entity/diaries.entity";
 import { CreateDiaryDto } from "./dto/create-diary.dto";
 import { UpdateDiaryDto } from "./dto/update-diary.dto";
 import moment, {Moment} from 'moment';
@@ -82,12 +82,13 @@ export class DiariesService {
 
     async findByDiaryId(diaryId: number): Promise<Diaries> {
         const diary = await this.diariesRepository.findByDiaryId(diaryId);
+        /*
         const image = new Array(); // image 배열을 만든다
         for(var i=0; i< diary.images.length; i++) {
                 image.push(diary.images[i]['imageUrl']);
             }
-        diary['images'] = image;
-        
+        diary['images'] = image;        // diary에 이미지 속성 추가
+        */
         return diary;
     }
 
@@ -108,6 +109,7 @@ export class DiariesService {
             }  
         ]
         */
+       
         const image = new Array(); // image 배열을 만든다
         for(var i=0;i<images.length;i++){
             if(images[i].imageStatus == true){ // 이미지가 삭제되지 않은 경우에만
@@ -115,6 +117,7 @@ export class DiariesService {
             }
         }
         console.log(image); // image배열에 url만 담김
+        
         const diary = {
             date,
             categoryId,
