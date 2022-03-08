@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from "typeorm";
-import { Histories } from "../entity/histories.entity";
+import { Histories } from "./histories.entity";
 
 @EntityRepository(Histories) 
 export class HistoriesRepository extends Repository<Histories>{
@@ -11,7 +11,14 @@ export class HistoriesRepository extends Repository<Histories>{
 
     // 특정 키워드로 검색한 기록이 있는지
     async findByKeyword(keyword: string){
-        return await this.findOne({keyword, historyStatus: true});
+        const h = await this.findOne({
+            where: {
+                keyword, 
+                historyStatus: true
+            },
+        });
+        console.log(h);
+        return h;
     }
 
     // 검색어 전체 조회 
@@ -29,14 +36,22 @@ export class HistoriesRepository extends Repository<Histories>{
     }
 
     //  검색어 입력 시
-    async createHistory(userId: number, keyword: string): Promise<Histories>{
+    async createHistory(userId: number, keyword: string): Promise<Histories>{     
         const history = {
             keyword,
             userId,
             keywordSearched: new Date()
         }
-        const newHistory = await this.save(history);
-        return newHistory;
+        console.log(history);
+        return await this.save(history);
+    }
+
+    // 특정 기록의 시간만 업데이트
+    async updateHistory(history: Histories){
+        const {userId, historyId} = history;
+        await this.update({userId, historyId},{
+            keywordSearched: new Date()
+        });
     }
 
     // 특정 기록만 지우기

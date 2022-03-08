@@ -1,7 +1,6 @@
-import { IsEmail } from "class-validator";
 import { Boards } from "src/boards/entity/boards.entity";
 import { Bookmarks } from "src/boards/entity/bookmarks.entity";
-import { Histories } from "src/boards/entity/histories.entity";
+import { Histories } from "src/histories/histories.entity";
 import { Likes } from "src/boards/entity/likes.entity";
 import { Diaries } from "src/diaries/entity/diaries.entity";
 import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity, OneToMany, OneToOne, JoinColumn } from "typeorm";

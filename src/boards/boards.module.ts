@@ -15,6 +15,7 @@ import { UploadService } from './upload.service';
 import { HistoriesRepository } from './repository/histories.repository';
 import { DiariesRepository } from 'src/diaries/repository/diaries.repository';
 import { ReportsRepository } from 'src/reports/reports.repository';
+import { HistoriesService } from 'src/histories/histories.service';
 require("dotenv").config();
 
 @Module({
@@ -37,10 +38,11 @@ require("dotenv").config();
       BookmarksRepository,
       HistoriesRepository,
       DiariesRepository,
-      ReportsRepository
+      ReportsRepository,
+      HistoriesRepository
     ])
   ], // 데이터베이스 커넥션 맺으며 사용할 엔티티를 리스트로 받기
   controllers: [BoardsController],
-  providers: [BoardsService, UsersService, UploadService]
+  providers: [BoardsService, UsersService, UploadService, HistoriesService]
 })
 export class BoardsModule {}

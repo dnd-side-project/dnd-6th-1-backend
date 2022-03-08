@@ -4,7 +4,7 @@ import { Iot } from 'aws-sdk';
 import { type } from 'os';
 import { BoardsService } from 'src/boards/boards.service';
 import { BoardsRepository } from 'src/boards/repository/boards.repository';
-import { HistoriesRepository } from 'src/boards/repository/histories.repository';
+import { HistoriesRepository } from 'src/histories/histories.repository';
 import { CommentsRepository } from 'src/comments/comments.repository';
 import { DiariesRepository } from 'src/diaries/repository/diaries.repository';
 import { ReportsRepository } from 'src/reports/reports.repository';
@@ -93,22 +93,6 @@ export class UsersService {
     async updatePassword(userId: number, passwordDto: PasswordDto){
         return await this.usersRepository.updatePassword(userId, passwordDto);
     }   
-
-    async getAllHistories(userId: number){
-        return await this.historiesRepository.getAllHistories(userId);
-    }
-
-    async createHistory(userId: number, keyword: string){
-        return await this.historiesRepository.createHistory(userId, keyword);
-    }
-
-    async deleteHistory(userId: number, historyId: number){
-        return await this.historiesRepository.deleteHistory(userId, historyId);
-    }
-
-    async deleteHistories(userId: number){
-        return await this.historiesRepository.deleteAllHistories(userId);
-    }
 
     async getAllBoardsByUserId(userId: number) {
         const boardsById = await this.usersRepository.getAllBoardsByUserId(userId);

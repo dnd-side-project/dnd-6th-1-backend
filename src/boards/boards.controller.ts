@@ -12,8 +12,7 @@ import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { parseFile } from 'aws-sdk/lib/shared-ini/ini-loader';
-import { create } from 'domain';
+import { HistoriesService } from 'src/histories/histories.service';
 require("dotenv").config();
 
 @ApiBearerAuth('accessToken')
@@ -25,7 +24,8 @@ export class BoardsController {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
         private readonly boardsService: BoardsService, 
         private readonly usersService : UsersService,
-        private readonly uploadService: UploadService
+        private readonly uploadService: UploadService,
+        private readonly historiesService: HistoriesService
     ){}
 
     @Get() // 커뮤니티 전체 글 조회 / 카테고리별 조회 / 검색어별 조회
@@ -61,7 +61,7 @@ export class BoardsController {
                         }) 
                 }
                 boards = await this.boardsService.getAllBoardsByKeyword(userId, keyword); // 검색결과 반환
-                const history = await this.usersService.createHistory(userId, keyword);
+                await this.historiesService.findByKeyword(userId, keyword);
             }
 
             else if(keyword==null && category!=null){ // 카테고리별 조회

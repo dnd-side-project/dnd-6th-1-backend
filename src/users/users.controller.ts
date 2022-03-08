@@ -10,6 +10,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import { ReportsService } from 'src/reports/reports.service';
+import { HistoriesService } from 'src/histories/histories.service';
 
 @ApiBearerAuth('accessToken')
 @UseGuards(JwtAuthGuard)
@@ -20,7 +21,8 @@ export class UsersController {
         private readonly usersService: UsersService,
         private readonly authService: AuthService,
         private readonly uploadService: UploadService,
-        private readonly reportsService: ReportsService
+        private readonly reportsService: ReportsService,
+        private readonly historiesService: HistoriesService
     ){}
 
     @ApiTags('마이페이지 API')
@@ -85,7 +87,7 @@ export class UsersController {
                     .json({
                         message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
                     })  
-            const histories = await this.usersService.getAllHistories(userId);
+            const histories = await this.historiesService.getAllHistories(userId);
             console.log(histories);
 
             return res
@@ -260,7 +262,7 @@ export class UsersController {
                         message:`검색기록 번호 ${historyId}번을 삭제할 권한이 없습니다.`
                     })   
 
-            await this.usersService.deleteHistory(userId, historyId);
+            await this.historiesService.deleteHistory(userId, historyId);
 
             return res
                 .status(HttpStatus.OK)
@@ -301,7 +303,7 @@ export class UsersController {
                         message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
                     })  
             
-            const histories = await this.usersService.getAllHistories(userId);
+            const histories = await this.historiesService.getAllHistories(userId);
             if(histories.length==0)
                 return res
                     .status(HttpStatus.OK)
@@ -309,7 +311,7 @@ export class UsersController {
                         message:`삭제할 검색기록이 없습니다.`
                     })  
 
-            await this.usersService.deleteHistories(userId);
+            await this.historiesService.deleteHistories(userId);
 
             return res
                 .status(HttpStatus.OK)
@@ -541,9 +543,11 @@ export class UsersController {
         }
     }
 
-    
-    startSchedule() { // 리포트 생성 함수
-        this.reportsService.createReport(new Date());
+    @ApiTags('주간 레포트 API')
+    @Get('/:userId/create')
+    @ApiOperation({ summary: '레포트 생성 조회 API' })
+    async startSchedule() { // 리포트 생성 함수
+        await this.reportsService.weekNumber(new Date());
     }
 
     // 1. 닉네임 중복확인
