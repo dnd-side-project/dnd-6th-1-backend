@@ -21,6 +21,7 @@ export class DiaryImagesRepository extends Repository<DiaryImages> {
         return await this.createQueryBuilder("diaryImage")
             .select("diaryImage.uploadedName")
             .where("diaryImage.diaryId =:diaryId", {diaryId})
+            .andWhere("diaryImage.imageStatus=:status", {status: true})
             .getMany();
     }
 

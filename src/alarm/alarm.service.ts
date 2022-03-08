@@ -42,5 +42,4 @@ export class AlarmService {
         return data;
     }
     
-
 }
