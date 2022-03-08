@@ -12,10 +12,10 @@ import { UsersRepository } from 'src/users/users.repository';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { UploadService } from './upload.service';
-import { HistoriesRepository } from './repository/histories.repository';
 import { DiariesRepository } from 'src/diaries/repository/diaries.repository';
 import { ReportsRepository } from 'src/reports/reports.repository';
 import { HistoriesService } from 'src/histories/histories.service';
+import { HistoriesRepository } from 'src/histories/histories.repository';
 require("dotenv").config();
 
 @Module({
@@ -36,7 +36,6 @@ require("dotenv").config();
       UsersRepository,
       LikesRepository,
       BookmarksRepository,
-      HistoriesRepository,
       DiariesRepository,
       ReportsRepository,
       HistoriesRepository

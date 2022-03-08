@@ -10,10 +10,10 @@ import { CommentsRepository } from './comments.repository';
 import { CommentsService } from './comments.service';
 import { UsersService } from 'src/users/users.service';
 import { UsersRepository } from 'src/users/users.repository';
-import { HistoriesRepository } from 'src/boards/repository/histories.repository';
 import { DiariesRepository } from 'src/diaries/repository/diaries.repository';
 import { ReportsRepository } from 'src/reports/reports.repository';
 import { HistoriesService } from 'src/histories/histories.service';
+import { HistoriesRepository } from 'src/histories/histories.repository';
 
 @Module({
   imports:[
@@ -24,7 +24,6 @@ import { HistoriesService } from 'src/histories/histories.service';
       UsersRepository,
       LikesRepository,
       BookmarksRepository,
-      HistoriesRepository,
       DiariesRepository,
       ReportsRepository,
       HistoriesRepository
