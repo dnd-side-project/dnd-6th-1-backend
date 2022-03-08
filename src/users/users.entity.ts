@@ -4,6 +4,7 @@ import { Histories } from "src/histories/histories.entity";
 import { Likes } from "src/boards/entity/likes.entity";
 import { Diaries } from "src/diaries/entity/diaries.entity";
 import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity, OneToMany, OneToOne, JoinColumn } from "typeorm";
+import { Reports } from "src/reports/reports.entity";
 
 
 @Entity()
@@ -71,4 +72,11 @@ export class Users extends BaseEntity {
         (history) => history.userId
     )
     histories: Histories[];
+
+    // User(1) <> Reports(*)
+    @OneToMany(
+        () => Reports,
+        (report) => report.userId
+    )
+    reports: Reports[];
 }

@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsIn, IsNotEmpty, IsNumber, IsString, Length } from "class-validator";
-import { Users } from "src/auth/users.entity";
+import { Users } from "src/users/users.entity";
 import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
@@ -13,24 +13,46 @@ export class Reports extends BaseEntity {
     reportId: number;
 
     @ApiProperty({ 
-        example: 4,
-        description: '레포트가 만들어진 유저 ID', 
+        example: '2022',
+        description: '레포트 글 연도', 
     })
     @IsNotEmpty()
     @IsNumber()
-    @ManyToOne(
-        () => Users,
-        (user) => user.diaries
-    )
-    @JoinColumn({name:"userId"})
-    @Column() //작성자 아이디 
-    userId: number;
+    @Column()        
+    year: number;
+
+    @ApiProperty({ 
+        example: '1',
+        description: '레포트 글 월', 
+    })
+    @IsNotEmpty()
+    @IsNumber()
+    @Column()         
+    month: number;
+
+    @ApiProperty({ 
+        example: '1',
+        description: '레포트 글 주', 
+    })
+    @IsNotEmpty()
+    @IsNumber()
+    @Column()         
+    week: number;
+
+    @ApiProperty({ 
+        example: 1,
+        description: '감정 등수', 
+    })
+    @IsNotEmpty()
+    @IsNumber()
+    @Column()        
+    rank: number;
 
     @ApiProperty({ 
         example: 1,
         description: '카테고리 번호', 
     })
-    @IsIn([1,2,3,4,5])      // class-validator
+    @IsIn([1,2,3,4,5])
     @IsNotEmpty()
     @IsNumber()
     @Column()
@@ -40,34 +62,22 @@ export class Reports extends BaseEntity {
         example: 3,
         description: '감정 횟수', 
     })
-    @Column({ type:'int' })        
+    @IsNotEmpty()
+    @IsNumber()
+    @Column()        
     cnt: number;
 
     @ApiProperty({ 
-        example: 1,
-        description: '감정 등수', 
+        example: 4,
+        description: '레포트가 만들어진 유저 ID', 
     })
-    @Column({ type:'int' })        
-    rank: number;
-
-    @ApiProperty({ 
-        example: '2022',
-        description: '레포트 글 연도', 
-    })
-    @Column({ type:'int' })        
-    year: number;
-
-    @ApiProperty({ 
-        example: '02',
-        description: '레포트 글 월', 
-    })
-    @Column({ type:'int' })         
-    month: number;
-
-    @ApiProperty({ 
-        example: '1',
-        description: '레포트 글 주', 
-    })
-    @Column({ type:'int' })         
-    week: number;
+    @IsNotEmpty()
+    @IsNumber()
+    @ManyToOne(
+        () => Users,
+        (user) => user.reports
+    )
+    @JoinColumn({name:"userId"})
+    @Column() // 아이디 
+    userId: number;
 }
