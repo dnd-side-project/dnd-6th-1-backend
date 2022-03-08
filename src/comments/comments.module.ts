@@ -11,8 +11,8 @@ import { CommentsService } from './comments.service';
 import { UsersService } from 'src/users/users.service';
 import { UsersRepository } from 'src/users/users.repository';
 import { HistoriesRepository } from 'src/boards/repository/histories.repository';
-import { Diaries } from 'src/diaries/diaries.entity';
-import { DiariesRepository } from 'src/diaries/diaries.repository';
+import { DiariesRepository } from 'src/diaries/repository/diaries.repository';
+import { ReportsRepository } from 'src/reports/reports.repository';
 
 @Module({
   imports:[
@@ -24,7 +24,8 @@ import { DiariesRepository } from 'src/diaries/diaries.repository';
       LikesRepository,
       BookmarksRepository,
       HistoriesRepository,
-      DiariesRepository
+      DiariesRepository,
+      ReportsRepository
   ])],
   controllers: [CommentsController],
   providers: [CommentsService, BoardsService, UsersService]

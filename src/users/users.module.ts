@@ -16,7 +16,9 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { JwtStrategy } from 'src/auth/jwt/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { UploadService } from 'src/boards/upload.service';
-import { DiariesRepository } from 'src/diaries/diaries.repository';
+import { DiariesRepository } from 'src/diaries/repository/diaries.repository';
+import { ReportsRepository } from 'src/reports/reports.repository';
+import { ReportsService } from 'src/reports/reports.service';
 require("dotenv").config();
 
 @Module({
@@ -31,18 +33,19 @@ require("dotenv").config();
     }),
     TypeOrmModule.forFeature([
       UsersRepository,
-      // BoardsRepository,
+      BoardsRepository,
       BoardImagesRepository,
-      // CommentsRepository,
+      CommentsRepository,
       // LikesRepository,
       // BookmarksRepository,
       HistoriesRepository,
       AuthRepository,
-      DiariesRepository
+      DiariesRepository,
+      ReportsRepository
     ])
   ], // 데이터베이스 커넥션 맺으며 사용할 엔티티를 리스트로 받기
   controllers: [UsersController],
-  providers: [UsersService, UploadService, AuthService, JwtStrategy],
+  providers: [UsersService, UploadService, AuthService, JwtStrategy, ReportsService],
   exports: [JwtStrategy, PassportModule]
 })
 export class UsersModule {}

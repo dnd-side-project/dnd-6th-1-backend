@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { DiariesRepository} from './diaries.repository';
+import { DiariesRepository} from './repository/diaries.repository';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Diaries } from "./diaries.entity";
+import { Diaries } from "./entity/diaries.entity";
 import { CreateDiaryDto } from "./dto/create-diary.dto";
 import { UpdateDiaryDto } from "./dto/update-diary.dto";
 import moment, {Moment} from 'moment';
@@ -14,6 +14,9 @@ export class DiariesService {
             private diariesRepository: DiariesRepository,
     ) {}
 
+    async calculateMonthWeek(date: Date){
+        
+    }
 
     // 입력 날짜의 month, week 계산
     static async calculateDate(createDiaryDto: CreateDiaryDto): Promise<any>{
@@ -35,9 +38,9 @@ export class DiariesService {
         const lastDay = lastDate.getDate();
     
         // 첫 날의 요일이 금, 토, 일요일 이라면 true
-        const firstWeekCheck = firstDayOfWeek === 5 || firstDayOfWeek === 6 || firstDayOfWeek === 7;
+        const firstWeekCheck = firstDayOfWeek === 7 || firstDayOfWeek === 1 || firstDayOfWeek === 2;
         // 마지막 날의 요일이 월, 화, 수라면 true
-        const lastWeekCheck = lastDayOfweek === 1 || lastDayOfweek === 2 || lastDayOfweek === 3;
+        const lastWeekCheck = lastDayOfweek === 3 || lastDayOfweek === 4 || lastDayOfweek === 5;
     
         // 해당 달이 총 몇주까지 있는지 ->2022.02 : 5
         const lastWeekNo = Math.ceil((firstDayOfWeek - 1 + lastDay) / 7);
@@ -79,12 +82,13 @@ export class DiariesService {
 
     async findByDiaryId(diaryId: number): Promise<Diaries> {
         const diary = await this.diariesRepository.findByDiaryId(diaryId);
+        /*
         const image = new Array(); // image 배열을 만든다
         for(var i=0; i< diary.images.length; i++) {
                 image.push(diary.images[i]['imageUrl']);
             }
-        diary['images'] = image;
-        
+        diary['images'] = image;        // diary에 이미지 속성 추가
+        */
         return diary;
     }
 
@@ -105,6 +109,7 @@ export class DiariesService {
             }  
         ]
         */
+       
         const image = new Array(); // image 배열을 만든다
         for(var i=0;i<images.length;i++){
             if(images[i].imageStatus == true){ // 이미지가 삭제되지 않은 경우에만
@@ -112,6 +117,7 @@ export class DiariesService {
             }
         }
         console.log(image); // image배열에 url만 담김
+        
         const diary = {
             date,
             categoryId,

@@ -34,18 +34,16 @@ export class AuthController {
             const nicknameUser = await this.authService.findByAuthNickname(nickname);
             if(nicknameUser)
                 return res.
-                    status(HttpStatus.BAD_REQUEST)
+                    status(HttpStatus.CONFLICT)
                     .json({
+                        success: false,
                         message: '중복된 닉네임이 있습니다.',
                     })
 
             const newUser = await this.authService.signUp(authcredentialsDto);
             return res
                 .status(HttpStatus.CREATED)
-                .json(
-                    newUser
-                
-                )
+                .json(newUser)
         } catch(error){
             this.logger.error('회원가입 ERROR'+error);
             return res
@@ -67,7 +65,7 @@ export class AuthController {
                     .status(HttpStatus.CONFLICT)
                     .json({
                         success: false,
-                        message: "같은 닉네임이 존재합니다.",
+                        message: "중복된 닉네임이 존재합니다.",
                     })
             
             return res
@@ -83,6 +81,35 @@ export class AuthController {
                 .json(error);
         }
     }
+
+    // @Get('/signin/:email')
+    // @ApiOperation({ summary: '비밀번호 찾을 시 이메일 전송' })
+    // async sendEmail(
+    //     @Res() res,
+    //     @Param("email") email: string,
+    // ): Promise<string> {
+    //     try{
+    //         if(nickName) 
+    //             return res
+    //                 .status(HttpStatus.CONFLICT)
+    //                 .json({
+    //                     success: false,
+    //                     message: "같은 닉네임이 존재합니다.",
+    //                 })
+            
+    //         return res
+    //             .status(HttpStatus.OK)
+    //             .json({
+    //                 success: true,
+    //                 message: "사용 가능한 닉네임입니다.",
+    //             })
+    //     } catch(error){
+    //         this.logger.error('닉네임 중복 조회 ERROR'+error);
+    //         return res
+    //             .status(HttpStatus.INTERNAL_SERVER_ERROR)
+    //             .json(error);
+    //     }
+    // }
 
     @Post('/signin')
     @ApiOperation({ 
@@ -104,14 +131,14 @@ export class AuthController {
                         accessToken: accessToken,
                         message: '로그인 되었습니다',
                         userId: user.userId,
-                        flag: 1
+                        success: true,
                     })
                 
             return res
                 .status(HttpStatus.BAD_REQUEST)
                 .json({
                     message: '비밀번호가 일치하지 않습니다.',
-                    flag: 0
+                    success: false
                 })
         } catch(error){
             this.logger.error('로그인 ERROR'+error);

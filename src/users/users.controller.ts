@@ -9,6 +9,7 @@ import { UsersService } from './users.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
+import { ReportsService } from 'src/reports/reports.service';
 
 @ApiBearerAuth('accessToken')
 @UseGuards(JwtAuthGuard)
@@ -18,7 +19,8 @@ export class UsersController {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
         private readonly usersService: UsersService,
         private readonly authService: AuthService,
-        private readonly uploadService: UploadService
+        private readonly uploadService: UploadService,
+        private readonly reportsService: ReportsService
     ){}
 
     @ApiTags('마이페이지 API')
@@ -34,7 +36,7 @@ export class UsersController {
     async getMyPage(
         @Res() res,
         @Param("userId", new ParseIntPipe({
-            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST // 파라미터 변수값이 맞지 않은 상태
         }))
         userId: number,
     ){
@@ -253,7 +255,7 @@ export class UsersController {
                     console.log(history.userId)
             if(history.userId != userId) // 검색한 사람 id랑 history 남긴 id가 다른 경우
                 return res
-                    .status(HttpStatus.BAD_REQUEST)
+                    .status(HttpStatus.FORBIDDEN) // 서버 자체 또는 서버에 있는 파일에 접근할 권한이 없을 경우
                     .json({
                         message:`검색기록 번호 ${historyId}번을 삭제할 권한이 없습니다.`
                     })   
@@ -302,7 +304,7 @@ export class UsersController {
             const histories = await this.usersService.getAllHistories(userId);
             if(histories.length==0)
                 return res
-                    .status(HttpStatus.NOT_FOUND)
+                    .status(HttpStatus.OK)
                     .json({
                         message:`삭제할 검색기록이 없습니다.`
                     })  
@@ -325,7 +327,7 @@ export class UsersController {
     @ApiTags('마이페이지 API')
     @Get('/:userId/boards')
     @ApiOperation({ 
-        summary : '특정 유저가 쓴 글 조회 API',
+        summary : '특정 유저가 작성한 글 조회 API',
     })
     @ApiParam({
         name: 'userId',
@@ -456,6 +458,43 @@ export class UsersController {
         }
     }
 
+    @ApiTags('마이페이지 API')
+    @Get('/:userId/all')
+    @ApiOperation({ 
+        summary : '특정 유저가 작성한 글/댓글단 글/북마크한 글 조회 API',
+    })
+    @ApiParam({
+        name: 'userId',
+        required: true,
+        description: '유저 ID'
+    })
+    async getAllBoardsByAll(
+        @Res() res,
+        @Param("userId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        userId: number,
+    ){
+        try{
+            const user = await this.usersService.findByUserId(userId);
+            if(!user)
+                return res
+                    .status(HttpStatus.NOT_FOUND)
+                    .json({
+                        message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+                    })  
+            const boards = await this.usersService.getAllBoardsByAll(user.userId);
+            return res
+                .status(HttpStatus.OK)
+                .json(boards);
+        } catch(error){
+            this.logger.error('특정 유저 마이페이지 통합 글 조회 ERROR'+error);
+            return res
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .json(error);
+        }
+    }
+
     @ApiTags('주간레포트 API')
     @Get('/:userId/reports')
     @ApiOperation({ summary: '주간 레포트 조회 API' })
@@ -500,6 +539,11 @@ export class UsersController {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .json(error);
         }
+    }
+
+    
+    startSchedule() { // 리포트 생성 함수
+        this.reportsService.createReport(new Date());
     }
 
     // 1. 닉네임 중복확인

@@ -15,8 +15,11 @@ import { DiaryImagesModule } from './diary-images/diary-images.module';
 import * as winston from 'winston';
 import DailyRotateFile = require('winston-daily-rotate-file');
 const { combine, timestamp, printf } = winston.format;
-
-
+import { MailerModule } from '@nestjs-modules/mailer';
+import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ReportsService } from './reports/reports.service';
+import { ReportsRepository } from './reports/reports.repository';
 
 @Module({
   imports: [
@@ -28,6 +31,7 @@ const { combine, timestamp, printf } = winston.format;
     UsersModule,
     DiariesModule,
     DiaryImagesModule,
+    ScheduleModule.forRoot(),
     WinstonModule.forRoot({
       transports: [
         new winston.transports.Console({
@@ -56,6 +60,29 @@ const { combine, timestamp, printf } = winston.format;
           maxFiles: '14d',
         }),
       ],
+    }),
+    MailerModule.forRoot({
+      transport: {
+        host: 'localhost',
+        port: 1025,
+        ignoreTLS: true,
+        secure: false,
+        auth: {
+          user: process.env.MAILDEV_INCOMING_USER,
+          pass: process.env.MAILDEV_INCOMING_PASS,
+        }
+      },
+      defaults: {
+        from: '"No Reply" <no-reply@localhost>',
+      },
+      preview: true,
+      template: {
+        dir: __dirname + '/templates',
+        adapter: new EjsAdapter(),
+        options: {
+          strict: true,
+        },
+      },
     })
   ],
   controllers: [AppController],
