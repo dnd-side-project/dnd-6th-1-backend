@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
+import { DiariesRepository } from 'src/diaries/repository/diaries.repository';
 import { create } from 'domain';
 import { report } from 'process';
-import { DiariesRepository } from 'src/diaries/diaries.repository';
 import { UsersRepository } from 'src/users/users.repository';
 import { ReportsRepository } from './reports.repository';
 

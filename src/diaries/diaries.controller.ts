@@ -1,19 +1,19 @@
 import { HttpStatus, ParseIntPipe, Inject, Res, UploadedFiles, UseGuards, Body, Controller, Delete, Get, Param, Patch, Post, Query, UseInterceptors } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FilesInterceptor} from '@nestjs/platform-express';
-import { Diaries } from './diaries.entity';
+import { Diaries } from './entity/diaries.entity';
 import { UploadService } from './upload.service';
 import { DiariesService } from './diaries.service';
 import { CreateDiaryDto } from './dto/create-diary.dto';
 import { UpdateDiaryDto } from './dto/update-diary.dto';
+import { Emotions } from './entity/emotions.entity';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { GetUser } from 'src/auth/get-user.decorator';
-
+import { EmotionsService } from './emotions.service';
 require("dotenv").config();
-
 
 @ApiBearerAuth('accessToken')
 @UseGuards(JwtAuthGuard)
@@ -23,8 +23,39 @@ export class DiariesController {
     constructor(
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
         private readonly diariesService: DiariesService,
-        private readonly uploadService: UploadService
+        private readonly uploadService: UploadService,
+        private readonly emotionsService: EmotionsService
     ){}
+
+    // 감정이야기 조회
+    @Get('/emotion')
+    @ApiOperation({ 
+        summary: '감정이야기 조회 API'
+    })
+    @ApiQuery({
+        name: 'emotionName',
+        required: false,
+        description: '감정이 이름',
+        example:'화남이',
+    })
+    async getAllEmotions(@Res() res, @Query() query) : Promise <Emotions>{
+        try{
+            const emotionName = query;
+            console.log(emotionName);
+
+            let emotion;
+
+            emotion = await this.emotionsService.findByEmotionName(emotionName);
+            return res
+                .status(HttpStatus.OK)
+                .json(emotion);
+        } catch(error){
+            this.logger.error('감정이야기 조회 ERROR'+error);
+            return res
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .json(error);
+        }
+    }
 
 
     // 홈화면 해당 연-월 일기글 조회
