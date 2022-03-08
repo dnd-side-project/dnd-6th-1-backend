@@ -38,9 +38,9 @@ export class DiariesService {
         const lastDay = lastDate.getDate();
     
         // 첫 날의 요일이 금, 토, 일요일 이라면 true
-        const firstWeekCheck = firstDayOfWeek === 5 || firstDayOfWeek === 6 || firstDayOfWeek === 7;
+        const firstWeekCheck = firstDayOfWeek === 7 || firstDayOfWeek === 1 || firstDayOfWeek === 2;
         // 마지막 날의 요일이 월, 화, 수라면 true
-        const lastWeekCheck = lastDayOfweek === 1 || lastDayOfweek === 2 || lastDayOfweek === 3;
+        const lastWeekCheck = lastDayOfweek === 3 || lastDayOfweek === 4 || lastDayOfweek === 5;
     
         // 해당 달이 총 몇주까지 있는지 ->2022.02 : 5
         const lastWeekNo = Math.ceil((firstDayOfWeek - 1 + lastDay) / 7);
