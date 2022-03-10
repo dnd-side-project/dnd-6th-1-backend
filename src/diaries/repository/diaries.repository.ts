@@ -90,7 +90,6 @@ export class DiariesRepository extends Repository <Diaries> {
         };
         
         // 게시글 저장
-        console.log(month);
         return await this.save(diary);
     }
 

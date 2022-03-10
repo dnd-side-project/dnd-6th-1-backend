@@ -4,7 +4,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { UsersRepository } from "src/users/users.repository";
 import { AuthRepository } from "../auth.repository";
-import { Users } from "../users.entity";
+import { Users } from "../../users/users.entity";
 require("dotenv").config();
 
 // 다른 곳에서도 주입해서 사용

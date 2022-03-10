@@ -1,7 +1,7 @@
 import { Body, Controller, Get, HttpStatus, Param, Post, Res, UseGuards, ValidationPipe, UploadedFile, UseInterceptors, UploadedFiles, Patch, Inject } from '@nestjs/common';
 import { AuthCredentialsDto } from './dto/auth-credential.dto';
 import { AuthSignInDto } from './dto/auth-signin.dto';
-import { Users } from './users.entity';
+import { Users } from '../users/users.entity';
 import { ApiTags, ApiOperation, ApiCreatedResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { GetUser } from './get-user.decorator';

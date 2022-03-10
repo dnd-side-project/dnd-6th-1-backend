@@ -478,6 +478,7 @@ export class UsersController {
         userId: number,
     ){
         try{
+            console.log(new Date());
             const user = await this.usersService.findByUserId(userId);
             if(!user)
                 return res
@@ -545,9 +546,21 @@ export class UsersController {
 
     @ApiTags('주간 레포트 API')
     @Get('/:userId/create')
-    @ApiOperation({ summary: '레포트 생성 조회 API' })
-    async startSchedule() { // 리포트 생성 함수
-        await this.reportsService.weekNumber(new Date());
+    @ApiParam({
+        name: 'userId',
+        required: true,
+        description: '유저 ID'
+    })
+    @ApiOperation({ summary: '레포트 생성 API' })
+    async startSchedule(
+        @Res() res,
+        @Query() query,
+        @Param("userId", new ParseIntPipe({
+            errorHttpStatusCode: HttpStatus.BAD_REQUEST
+        }))
+        userId: number
+    ) { // 리포트 생성 함수
+        await this.reportsService.createReport();
     }
 
     // 1. 닉네임 중복확인

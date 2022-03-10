@@ -20,6 +20,7 @@ import { DiariesRepository } from 'src/diaries/repository/diaries.repository';
 import { ReportsRepository } from 'src/reports/reports.repository';
 import { ReportsService } from 'src/reports/reports.service';
 import { HistoriesService } from 'src/histories/histories.service';
+import { TestedRepository } from 'src/reports/test.repository';
 require("dotenv").config();
 
 @Module({
@@ -42,11 +43,13 @@ require("dotenv").config();
       HistoriesRepository,
       AuthRepository,
       DiariesRepository,
-      ReportsRepository
+      ReportsRepository,
+      TestedRepository,
+      HistoriesRepository
     ])
   ], // 데이터베이스 커넥션 맺으며 사용할 엔티티를 리스트로 받기
   controllers: [UsersController],
-  providers: [UsersService, UploadService, AuthService, JwtStrategy, ReportsService, HistoriesService, HistoriesRepository],
+  providers: [UsersService, UploadService, AuthService, JwtStrategy, ReportsService, HistoriesService],
   exports: [JwtStrategy, PassportModule]
 })
 export class UsersModule {}
