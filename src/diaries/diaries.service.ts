@@ -67,6 +67,18 @@ export class DiariesService {
         return diary;
     }
 
+    async findCreateDiary(diaryId: number): Promise<Diaries> {
+        const diary = await this.diariesRepository.findByDiaryId(diaryId);
+        
+        const image = new Array(); // image 배열을 만든다
+        for(var i=0; i< diary.images.length; i++) {
+                image.push(diary.images[i]['imageUrl']);
+            }
+        diary['images'] = image;        // diary에 이미지 속성 추가
+        
+        return diary;
+    }
+  
     // 일기 특정 글 조회
     async getDiaryById(loginUserId: number, diaryId: number) {
         // 다이어리 객체
