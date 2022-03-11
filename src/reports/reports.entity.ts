@@ -5,6 +5,7 @@ import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGe
 
 @Entity()
 export class Reports extends BaseEntity {
+
     @ApiProperty({ 
         example: 1,
         description: '자동생성되는 레포트 ID', 

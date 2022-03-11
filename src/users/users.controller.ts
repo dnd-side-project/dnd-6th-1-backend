@@ -507,11 +507,6 @@ export class UsersController {
         description: '주'
     })
     @ApiQuery({
-        name: 'month',
-        required: true, 
-        description: '월'
-    })
-    @ApiQuery({
         name: 'year',
         required: true, 
         description: '연도'
@@ -530,15 +525,23 @@ export class UsersController {
         userId: number
     ) {
         try{
-            const { year, month, week } = query;
+            const { year, week } = query;
             const user = await this.usersService.findByUserId(userId);
             if(!user)
                 return res
                     .status(HttpStatus.NOT_FOUND)
                     .json({
                         message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
-                    })  
-            const report = await this.reportsService.getWeeklyReport(year, month, week, userId);
+                    }) 
+
+            if(year==null && week==null){ // 그냥 전체 목록 조회
+                const reports = await this.reportsService.getAllReports(userId);
+                return res
+                    .status(HttpStatus.OK)
+                    .json(reports);
+            }
+
+            const report = await this.reportsService.getWeeklyReport(year, week, userId);
             return res
                 .status(HttpStatus.OK)
                 .json(report);
@@ -551,20 +554,16 @@ export class UsersController {
         }
     }
 
+
     @ApiTags('주간 레포트 API')
-    @Get('/:userId/create')
-    @ApiParam({
-        name: 'userId',
-        required: true,
-        description: '유저 ID'
-    })
+    @Post('/reports')
     @ApiOperation({ summary: '레포트 생성 API' })
     async startSchedule(
-        @Res() res,
-        @Query() query,
     ) { // 리포트 생성 함수
         await this.reportsService.createReport();
     }
+
+
 
     // 1. 닉네임 중복확인
     @ApiTags('마이페이지 API')

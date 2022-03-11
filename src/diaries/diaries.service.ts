@@ -15,13 +15,13 @@ export class DiariesService {
     // 주차 계산 함수
     async getWeek(date: Date) { 
         const dowOffset = 1; // 월요일부터 시작인 경우 1
-        var newYear = new Date(date.getFullYear(),0,1);
-        var day = newYear.getDay() - dowOffset; // 6-6 = 0
+        let newYear = new Date(date.getFullYear(),0,1);
+        let day = newYear.getDay() - dowOffset; // 6-6 = 0
         day = (day >= 0 ? day : day + 7); //  -1+7 = 6 (토요일)
-        var daynum = Math.floor((date.getTime() - newYear.getTime() -
+        let daynum = Math.floor((date.getTime() - newYear.getTime() -
           (date.getTimezoneOffset()-newYear.getTimezoneOffset())*60000)/86400000) + 1; // ex)2021.01.15 -> daynum=15
         console.log('dayNum '+daynum); // ex)3/11 -> 2022년의 70 (번째 날짜)
-        var weeknum; 
+        let weeknum; 
         //if the year starts before the middle of a week
         if(day < 4) { // day=-1 -> 
           weeknum = Math.floor((daynum+day-1)/7) + 1;
@@ -35,77 +35,8 @@ export class DiariesService {
         else {
           weeknum = Math.floor((daynum+day-1)/7)+1;
         }
-        this.getStartAndEndDate(date.getFullYear(), weeknum);
         return weeknum;
     }
-
-    // 주차별 첫날(월)과 마지막날(일) 계산
-    async getStartAndEndDate(year: number, week: number) { 
-        var month_days = new Array( 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 );
-        var month_days_count = new Array();
-        // 윤년(2월이 29일)인지 검사
-
-        function is_leap_year(year: number){
-            return ( year % 4 == 0 && year % 100 != 0 ) || ( year % 400 == 0 && year % 4000 != 0 );
-        }
-
-        // 년도에 맞게 month_days 와 month_days_count의 값을 설정한다. 
-        function set_month_days(year: number){
-            if(is_leap_year(year)) 
-                month_days[1] = 29; 
-            else 
-                month_days[1] = 28;
-
-            month_days_count[0] = 0;
-
-            for(let i=0;i<12;i++){
-                month_days_count[i+1] = month_days_count[i] + month_days[i];
-            }
-        }
-
-        set_month_days(year);
-
-        var weekday = new Date(year,0,1).getDay();
-        var total_days = ((week-1) * 7) - weekday;
-        console.log(weekday, total_days)
-        var yy1,yy2,mm1,mm2,dd1,dd2;
-
-        if( total_days < 0 ){
-            yy1 = year-1;
-            yy2 = year;
-            mm1=12;
-            mm2=1;
-            dd1=32-weekday;
-            dd2=7-weekday;
-        }else{
-            yy1 = yy2 = year;
-            for( mm1 = 0 ; mm1 < 12 ; mm1++ ){
-                if( month_days_count[mm1] > total_days ) 
-                    break;
-            }
-                
-            dd1 = total_days - month_days_count[mm1-1] + 2;        
-            dd2 = dd1 + 6;
-            mm2 = mm1;
-
-            if( dd2 > month_days[ mm1-1 ] ){
-                mm2 = mm1 % 12 + 1;
-                dd2 = dd2 - month_days[ mm1-1];
-            }
-            if( mm1==12 && mm2==1 ) yy2++;  
-        }
-        mm1 = (mm1<10)?'0'+mm1:mm1;
-        mm2 = (mm2<10)?'0'+mm2:mm2;
-        dd1 = (dd1<10)?'0'+dd1:dd1;
-        dd2 = (dd2<10)?'0'+dd2:dd2;
-
-        let startDay = yy1+'.'+mm1+'.'+dd1;
-        let endDay =  yy2+'.'+mm2+'.'+dd2;
-
-        return startDay+'~'+endDay;
-    }
-
-
 
     async getAllDiaries(loginUserId: number) {
         const diaries = await this.diariesRepository.getAllDiaries(loginUserId); // 내가 쓴 모든 일기글
@@ -120,9 +51,9 @@ export class DiariesService {
         
         const diary = Object.values(monthDiaries);
         
-        for (var i=0; i<diary.length; i++) {
+        for (let i=0; i<diary.length; i++) {
             const image = new Array(); // image 배열을 만든다
-            for(var j=0; j<diary[i].images.length; j++) {
+            for(let j=0; j<diary[i].images.length; j++) {
                 image.push(diary[i].images[j]['imageUrl']);
             }
             monthDiaries[i]['images'] = image;
@@ -153,7 +84,7 @@ export class DiariesService {
         */
        
         const image = new Array(); // image 배열을 만든다
-        for(var i=0;i<images.length;i++){
+        for(let i=0;i<images.length;i++){
             if(images[i].imageStatus == true){ // 이미지가 삭제되지 않은 경우에만
                 image.push(images[i]['imageUrl']); // image 배열에 url을 하나씩 푸시
             }
@@ -197,7 +128,7 @@ export class DiariesService {
         const { userId, categoryId, categoryReason, diaryTitle, diaryContent, images, date } = diaryById;
         const image = new Array(); // image 배열을 만든다
 
-        for(var i=0;i<images.length;i++){
+        for(let i=0;i<images.length;i++){
             if(images[i].imageStatus == true){ // 이미지가 삭제되지 않은 경우에만
                 image.push(images[i]['imageUrl']); // image 배열에 url을 하나씩 푸시
             }

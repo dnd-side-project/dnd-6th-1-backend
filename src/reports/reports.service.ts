@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, SchedulerRegistry } from '@nestjs/schedule';
 import { create } from 'domain';
 import { report } from 'process';
+import { first } from 'rxjs';
 import { DiariesService } from 'src/diaries/diaries.service';
 import { DiariesRepository } from 'src/diaries/repository/diaries.repository';
 import { UsersRepository } from 'src/users/users.repository';
@@ -19,7 +20,7 @@ export class ReportsService {
     ) {}
     private readonly logger = new Logger(ReportsService.name);
 
-    @Cron('55 01 11 * * 1-5', {
+    @Cron('00 11 23 * * 1-5', {
       name: 'report',
       timeZone: 'Asia/Seoul',
     })
@@ -29,18 +30,85 @@ export class ReportsService {
             const userId = users[i].userId;
             const today = new Date();
             const year = today.getFullYear();
-            const month = today.getMonth()+1; // 1 더해줘야 우리가 찾는 달이 나옴
-            const lastWeek = await this.diariesService.getWeek(today)-1; // 이번주(월)요일 전 주의 레포트 생성해야함
-            const { reports } = await this.emotionCount(year, month, lastWeek, userId);
-            await this.reportsRepository.createReport(year, month, lastWeek, userId, reports);
+            const lastWeek = await this.diariesService.getWeek(today); // 이번주(월)요일 전 주의 레포트 생성해야함
+
+            // const lastWeek = await this.diariesService.getWeek(today)-1; // 이번주(월)요일 전 주의 레포트 생성해야함
+            const { reports } = await this.emotionCount(year, lastWeek, userId);
+            await this.reportsRepository.createReport(year, lastWeek, userId, reports);
         }
-        // this.schedulerRegistry.getCronJob('report');
+        this.schedulerRegistry.getCronJob('report');
     }
     triggerNotifications() {}
 
+// 주차별 첫날(월)과 마지막날(일) 계산
+    async getStartAndEndDate(year: number, week: number) { 
+        let month_days = new Array(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
+        let month_days_count = new Array();
+
+        // 윤년(2월이 29일)인지 검사
+        function is_leap_year(year: number){
+            return (year%4==0 && year% 100!=0) || (year%400==0 && year%4000!=0);
+        }
+
+        // 년도에 맞게 month_days 와 month_days_count의 값을 설정한다. 
+        function set_month_days(year: number){
+            if(is_leap_year(year)) 
+                month_days[1]=29; 
+            else 
+                month_days[1]=28;
+
+            month_days_count[0]=0;
+
+            for(let i=0;i<12;i++){
+                month_days_count[i+1]=month_days_count[i]+month_days[i];
+            }
+        }
+
+        set_month_days(year);
+
+        let weekday = new Date(year,0,1).getDay();
+        let total_days = ((week-1)*7)-weekday;
+        let yy1, yy2, mm1, mm2, dd1, dd2;
+
+        if( total_days < 0 ){
+            yy1 = year-1;
+            yy2 = year;
+            mm1=12;
+            mm2=1;
+            dd1=32-weekday;
+            dd2=7-weekday;
+        } else{
+            yy1=yy2=year;
+            for(mm1=0;mm1<12;mm1++ ){
+                if(month_days_count[mm1]>total_days) 
+                    break;
+            }
+                
+            dd1=total_days-month_days_count[mm1-1]+2;        
+            dd2=dd1 + 6;
+            mm2=mm1;
+
+            if(dd2>month_days[mm1-1]){
+                mm2=mm1%12+1;
+                dd2=dd2-month_days[mm1-1];
+            }
+            if(mm1==12 && mm2==1) 
+                yy2++;  
+        }
+        mm1=(mm1<10)?'0'+mm1:mm1;
+        mm2=(mm2<10)?'0'+mm2:mm2;
+        dd1=(dd1<10)?'0'+dd1:dd1;
+        dd2=(dd2<10)?'0'+dd2:dd2;
+
+        let startDay = yy1+'.'+mm1+'.'+dd1;
+        let endDay =  yy2+'.'+mm2+'.'+dd2;
+        console.log(startDay, endDay);
+        return startDay+'~'+endDay;
+    }
+
     // 감정 개수 세는 함수
-    async emotionCount(year: number, month: number, week: number, userId: number){ 
-        const diaries = await this.diariesRepository.getWeeklyReport(year,month, week, userId);
+    async emotionCount(year: number, week: number, userId: number){ 
+        const diaries = await this.diariesRepository.getWeeklyReport(year, week, userId);
         const reports = new Object(); // 리포트 객체 생성
         const categoryName = [1,2,3,4,5]; // 감정 array
         const emotionCnt = new Array();
@@ -74,48 +142,70 @@ export class ReportsService {
         return { reports, diaries };
     }
 
+    // 전체 리포트 조회
+    async getAllReports(userId: number){
+        const reports = await this.reportsRepository.findListsByUser(userId);
+        console.log(reports);
+        const report = reports.filter((item, i) => {
+            return reports.findIndex((item2, j) => { // 주어진 판별함수를 만족하는 첫번째 요소에 대한 인덱스 반환
+                return item.year === item2.year && item.week === item2.week; 
+            }) === i;
+        });
+        return report;
+    }
+
     // 주간 리포트 조회
-    async getWeeklyReport(year: number, month: number, week: number, userId: number){
-        const { reports, diaries } = await this.emotionCount(year, month, week, userId);
+    async getWeeklyReport(year: number, week: number, userId: number){
+        // 일기를 하나도 안쓴 경우 빈 배열 리턴
+        let sum=0;
+        const reportByWeek = await this.reportsRepository.findReportByWeek(year, week, userId);
+        reportByWeek.forEach(function(el){sum += el.cnt});
+        if(sum==0)
+            return [];
+
+        const { reports, diaries } = await this.emotionCount(year, week, userId);
         const maxCategory = new Array();
         for(let i=0;i<5;i++){
             if(reports['emotion'][i].cnt == reports['emotion'][0].cnt)
                 maxCategory.push(reports['emotion'][i].category);
         }
         const maxDiaries = diaries.filter(diary => maxCategory.includes(diary.categoryId)); // 최다 감정이 담긴 배열만 필터링
-        
-        // 10주차(얘 자체도 지난주) 리포트지만 순위 비교하려면 9주차 데이터도 가져와야함 
-        let sum=0;
-        while(true){
-            const reportByWeek = await this.reportsRepository.findReportByWeek(year, --week, userId);
-            console.log(reportByWeek);
-            console.log(week);
+        const firstData = await this.reportsRepository.findByUser(userId); // 맨처음꺼만 가져옴
+        const firstYear = firstData[0].year;
+        const firstWeek = firstData[0].week;
 
-            // 해당 주차에 리포트가 있는지 -> 5개의 감정이 모두 cnt=0이면 레포트 안쓴 것
-            reportByWeek.forEach(function(el){sum += el.cnt});
-            if(sum!=0){
-                console.log(sum);
-                break;
-            }
+        if(firstYear==year && firstWeek==week){ // 이전 데이터가 없는 신규 유저일 경우
+            for(let i=0;i<5;i++)  
+                reports['emotion'][i]['rankChange'] = 0;
         }
-        
-        for(let i=0;i<5;i++){  // 지난 주와 감정 순위 비교
-            let categoryId = reports['emotion'][i].category;
-            let rank = reports['emotion'][i].rank;
-            await this.reportsRepository.findRankByCategory(year, month, week, userId, categoryId);
-            const lastRank = await (await this.reportsRepository.findRankByCategory(year, month, week, userId, categoryId)).rank; 
-            reports['emotion'][i]['rankChange'] = lastRank-rank;
+        else { // 이전 데이터가 존재하는 경우
+            let sum=0;
+            while(true){
+                const reportByWeek = await this.reportsRepository.findReportByWeek(year, --week, userId);
+                // if(reportByWeek.length==0) // 개발용
+                //     return '지난주 기록이 없습니다';
+                reportByWeek.forEach(function(el){sum += el.cnt});
+                if(sum!=0){
+                    break;
+                }
+            }
+            for(let i=0;i<5;i++){  // 지난 주와 감정 순위 비교
+                let categoryId = reports['emotion'][i].category;
+                let rank = reports['emotion'][i].rank;
+                const lastRank = await (await this.reportsRepository.findRankByCategory(year, week, userId, categoryId)).rank; 
+                reports['emotion'][i]['rankChange'] = lastRank-rank;
+            }    
         }
 
         // 가장 많은 감정의 일기 데이터
         const diaryList = new Array(); // diaries : [] 에 해당하는 배열
         const WEEKDAY = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-        for(var i=0;i<maxCategory.length;i++){ // maxCnt 인 카테고리 번호가 담긴 배열            
+        for(let i=0;i<maxCategory.length;i++){ // maxCnt 인 카테고리 번호가 담긴 배열            
             const diary = new Object(); // 각 카테고리별로 담을 딕셔너리 생성
-            diary['period'] = await this.diariesService.getStartAndEndDate(year,week); // 주차별 첫날~끝날
+            diary['period'] = await this.getStartAndEndDate(year,week); // 주차별 첫날~끝날
             diary['category'] = maxCategory[i]; // 딕셔너리 첫 요소 -  카테고리 번호
             const diaryObj = new Array();  // 각 카테고리에 해당하는 일기 담을 배열 생성
-            for(var j=0;j<maxDiaries.length;j++){ // maxCnt인 카테고리로 필터링된 다이어리 배열 
+            for(let j=0;j<maxDiaries.length;j++){ // maxCnt인 카테고리로 필터링된 다이어리 배열 
                 if(maxCategory[i] == maxDiaries[j].categoryId){
                     const { diaryId, date, categoryReason, diaryTitle, diaryCreated } = maxDiaries[j];
                     const day = date.getDate();
