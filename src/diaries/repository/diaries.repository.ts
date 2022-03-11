@@ -90,7 +90,6 @@ export class DiariesRepository extends Repository <Diaries> {
         };
         
         // 게시글 저장
-        console.log(month);
         return await this.save(diary);
     }
 
@@ -112,19 +111,19 @@ export class DiariesRepository extends Repository <Diaries> {
         await this.update({diaryId}, {diaryStatus: false});
     }
     
-    async getWeeklyReport(year: number, month: number, week: number, userId: number){
+    async getWeeklyReport(year: number, week: number, userId: number){
         return await this.createQueryBuilder("diaries")        // user를 사용해서 작성한 글찾기
             .select([
                 // "diaries.userId AS userId",
                 "diaries.diaryId AS diaryId",
                 "diaries.date AS date",
+                "diaries.diaryCreated AS diaryCreated",
                 "diaries.categoryId AS categoryId", 
                 "diaries.categoryReason AS categoryReason",
                 "diaries.diaryTitle AS diaryTitle", 
             ])
             .where('diaries.userId =:userId', {userId})       
             .andWhere('diaries.year =:year', {year}) // =: 다음에 공백 xx
-            .andWhere("diaries.month =:month", {month})      
             .andWhere("diaries.week =:week", {week})    
             .groupBy("diaries.diaryId")    
             .getRawMany();  
