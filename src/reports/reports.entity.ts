@@ -24,15 +24,6 @@ export class Reports extends BaseEntity {
 
     @ApiProperty({ 
         example: '1',
-        description: '레포트 글 월', 
-    })
-    @IsNotEmpty()
-    @IsNumber()
-    @Column()         
-    month: number;
-
-    @ApiProperty({ 
-        example: '1',
         description: '레포트 글 주', 
     })
     @IsNotEmpty()

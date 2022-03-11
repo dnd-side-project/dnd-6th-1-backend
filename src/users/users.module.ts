@@ -5,14 +5,11 @@ import { UsersService } from './users.service';
 import { UsersRepository } from './users.repository';
 import { BoardImagesRepository } from 'src/board-images/board-images.repository';
 import { BoardsRepository } from 'src/boards/repository/boards.repository';
-import { BoardsService } from 'src/boards/boards.service';
-import { BookmarksRepository } from 'src/boards/repository/bookmarks.repository';
-import { LikesRepository } from 'src/boards/repository/likes.repository';
 import { CommentsRepository } from 'src/comments/comments.repository';
 import { HistoriesRepository } from 'src/histories/histories.repository';
 import { AuthService } from 'src/auth/auth.service';
 import { AuthRepository } from 'src/auth/auth.repository';
-import { JwtModule, JwtService } from '@nestjs/jwt';
+import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from 'src/auth/jwt/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { UploadService } from 'src/boards/upload.service';
@@ -20,7 +17,6 @@ import { DiariesRepository } from 'src/diaries/repository/diaries.repository';
 import { ReportsRepository } from 'src/reports/reports.repository';
 import { ReportsService } from 'src/reports/reports.service';
 import { HistoriesService } from 'src/histories/histories.service';
-import { TestedRepository } from 'src/reports/test.repository';
 import { DiariesService } from 'src/diaries/diaries.service';
 require("dotenv").config();
 
@@ -39,13 +35,10 @@ require("dotenv").config();
       BoardsRepository,
       BoardImagesRepository,
       CommentsRepository,
-      // LikesRepository,
-      // BookmarksRepository,
       HistoriesRepository,
       AuthRepository,
       DiariesRepository,
       ReportsRepository,
-      TestedRepository,
       HistoriesRepository
     ])
   ], // 데이터베이스 커넥션 맺으며 사용할 엔티티를 리스트로 받기

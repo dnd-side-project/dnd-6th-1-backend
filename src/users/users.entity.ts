@@ -5,8 +5,6 @@ import { Likes } from "src/boards/entity/likes.entity";
 import { Diaries } from "src/diaries/entity/diaries.entity";
 import { BaseEntity, Column, PrimaryGeneratedColumn, Unique, Entity, OneToMany, OneToOne, JoinColumn } from "typeorm";
 import { Reports } from "src/reports/reports.entity";
-import { Tested } from "src/reports/test.entity";
-
 
 @Entity()
 @Unique(['email'])
@@ -74,10 +72,4 @@ export class Users extends BaseEntity {
         (report) => report.userId
     )
     reports: Reports[];
-
-    @OneToMany(
-        () => Tested,
-        (tested) => tested.userId
-    )
-    tests: Tested[];
 }

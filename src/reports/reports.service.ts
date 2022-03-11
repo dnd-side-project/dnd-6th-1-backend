@@ -7,7 +7,6 @@ import { DiariesService } from 'src/diaries/diaries.service';
 import { DiariesRepository } from 'src/diaries/repository/diaries.repository';
 import { UsersRepository } from 'src/users/users.repository';
 import { ReportsRepository } from './reports.repository';
-import { TestedRepository } from './test.repository';
 
 @Injectable()
 export class ReportsService {
@@ -20,7 +19,7 @@ export class ReportsService {
     ) {}
     private readonly logger = new Logger(ReportsService.name);
 
-    @Cron('00 11 23 * * 1-5', {
+    @Cron('00 00 00 * * 1', { // 월요일 자정에 생성
       name: 'report',
       timeZone: 'Asia/Seoul',
     })
@@ -30,9 +29,8 @@ export class ReportsService {
             const userId = users[i].userId;
             const today = new Date();
             const year = today.getFullYear();
-            const lastWeek = await this.diariesService.getWeek(today); // 이번주(월)요일 전 주의 레포트 생성해야함
-
-            // const lastWeek = await this.diariesService.getWeek(today)-1; // 이번주(월)요일 전 주의 레포트 생성해야함
+            // const lastWeek = await this.diariesService.getWeek(today); // 테스트용 - 이번주 데이터
+            const lastWeek = await this.diariesService.getWeek(today)-1; // 이번주(월)요일 전 주의 레포트 생성해야함
             const { reports } = await this.emotionCount(year, lastWeek, userId);
             await this.reportsRepository.createReport(year, lastWeek, userId, reports);
         }
