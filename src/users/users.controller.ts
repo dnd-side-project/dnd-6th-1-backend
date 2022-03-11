@@ -531,6 +531,13 @@ export class UsersController {
     ) {
         try{
             const { year, month, week } = query;
+            const user = await this.usersService.findByUserId(userId);
+            if(!user)
+                return res
+                    .status(HttpStatus.NOT_FOUND)
+                    .json({
+                        message:`유저 번호 ${userId}번에 해당하는 유저가 없습니다.`
+                    })  
             const report = await this.reportsService.getWeeklyReport(year, month, week, userId);
             return res
                 .status(HttpStatus.OK)

@@ -19,6 +19,17 @@ export class ReportsRepository extends Repository<Reports> {
         }
     }
 
+    async findReportByWeek(year: number, week: number, userId: number){
+        return await this.find({
+            select: ["cnt"],
+            where: {
+                year,
+                week,
+                userId
+            }
+        })
+    }
+
     async findRankByCategory(year: number, month: number, week: number, userId: number, categoryId: number) {
         return await this.findOne({
             select: ["rank"],

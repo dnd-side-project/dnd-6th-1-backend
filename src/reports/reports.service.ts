@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, SchedulerRegistry } from '@nestjs/schedule';
 import { create } from 'domain';
+import { report } from 'process';
 import { DiariesService } from 'src/diaries/diaries.service';
 import { DiariesRepository } from 'src/diaries/repository/diaries.repository';
 import { UsersRepository } from 'src/users/users.repository';
@@ -74,8 +75,7 @@ export class ReportsService {
     }
 
     // 주간 리포트 조회
-    async getWeeklyReport(year: number, month: number, week: number, userId: number){   
-        await this.diariesService.getStartAndEndDate(year, week);
+    async getWeeklyReport(year: number, month: number, week: number, userId: number){
         const { reports, diaries } = await this.emotionCount(year, month, week, userId);
         const maxCategory = new Array();
         for(let i=0;i<5;i++){
@@ -83,11 +83,27 @@ export class ReportsService {
                 maxCategory.push(reports['emotion'][i].category);
         }
         const maxDiaries = diaries.filter(diary => maxCategory.includes(diary.categoryId)); // 최다 감정이 담긴 배열만 필터링
+        
+        // 10주차(얘 자체도 지난주) 리포트지만 순위 비교하려면 9주차 데이터도 가져와야함 
+        let sum=0;
+        while(true){
+            const reportByWeek = await this.reportsRepository.findReportByWeek(year, --week, userId);
+            console.log(reportByWeek);
+            console.log(week);
+
+            // 해당 주차에 리포트가 있는지 -> 5개의 감정이 모두 cnt=0이면 레포트 안쓴 것
+            reportByWeek.forEach(function(el){sum += el.cnt});
+            if(sum!=0){
+                console.log(sum);
+                break;
+            }
+        }
+        
         for(let i=0;i<5;i++){  // 지난 주와 감정 순위 비교
             let categoryId = reports['emotion'][i].category;
             let rank = reports['emotion'][i].rank;
-            // 10주차(얘 자체도 지난주) 리포트지만 순위 비교하려면 9주차 데이터도 가져와야함 
-            const lastRank = await (await this.reportsRepository.findRankByCategory(year, month, week-1, userId, categoryId)).rank; 
+            await this.reportsRepository.findRankByCategory(year, month, week, userId, categoryId);
+            const lastRank = await (await this.reportsRepository.findRankByCategory(year, month, week, userId, categoryId)).rank; 
             reports['emotion'][i]['rankChange'] = lastRank-rank;
         }
 
