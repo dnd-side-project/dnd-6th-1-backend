@@ -12,8 +12,8 @@ import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import { ReportsService } from 'src/reports/reports.service';
 import { HistoriesService } from 'src/histories/histories.service';
 
-// @ApiBearerAuth('accessToken')
-// @UseGuards(JwtAuthGuard)
+@ApiBearerAuth('accessToken')
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
     constructor(
@@ -498,7 +498,7 @@ export class UsersController {
         }
     }
 
-    @ApiTags('주간레포트 API')
+    @ApiTags('주간 레포트 API')
     @Get('/:userId/reports')
     @ApiOperation({ summary: '주간 레포트 조회 API' })
     @ApiQuery({
@@ -554,16 +554,13 @@ export class UsersController {
         }
     }
 
-
     @ApiTags('주간 레포트 API')
     @Post('/reports')
-    @ApiOperation({ summary: '레포트 생성 API' })
+    @ApiOperation({ summary: '레포트 생성 API (서버용)' })
     async startSchedule(
     ) { // 리포트 생성 함수
         await this.reportsService.createReport();
     }
-
-
 
     // 1. 닉네임 중복확인
     @ApiTags('마이페이지 API')
