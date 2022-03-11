@@ -151,11 +151,10 @@ export class DiariesController {
             // 다이어리글 작성
             const diary = await this.diariesService.createDiary(userId, createDiaryDto); 
             if(files.length!=0) // 파일이 있는 경우
-
                 await this.uploadService.uploadFiles(files, diary.diaryId); 
             
             // 작성한 다이어리 정보 return
-            const createDiary = await this.diariesService.findByDiaryId(diary.diaryId);
+            const createDiary = await this.diariesService.findCreateDiary(diary.diaryId);
             return res
                 .status(HttpStatus.CREATED)
                 // 확인필요
