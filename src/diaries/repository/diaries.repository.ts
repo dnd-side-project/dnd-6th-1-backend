@@ -117,6 +117,7 @@ export class DiariesRepository extends Repository <Diaries> {
                 // "diaries.userId AS userId",
                 "diaries.diaryId AS diaryId",
                 "diaries.date AS date",
+                "diaries.diaryCreated AS diaryCreated",
                 "diaries.categoryId AS categoryId", 
                 "diaries.categoryReason AS categoryReason",
                 "diaries.diaryTitle AS diaryTitle", 

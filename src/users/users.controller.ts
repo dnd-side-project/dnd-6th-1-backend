@@ -12,8 +12,8 @@ import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import { ReportsService } from 'src/reports/reports.service';
 import { HistoriesService } from 'src/histories/histories.service';
 
-@ApiBearerAuth('accessToken')
-@UseGuards(JwtAuthGuard)
+// @ApiBearerAuth('accessToken')
+// @UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
     constructor(
@@ -531,7 +531,7 @@ export class UsersController {
     ) {
         try{
             const { year, month, week } = query;
-            const report = await this.usersService.getWeeklyReport(year, month, week, userId);
+            const report = await this.reportsService.getWeeklyReport(year, month, week, userId);
             return res
                 .status(HttpStatus.OK)
                 .json(report);
@@ -555,10 +555,6 @@ export class UsersController {
     async startSchedule(
         @Res() res,
         @Query() query,
-        @Param("userId", new ParseIntPipe({
-            errorHttpStatusCode: HttpStatus.BAD_REQUEST
-        }))
-        userId: number
     ) { // 리포트 생성 함수
         await this.reportsService.createReport();
     }
