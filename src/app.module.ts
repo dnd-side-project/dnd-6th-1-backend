@@ -18,8 +18,6 @@ const { combine, timestamp, printf } = winston.format;
 import { MailerModule } from '@nestjs-modules/mailer';
 import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ReportsService } from './reports/reports.service';
-import { ReportsRepository } from './reports/reports.repository';
 import { HistoriesService } from './histories/histories.service';
 import { HistoriesRepository } from './histories/histories.repository';
 

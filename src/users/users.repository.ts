@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from "typeorm";
-import { Users } from "src/auth/users.entity";
+import { Users } from "src/users/users.entity";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { PasswordDto } from "./dto/password.dto";
 import * as bcrypt from "bcryptjs";
