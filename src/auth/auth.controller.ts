@@ -90,11 +90,11 @@ export class AuthController {
         @Param("email") email: string,
     ): Promise<string> {
         try{
-            const userEmail = await this.authService.findByAuthEmail(email);
+            const user = await this.authService.findByAuthEmail(email);
             // 가입된 이메일 O
-            if(userEmail)
+            if(user)
 
-                await this.authService.sendEmail();
+                await this.authService.sendEmail(user);
                 return res
                     .status(HttpStatus.OK)
                     .json({
