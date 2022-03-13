@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsIn, IsNotEmpty, IsNumber, IsString, Length } from 'class-validator';
-import { Users } from 'src/auth/users.entity';
+import { Users } from 'src/users/users.entity';
 import {
   BaseEntity,
   Column,

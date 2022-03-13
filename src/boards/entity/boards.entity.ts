@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsIn, IsNotEmpty, IsNumber, IsString, Length } from "class-validator";
-import { Users } from "src/auth/users.entity";
+import { Users } from "src/users/users.entity";
 import { BoardImages } from "src/board-images/board-images.entity";
 import { Comments } from "src/comments/comments.entity";
 import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";

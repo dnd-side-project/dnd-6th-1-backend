@@ -5,6 +5,8 @@ import * as bcrypt from 'bcryptjs';
 import { AuthRepository } from './auth.repository';
 import { JwtService } from '@nestjs/jwt';
 import { AuthSignInDto } from './dto/auth-signin.dto';
+import generator from 'generate-password';
+
 
 @Injectable()
 export class AuthService {
@@ -53,8 +55,19 @@ export class AuthService {
         return await this.authRepository.signOut(userId);
     }
     
-    // // 비밀번호 재설정
-    // async updatePassword(password: string): Promise<string> {
- 
-    // }
+
+    // 비밀번호 재설정 & 이메일 전송
+    async sendEmail(): Promise<string> {
+        // 랜덤 비밀번호 생성
+        var generator = require('generate-password');
+        const password = generator.generate({ length: 10, numbers: true });
+        // 비밀번호 암호화 (회원가입-로그인 비밀번호 암호화 로직과 동일)
+        const hashedPassword = await bcrypt.hash(
+            password,
+            parseInt(process.env.BCRYPT_SALT_ROUNDS),
+        );
+        console.log(password);
+        console.log(hashedPassword);
+        return;
+    }
 }
