@@ -82,34 +82,42 @@ export class AuthController {
         }
     }
 
-    // @Get('/signin/:email')
-    // @ApiOperation({ summary: '비밀번호 찾을 시 이메일 전송' })
-    // async sendEmail(
-    //     @Res() res,
-    //     @Param("email") email: string,
-    // ): Promise<string> {
-    //     try{
-    //         if(nickName) 
-    //             return res
-    //                 .status(HttpStatus.CONFLICT)
-    //                 .json({
-    //                     success: false,
-    //                     message: "같은 닉네임이 존재합니다.",
-    //                 })
-            
-    //         return res
-    //             .status(HttpStatus.OK)
-    //             .json({
-    //                 success: true,
-    //                 message: "사용 가능한 닉네임입니다.",
-    //             })
-    //     } catch(error){
-    //         this.logger.error('닉네임 중복 조회 ERROR'+error);
-    //         return res
-    //             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-    //             .json(error);
-    //     }
-    // }
+
+    @Get('/signin/:email')
+    @ApiOperation({ summary: '비밀번호 찾기 이메일 전송' })
+    async sendEmail(
+        @Res() res,
+        @Param("email") email: string,
+    ): Promise<string> {
+        try{
+            const userEmail = await this.authService.findByAuthEmail(email);
+            // 가입된 이메일 O
+            if(userEmail)
+
+                await this.authService.sendEmail();
+                return res
+                    .status(HttpStatus.OK)
+                    .json({
+                        success: true,
+                        message: "임시 비밀번호가 전송되었습니다.",
+                    })
+            // 가입된 이메일 X
+            return res
+                .status(HttpStatus.CONFLICT)
+                .json({
+                    success: false,
+                    message: "존재하지 않는 계정입니다.",
+                })
+        } catch(error){
+            this.logger.error('비밀번호 찾기 ERROR'+error);
+            return res
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .json(error);
+        }
+    }
+
+
+
 
     @Post('/signin')
     @ApiOperation({ 
