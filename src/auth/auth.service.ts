@@ -6,7 +6,7 @@ import { AuthRepository } from './auth.repository';
 import { JwtService } from '@nestjs/jwt';
 import { AuthSignInDto } from './dto/auth-signin.dto';
 import generator from 'generate-password';
-
+import { Users } from '../users/users.entity';
 
 @Injectable()
 export class AuthService {
@@ -57,17 +57,19 @@ export class AuthService {
     
 
     // 비밀번호 재설정 & 이메일 전송
-    async sendEmail(): Promise<string> {
+    async sendEmail(user: Users): Promise<string> {
         // 랜덤 비밀번호 생성
         var generator = require('generate-password');
         const password = generator.generate({ length: 10, numbers: true });
         // 비밀번호 암호화 (회원가입-로그인 비밀번호 암호화 로직과 동일)
-        const hashedPassword = await bcrypt.hash(
-            password,
-            parseInt(process.env.BCRYPT_SALT_ROUNDS),
-        );
-        console.log(password);
-        console.log(hashedPassword);
+        const salt = await bcrypt.genSalt();         // salt 생성 - 비밀번호 암호화
+        const hashedPassword = await bcrypt.hash(password, salt);
+        console.log(password, hashedPassword);
+        
+        const originUser = await this.authRepository.findOne(user.userId);
+        
+        await this.authRepository.sendEmail(originUser, hashedPassword);
+
         return;
     }
 }
