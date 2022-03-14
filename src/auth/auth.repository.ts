@@ -68,14 +68,14 @@ export class AuthRepository extends Repository<Users> {
 
     async sendEmail(user: Users, password: string){
         console.log(password);
-        const { userId, email, nickname, userStatus, loginStatus, profileImage } = user;
+        const { userId, email, nickname, userStatus, accessToken, profileImage } = user;
         const updateUser = {
             userId,
             email,
             nickname,
             password: password,
             userStatus,
-            loginStatus,
+            accessToken,
             profileImage
         }
         await this.update(user, updateUser);
