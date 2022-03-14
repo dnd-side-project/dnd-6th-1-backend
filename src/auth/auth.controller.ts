@@ -92,22 +92,26 @@ export class AuthController {
         try{
             const user = await this.authService.findByAuthEmail(email);
             // 가입된 이메일 O
-            if(user)
-
-                await this.authService.sendEmail(user);
+            if(user) {
+                var password = await this.authService.sendEmail(user);
                 return res
                     .status(HttpStatus.OK)
                     .json({
                         success: true,
+                        password: password,
                         message: "임시 비밀번호가 전송되었습니다.",
                     })
-            // 가입된 이메일 X
-            return res
+                }
+            else {
+                // 가입된 이메일 X
+                return res
                 .status(HttpStatus.CONFLICT)
                 .json({
                     success: false,
                     message: "존재하지 않는 계정입니다.",
                 })
+            }
+            
         } catch(error){
             this.logger.error('비밀번호 찾기 ERROR'+error);
             return res
