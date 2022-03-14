@@ -40,7 +40,7 @@ export class AuthService {
     async signIn(authsigninDto: AuthSignInDto): Promise<string> {
         const {email, password} = authsigninDto;
         // username 찾기
-        const user = await this.authRepository.findOne({email});
+        const user = await this.authRepository.findByAuthEmail(email);
 
         //로그인 성공 - user가 데이터베이스에 있고, pw비교
         if(user && (await bcrypt.compare(password, user.password))) {
@@ -48,7 +48,7 @@ export class AuthService {
             const payload = { userId: user.userId, email };
             const accessToken = await this.jwtService.sign(payload);
             // 로그인 상태 업데이트
-            await this.authRepository.signIn(user.userId);            
+            await this.authRepository.signIn(user.userId, accessToken);            
             return accessToken;
             // JWT에 들어갈 payload에 User id와 account를 넣고 JWT를 생성하여 반환
         }
@@ -57,7 +57,7 @@ export class AuthService {
     async signOut(userId: number){
         return await this.authRepository.signOut(userId);
     }
-    
+
 
     // 비밀번호 재설정 & 이메일 전송
     async sendEmail(user: Users): Promise<string> {
@@ -84,4 +84,5 @@ export class AuthService {
             console.log(err);
         }
     }
+
 }
