@@ -154,6 +154,8 @@ export class ReportsService {
 
     // 주간 리포트 조회
     async getWeeklyReport(year: number, week: number, userId: number){
+        
+        
         // 일기를 하나도 안쓴 경우 빈 배열 리턴
         let sum=0;
         const reportByWeek = await this.reportsRepository.findReportByWeek(year, week, userId);
@@ -162,6 +164,7 @@ export class ReportsService {
             return [];
 
         const { reports, diaries } = await this.emotionCount(year, week, userId);
+        reports['profileImage'] = await (await this.usersRepository.findByUserId(userId)).profileImage;
         const maxCategory = new Array();
         for(let i=0;i<5;i++){
             if(reports['emotion'][i].cnt == reports['emotion'][0].cnt)
