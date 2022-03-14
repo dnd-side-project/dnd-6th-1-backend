@@ -23,10 +23,6 @@ export class UsersService {
             private commentsRepository: CommentsRepository,
         @InjectRepository(HistoriesRepository)
             private historiesRepository: HistoriesRepository,
-        @InjectRepository(DiariesRepository)
-            private diariesRepository: DiariesRepository,
-        @InjectRepository(ReportsRepository)
-            private reportsRepository: ReportsRepository,
     ) { }
     
     async findByUserId(userId: number) {

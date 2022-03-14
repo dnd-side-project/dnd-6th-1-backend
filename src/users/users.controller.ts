@@ -179,7 +179,7 @@ export class UsersController {
         }
     }
 
-    @ApiTags('마이페이지 API')
+    @ApiTags('유저 API')
     @Delete('/:userId')
     @ApiOperation({ summary : '회원 탈퇴 API' })
     @ApiParam({

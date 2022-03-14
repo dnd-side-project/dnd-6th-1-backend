@@ -35,8 +35,8 @@ export class AuthService {
     async signIn(authsigninDto: AuthSignInDto): Promise<string> {
         const {email, password} = authsigninDto;
         // username 찾기
-        const user = await this.authRepository.findOne({email});
-
+        const user = await this.authRepository.findByAuthEmail(email);
+                    
         //로그인 성공 - user가 데이터베이스에 있고, pw비교
         if(user && (await bcrypt.compare(password, user.password))) {
             // 유저 토큰 생성 (Secret + Payload) -> payload에 중요한 정보는 넣으면 안됨
@@ -52,9 +52,5 @@ export class AuthService {
     async signOut(userId: number){
         return await this.authRepository.signOut(userId);
     }
-    
-    // // 비밀번호 재설정
-    // async updatePassword(password: string): Promise<string> {
- 
-    // }
+
 }
