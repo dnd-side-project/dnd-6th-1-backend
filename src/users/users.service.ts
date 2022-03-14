@@ -1,13 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Iot } from 'aws-sdk';
-import { type } from 'os';
 import { BoardsService } from 'src/boards/boards.service';
 import { BoardsRepository } from 'src/boards/repository/boards.repository';
 import { HistoriesRepository } from 'src/histories/histories.repository';
 import { CommentsRepository } from 'src/comments/comments.repository';
-import { DiariesRepository } from 'src/diaries/repository/diaries.repository';
-import { ReportsRepository } from 'src/reports/reports.repository';
 import { PasswordDto } from './dto/password.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UsersRepository } from './users.repository';
