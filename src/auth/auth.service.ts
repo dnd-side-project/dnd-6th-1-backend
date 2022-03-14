@@ -5,6 +5,10 @@ import * as bcrypt from 'bcryptjs';
 import { AuthRepository } from './auth.repository';
 import { JwtService } from '@nestjs/jwt';
 import { AuthSignInDto } from './dto/auth-signin.dto';
+import generator from 'generate-password';
+import { Users } from '../users/users.entity';
+import { MailerService } from '@nestjs-modules/mailer';
+
 
 @Injectable()
 export class AuthService {
@@ -12,6 +16,7 @@ export class AuthService {
         @InjectRepository(AuthRepository)
         private authRepository: AuthRepository,
         private jwtService : JwtService,
+        private readonly mailerService: MailerService,
     ) { }
 
 
@@ -51,6 +56,33 @@ export class AuthService {
     
     async signOut(userId: number){
         return await this.authRepository.signOut(userId);
+    }
+
+
+    // 비밀번호 재설정 & 이메일 전송
+    async sendEmail(user: Users): Promise<string> {
+        // 랜덤 임시 비밀번호 생성
+        var generator = require('generate-password');
+        const password = generator.generate({ length: 10, numbers: true });
+        // 비밀번호 암호화 (회원가입-로그인 비밀번호 암호화 로직과 동일)
+        const salt = await bcrypt.genSalt();         // salt 생성 - 비밀번호 암호화
+        const hashedPassword = await bcrypt.hash(password, salt);
+        console.log(password);
+        
+        const originUser = await this.authRepository.findOne(user.userId);
+        // 임시 비밀번호 저장
+        await this.authRepository.sendEmail(originUser, hashedPassword);
+        try {
+            await this.mailerService.sendMail({
+              to: user.email, // list of receivers
+              from: 'ITZZAteam', // sender address
+              subject: '[ITZZA] 임시 비밀번호 발급', // Subject line
+              html: "<h1 >ITZZA에서 임시 비밀번호를 알려드립니다.</h1> <h2> 비밀번호 : " + password + "</h2>" +'<h3 style="color: crimson;">임시 비밀번호로 로그인 하신 후, 반드시 비밀번호를 수정해 주세요.</h3>'
+            });
+            return password;
+          } catch (err) {
+            console.log(err);
+        }
     }
 
 }

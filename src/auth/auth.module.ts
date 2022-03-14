@@ -7,6 +7,8 @@ import { JwtStrategy } from './jwt/jwt.strategy';
 import { AuthRepository } from './auth.repository';
 import { AuthService } from './auth.service';
 import { UsersRepository } from 'src/users/users.repository';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 require("dotenv").config();
 
 @Module({
@@ -22,7 +24,28 @@ require("dotenv").config();
     TypeOrmModule.forFeature([
       AuthRepository,
       UsersRepository
-    ])
+    ]),
+    // 이메일 전송
+    MailerModule.forRoot({
+      transport: {
+        service: 'gmail',
+        // SMTP : 인터넷에서 메일을 주고 받기 위한 전송 규약 및 프로토콜
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.NODEMAILER_USER,
+          pass: process.env.NODEMAILER_PASS,
+        },
+        template: {
+          dir: process.cwd() + '/template/',
+          adaptor: new HandlebarsAdapter(),
+          options: {
+            strict: true,
+          },
+        },
+      },
+    }),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

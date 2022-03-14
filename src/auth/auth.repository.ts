@@ -2,6 +2,8 @@ import { EntityRepository, Repository } from "typeorm";
 import { Users } from "../users/users.entity";
 import { AuthCredentialsDto } from "./dto/auth-credential.dto";
 import * as bcrypt from "bcryptjs";
+import { UserImportBuilder } from "firebase-admin/lib/auth/user-import-builder";
+
 
 require("dotenv").config();
 @EntityRepository(Users)
@@ -62,6 +64,22 @@ export class AuthRepository extends Repository<Users> {
     async signOut(userId: number) {
         await this.update({userId}, { accessToken: "" }); 
         // 토큰 값 삭제
+    }
+
+    async sendEmail(user: Users, password: string){
+        console.log(password);
+        const { userId, email, nickname, userStatus, loginStatus, profileImage } = user;
+        const updateUser = {
+            userId,
+            email,
+            nickname,
+            password: password,
+            userStatus,
+            loginStatus,
+            profileImage
+        }
+        await this.update(user, updateUser);
+        console.log(updateUser);
     }
 }
     
