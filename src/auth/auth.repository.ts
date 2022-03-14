@@ -13,9 +13,11 @@ export class AuthRepository extends Repository<Users> {
         return await this.createQueryBuilder("users")
             // "".뭐뭐뭐
             .where("users.email =:email", {email})
+            .andWhere("users.userStatus =:status", {status: true})
             .getOne();
     }
 
+    
     async findByAuthNickname(nickname: string) {
         return await this.createQueryBuilder("users")
             // "".뭐뭐뭐
@@ -52,12 +54,14 @@ export class AuthRepository extends Repository<Users> {
     }
   
     // 로그인
-    async signIn(userId: number) {
-        await this.update({userId},{ loginStatus: true }); 
+    async signIn(userId: number, accessToken: string) {
+        await this.update({userId},{ accessToken });
+        // 토큰 값 update 
     }
 
     async signOut(userId: number) {
-        await this.update({userId},{ loginStatus: false }); 
+        await this.update({userId}, { accessToken: "" }); 
+        // 토큰 값 삭제
     }
 }
     

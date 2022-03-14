@@ -122,8 +122,15 @@ export class AuthController {
         @Body(ValidationPipe) authsigninDto: AuthSignInDto
     ): Promise<string> {
         try{
-            const accessToken = await this.authService.signIn(authsigninDto);
             const user = await this.authService.findByAuthEmail(authsigninDto.email);
+            if(!user)
+                return res
+                    .status(HttpStatus.OK)
+                    .json({
+                        message: '없는 회원입니다'
+                    });
+
+            const accessToken = await this.authService.signIn(authsigninDto);
             if(accessToken)
                 return res
                     .status(HttpStatus.OK)

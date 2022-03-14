@@ -19,14 +19,14 @@ export class Users extends BaseEntity {
     @Column()
     password: string;
 
+    @Column()
+    accessToken: string;
+
     @Column({ type: 'varchar', length: 200})
     nickname: string;
 
     @Column({ default: true })
     userStatus: boolean;
-
-    @Column({ default: false })
-    loginStatus: boolean;
 
     @Column()
     profileImage: string;
