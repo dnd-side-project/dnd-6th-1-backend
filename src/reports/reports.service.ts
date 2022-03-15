@@ -148,14 +148,12 @@ export class ReportsService {
             return reports.findIndex((item2, j) => { // 주어진 판별함수를 만족하는 첫번째 요소에 대한 인덱스 반환
                 return item.year === item2.year && item.week === item2.week; 
             }) === i;
-        });
+        }).reverse();
         return report;
     }
 
     // 주간 리포트 조회
     async getWeeklyReport(year: number, week: number, userId: number){
-        
-        
         // 일기를 하나도 안쓴 경우 빈 배열 리턴
         let sum=0;
         const reportByWeek = await this.reportsRepository.findReportByWeek(year, week, userId);
