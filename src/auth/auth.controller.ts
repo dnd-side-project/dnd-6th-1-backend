@@ -137,7 +137,7 @@ export class AuthController {
             const user = await this.authService.findByAuthEmail(authsigninDto.email);
             if(!user)
                 return res
-                    .status(HttpStatus.OK)
+                    .status(HttpStatus.BAD_REQUEST)
                     .json({
                         message: '없는 회원입니다'
                     });

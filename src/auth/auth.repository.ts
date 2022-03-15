@@ -24,6 +24,7 @@ export class AuthRepository extends Repository<Users> {
         return await this.createQueryBuilder("users")
             // "".뭐뭐뭐
             .where("users.nickname =:nickname", {nickname})
+            .andWhere("users.userStatus =:status", {status: true})
             .getOne();
     }
 
