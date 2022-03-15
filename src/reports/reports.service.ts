@@ -148,7 +148,7 @@ export class ReportsService {
             return reports.findIndex((item2, j) => { // 주어진 판별함수를 만족하는 첫번째 요소에 대한 인덱스 반환
                 return item.year === item2.year && item.week === item2.week; 
             }) === i;
-        });
+        }).reverse();
         return report;
     }
 
@@ -162,6 +162,7 @@ export class ReportsService {
             return [];
 
         const { reports, diaries } = await this.emotionCount(year, week, userId);
+        reports['profileImage'] = await (await this.usersRepository.findByUserId(userId)).profileImage;
         const maxCategory = new Array();
         for(let i=0;i<5;i++){
             if(reports['emotion'][i].cnt == reports['emotion'][0].cnt)

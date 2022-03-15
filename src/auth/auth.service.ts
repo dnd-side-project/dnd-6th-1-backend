@@ -75,7 +75,7 @@ export class AuthService {
         try {
             await this.mailerService.sendMail({
               to: user.email, // list of receivers
-              from: 'ITZZAteam', // sender address
+              from: process.env.NODEMAILER_USER, // sender address
               subject: '[ITZZA] 임시 비밀번호 발급', // Subject line
               html: "<h1 >ITZZA에서 임시 비밀번호를 알려드립니다.</h1> <h2> 비밀번호 : " + password + "</h2>" +'<h3 style="color: crimson;">임시 비밀번호로 로그인 하신 후, 반드시 비밀번호를 수정해 주세요.</h3>'
             });
