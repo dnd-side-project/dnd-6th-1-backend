@@ -49,14 +49,14 @@ export class UsersRepository extends Repository<Users> {
     }
 
     async deleteUser(userId: number){
-        
+        /*
         const user = await this.findOne(userId);
         user.userStatus = false;
         user.email = null;
         
         await this.save(user);
-        
-        // await this.update({userId}, {userStatus: false});
+        */
+        await this.update({userId}, {userStatus: false});
     }
 
     // 작성한 글 가져오기 _ 카테고리명, 제목, 닉네임, 내용, n시간전, 이미지 개수
