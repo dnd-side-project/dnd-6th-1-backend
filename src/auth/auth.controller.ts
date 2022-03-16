@@ -30,7 +30,15 @@ export class AuthController {
         @Body(ValidationPipe) authcredentialsDto: AuthCredentialsDto
     ): Promise<any> {
         try{
-            const { nickname } = authcredentialsDto;
+            const { email, nickname } = authcredentialsDto;
+            const emailUser = await this.authService.findByAuthEmail(email);
+            if(emailUser)
+                return res.
+                    status(HttpStatus.CONFLICT)
+                    .json({
+                        success: false,
+                        message: '중복된 이메일이 있습니다.'
+                    })
             const nicknameUser = await this.authService.findByAuthNickname(nickname);
             if(nicknameUser)
                 return res.
